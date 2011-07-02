@@ -1,0 +1,15 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  type: MyString
+  road: 1
+  city: 1
+  grassA: 1
+  grassB: 1
+
+two:
+  type: MyString
+  road: 1
+  city: 1
+  grassA: 1
+  grassB: 1

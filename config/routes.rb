@@ -1,4 +1,10 @@
 CloisterSpaceServer::Application.routes.draw do
+  resources :tiles do
+  end
+  
+  resources :edges do
+  end
+  
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

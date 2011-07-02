@@ -1,0 +1,29 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  image: MyString
+  hasTwoCities: false
+  hasRoadEnd: false
+  hasPennant: false
+  isCloister: false
+  isStart: false
+  rotation: 1
+  citysFields: 1
+  north: 1
+  south: 1
+  east: 1
+  west: 1
+
+two:
+  image: MyString
+  hasTwoCities: false
+  hasRoadEnd: false
+  hasPennant: false
+  isCloister: false
+  isStart: false
+  rotation: 1
+  citysFields: 1
+  north: 1
+  south: 1
+  east: 1
+  west: 1

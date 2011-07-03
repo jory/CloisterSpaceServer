@@ -1,0 +1,59 @@
+.r1 {
+    transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+}
+.r2 {
+    transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+}
+.r3 {
+    transform: rotate(270deg);
+    -webkit-transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
+}
+
+tr {
+    height: 90px;
+}
+
+td {
+    width: 90px;
+}
+
+.candidate {
+    background: #002b36;
+}
+
+#board {
+    overflow: scroll;
+}
+
+#sideboard {
+    height: 120px;
+}
+
+#candidate {
+    float: left;
+    height: 90px;
+    width: 90px;
+    background: #002b36;
+}
+
+#controls {
+    float: left;
+}
+
+#play {
+    float: left;
+    height: 90px;
+}
+
+#features {
+
+}
+
+.debug {
+    background: red;
+}

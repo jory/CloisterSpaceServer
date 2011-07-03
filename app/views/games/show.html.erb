@@ -1,5 +1,29 @@
 <p id="notice"><%= notice %></p>
 
+<div id="board"></div>
+<div id="sideboard">
+  <div id="controls">
+    <img id="candidate" src=""/>
+    <div style="float: right">
+      <input id="left" type="button" value="Left" disabled="disabled"/><br/>
+      <input id="right" type="button" value="Right" disabled="disabled"/><br/>
+      <input id="next" type="button" value="Next" disabled="disabled"/>
+    </div>
+  </div>
+  <div id="debug">
+    <div id="play">
+      <input id="go" type="button" value="Go!"/><br/>
+      <input id="step" type="button" value="Step"/><br/>
+    </div>
+    <div id="features">  
+      <input id="features_all" type="button" value="Features: All"/><br/>
+      <input id="features_completed" type="button" 
+             value="Features: Completed"/><br/>
+      <input id="features_farms" type="button" 
+             value="Features: Farms"/>
+    </div>
+  </div>
+</div>
 
 <%= link_to 'Edit', edit_game_path(@game) %> |
 <%= link_to 'Back', games_path %>

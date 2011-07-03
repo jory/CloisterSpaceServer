@@ -1,4 +1,6 @@
 CloisterSpaceServer::Application.routes.draw do
+  resources :games
+
   resources :tiles do
   end
   

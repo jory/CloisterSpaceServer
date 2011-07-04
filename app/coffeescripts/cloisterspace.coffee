@@ -427,21 +427,21 @@ class World
                    "<img src='/images/#{tile.image}' class='#{tile.rotationClass}'/></td>")
             # TODO: Remove this!
             if tile.isStart
-              td.attr('class', 'debug')
+              td.prop('class', 'debug')
           tr.append(td)
       tbody.append(tr)
     $("#board").empty().append(table)
 
   drawCandidates: (tile, candidates) ->
-    $('#candidate').attr('src', "/images/#{tile.image}").attr('class', tile.rotationClass)
+    $('#candidate').prop('src', "/images/#{tile.image}").prop('class', tile.rotationClass)
 
     disableAll = ->
       for item in actives
-        item.attr('class', '').unbind()
+        item.prop('class', '').unbind()
 
-      $('#left').unbind().attr('disabled', 'disabled')
-      $('#right').unbind().attr('disabled', 'disabled')
-      $('#next').unbind().attr('disabled', 'disabled')
+      $('#left').unbind().prop('disabled', 'disabled')
+      $('#right').unbind().prop('disabled', 'disabled')
+      $('#next').unbind().prop('disabled', 'disabled')
 
     attach = (cell, row, col, neighbours) =>
       cell.unbind().click(=>
@@ -484,16 +484,16 @@ class World
             map.append(area)
 
         $('#board').append(map)
-        $("td[row=#{row}][col=#{col}]").find('img').attr('usemap', 'clicky')
+        $("td[row=#{row}][col=#{col}]").find('img').prop('usemap', 'clicky')
 
         $('#next').click(=>
           map.remove()
-          $("td[row=#{row}][col=#{col}]").find('img').attr('usemap', '')
-          $('#next').unbind().attr('disabled', 'disabled')
+          $("td[row=#{row}][col=#{col}]").find('img').prop('usemap', '')
+          $('#next').unbind().prop('disabled', 'disabled')
           @tiles.shift()
           @next()
-        ).attr('disabled', '')
-      ).attr('class', 'candidate')
+        ).prop('disabled', '')
+      ).prop('class', 'candidate')
 
     actives = for candidate in candidates[tile.rotation]
       [row, col, turns, neighbours] = candidate
@@ -503,13 +503,13 @@ class World
       disableAll()
       tile.rotate(-1)
       @drawCandidates(tile, candidates)
-    ).attr('disabled', '')
+    ).prop('disabled', '')
 
     $('#right').unbind().click(=>
       disableAll()
       tile.rotate(1)
       @drawCandidates(tile, candidates)
-    ).attr('disabled', '')
+    ).prop('disabled', '')
 
   next: ->
     if @tiles.length > 0
@@ -517,9 +517,9 @@ class World
       candidates = @findValidPositions(tile)
       @drawCandidates(tile, candidates)
     else
-      $('#candidate').attr('style', 'visibility: hidden')
-      $('#left').unbind().attr('disabled', 'disabled')
-      $('#right').unbind().attr('disabled', 'disabled')
+      $('#candidate').prop('style', 'visibility: hidden')
+      $('#left').unbind().prop('disabled', 'disabled')
+      $('#right').unbind().prop('disabled', 'disabled')
 
       for farm in @farms
         farm.calculateScore(@cities)
@@ -760,19 +760,19 @@ $ ->
   )
 
   $('#go').click(->
-    $('.candidate').unbind().attr('class', '')
+    $('.candidate').unbind().prop('class', '')
 
     for tile in world.tiles
       world.randomlyPlaceTile(tile, world.findValidPositions(tile))
 
     world.tiles = []
 
-    $('#candidate').attr('style', 'visibility: hidden')
-    $('#left').unbind().attr('disabled', 'disabled')
-    $('#right').unbind().attr('disabled', 'disabled')
+    $('#candidate').prop('style', 'visibility: hidden')
+    $('#left').unbind().prop('disabled', 'disabled')
+    $('#right').unbind().prop('disabled', 'disabled')
 
-    $('#go').unbind().attr('disabled', 'disabled')
-    $('#step').unbind().attr('disabled', 'disabled')
+    $('#go').unbind().prop('disabled', 'disabled')
+    $('#step').unbind().prop('disabled', 'disabled')
 
     for farm in world.farms
       farm.calculateScore(world.cities)
@@ -781,7 +781,7 @@ $ ->
   )
 
   $('#step').click(->
-    $('.candidate').unbind().attr('class', '')
+    $('.candidate').unbind().prop('class', '')
 
     tile = world.tiles.shift()
     world.randomlyPlaceTile(tile, world.findValidPositions(tile))
@@ -792,6 +792,6 @@ $ ->
     print_features(true)
 
     if world.tiles.length is 0
-      $('#go').unbind().attr('disabled', 'disabled')
-      $('#step').unbind().attr('disabled', 'disabled')
+      $('#go').unbind().prop('disabled', 'disabled')
+      $('#step').unbind().prop('disabled', 'disabled')
   )

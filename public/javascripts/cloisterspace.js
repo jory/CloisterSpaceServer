@@ -510,7 +510,7 @@
             if (tile != null) {
               td = $(("<td row='" + row + "' col='" + col + "'>") + ("<img src='/images/" + tile.image + "' class='" + tile.rotationClass + "'/></td>"));
               if (tile.isStart) {
-                td.attr('class', 'debug');
+                td.prop('class', 'debug');
               }
             }
             tr.append(td);
@@ -522,16 +522,16 @@
     };
     World.prototype.drawCandidates = function(tile, candidates) {
       var actives, attach, candidate, col, disableAll, neighbours, row, turns;
-      $('#candidate').attr('src', "/images/" + tile.image).attr('class', tile.rotationClass);
+      $('#candidate').prop('src', "/images/" + tile.image).prop('class', tile.rotationClass);
       disableAll = function() {
         var item, _i, _len;
         for (_i = 0, _len = actives.length; _i < _len; _i++) {
           item = actives[_i];
-          item.attr('class', '').unbind();
+          item.prop('class', '').unbind();
         }
-        $('#left').unbind().attr('disabled', 'disabled');
-        $('#right').unbind().attr('disabled', 'disabled');
-        return $('#next').unbind().attr('disabled', 'disabled');
+        $('#left').unbind().prop('disabled', 'disabled');
+        $('#right').unbind().prop('disabled', 'disabled');
+        return $('#next').unbind().prop('disabled', 'disabled');
       };
       attach = __bind(function(cell, row, col, neighbours) {
         return cell.unbind().click(__bind(function() {
@@ -559,15 +559,15 @@
             }
           }
           $('#board').append(map);
-          $("td[row=" + row + "][col=" + col + "]").find('img').attr('usemap', 'clicky');
+          $("td[row=" + row + "][col=" + col + "]").find('img').prop('usemap', 'clicky');
           return $('#next').click(__bind(function() {
             map.remove();
-            $("td[row=" + row + "][col=" + col + "]").find('img').attr('usemap', '');
-            $('#next').unbind().attr('disabled', 'disabled');
+            $("td[row=" + row + "][col=" + col + "]").find('img').prop('usemap', '');
+            $('#next').unbind().prop('disabled', 'disabled');
             this.tiles.shift();
             return this.next();
-          }, this)).attr('disabled', '');
-        }, this)).attr('class', 'candidate');
+          }, this)).prop('disabled', '');
+        }, this)).prop('class', 'candidate');
       }, this);
       actives = (function() {
         var _i, _len, _ref, _results;
@@ -584,12 +584,12 @@
         disableAll();
         tile.rotate(-1);
         return this.drawCandidates(tile, candidates);
-      }, this)).attr('disabled', '');
+      }, this)).prop('disabled', '');
       return $('#right').unbind().click(__bind(function() {
         disableAll();
         tile.rotate(1);
         return this.drawCandidates(tile, candidates);
-      }, this)).attr('disabled', '');
+      }, this)).prop('disabled', '');
     };
     World.prototype.next = function() {
       var candidates, farm, tile, _i, _len, _ref, _results;
@@ -598,9 +598,9 @@
         candidates = this.findValidPositions(tile);
         return this.drawCandidates(tile, candidates);
       } else {
-        $('#candidate').attr('style', 'visibility: hidden');
-        $('#left').unbind().attr('disabled', 'disabled');
-        $('#right').unbind().attr('disabled', 'disabled');
+        $('#candidate').prop('style', 'visibility: hidden');
+        $('#left').unbind().prop('disabled', 'disabled');
+        $('#right').unbind().prop('disabled', 'disabled');
         _ref = this.farms;
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -889,18 +889,18 @@
     });
     $('#go').click(function() {
       var farm, tile, _i, _j, _len, _len2, _ref, _ref2;
-      $('.candidate').unbind().attr('class', '');
+      $('.candidate').unbind().prop('class', '');
       _ref = world.tiles;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         tile = _ref[_i];
         world.randomlyPlaceTile(tile, world.findValidPositions(tile));
       }
       world.tiles = [];
-      $('#candidate').attr('style', 'visibility: hidden');
-      $('#left').unbind().attr('disabled', 'disabled');
-      $('#right').unbind().attr('disabled', 'disabled');
-      $('#go').unbind().attr('disabled', 'disabled');
-      $('#step').unbind().attr('disabled', 'disabled');
+      $('#candidate').prop('style', 'visibility: hidden');
+      $('#left').unbind().prop('disabled', 'disabled');
+      $('#right').unbind().prop('disabled', 'disabled');
+      $('#go').unbind().prop('disabled', 'disabled');
+      $('#step').unbind().prop('disabled', 'disabled');
       _ref2 = world.farms;
       for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
         farm = _ref2[_j];
@@ -910,15 +910,15 @@
     });
     return $('#step').click(function() {
       var tile;
-      $('.candidate').unbind().attr('class', '');
+      $('.candidate').unbind().prop('class', '');
       tile = world.tiles.shift();
       world.randomlyPlaceTile(tile, world.findValidPositions(tile));
       world.drawBoard();
       world.next();
       print_features(true);
       if (world.tiles.length === 0) {
-        $('#go').unbind().attr('disabled', 'disabled');
-        return $('#step').unbind().attr('disabled', 'disabled');
+        $('#go').unbind().prop('disabled', 'disabled');
+        return $('#step').unbind().prop('disabled', 'disabled');
       }
     });
   });

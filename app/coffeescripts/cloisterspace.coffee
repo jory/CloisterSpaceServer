@@ -538,7 +538,7 @@ class World
       candidates = @findValidPositions(tile)
       @drawCandidates(tile, candidates)
     else
-      $('#candidate').prop('style', 'visibility: hidden')
+      $('#candidate').attr('style', 'visibility: hidden')
       $('#left').unbind().prop('disabled', 'disabled')
       $('#right').unbind().prop('disabled', 'disabled')
 
@@ -788,7 +788,7 @@ $ ->
 
     world.tiles = []
 
-    $('#candidate').prop('style', 'visibility: hidden')
+    $('#candidate').attr('style', 'visibility: hidden')
     $('#left').unbind().prop('disabled', 'disabled')
     $('#right').unbind().prop('disabled', 'disabled')
 

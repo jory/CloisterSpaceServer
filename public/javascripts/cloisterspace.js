@@ -61,10 +61,10 @@
       this.isCloister = tile.isCloister;
       this.isStart = tile.isStart;
       this.edges = {
-        north: tile.north,
-        east: tile.east,
-        south: tile.south,
-        west: tile.west
+        north: tile.northEdge,
+        east: tile.eastEdge,
+        south: tile.southEdge,
+        west: tile.westEdge
       };
       this.rotation = 0;
       this.rotationClass = 'r0';
@@ -346,14 +346,9 @@
   })();
   World = (function() {
     function World() {
-      var i;
-      this.tiles = this.generateRandomTileSet();
-      this.center = this.minrow = this.maxrow = this.mincol = this.maxcol = this.tiles.length;
+      var i, setupBoard;
+      this.center = this.minrow = this.maxrow = this.mincol = this.maxcol = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
-      this.cloisters = [];
-      this.cities = [];
-      this.roads = [];
-      this.farms = [];
       this.board = (function() {
         var _ref, _results;
         _results = [];
@@ -362,79 +357,58 @@
         }
         return _results;
       }).call(this);
-      this.placeTile(this.center, this.center, this.tiles.shift(), []);
-    }
-    World.prototype.generateRandomTileSet = function() {
-      var city, citysFields, count, east, edge, edgeDefs, edges, grass, hasPennant, hasRoadEnd, hasTwoCities, i, image, isCloister, isStart, north, regExp, road, roadEdgeCount, south, tile, tileDef, tileDefinitions, tileSets, tiles, west, _ref;
-      edgeDefs = {
-        'r': 'road',
-        'g': 'grass',
-        'c': 'city'
-      };
-      tileDefinitions = ['city1rwe.png   1   start crgr    -1-1    1---    --122221    --    1', 'city1.png      5   reg   cggg    ----    1---    --111111    --    1', 'city1rse.png   3   reg   crrg    -11-    1---    --122111    --    1', 'city1rsw.png   3   reg   cgrr    --11    1---    --111221    --    1', 'city1rswe.png  3   reg   crrr    -123    1---    --122331    --    1', 'city1rwe.png   3   reg   crgr    -1-1    1---    --122221    --    1', 'city2nw.png    3   reg   cggc    ----    1--1    --1111--    --    1', 'city2nwq.png   2   reg   cggc    ----    1--1    --1111--    --    1', 'city2nwqr.png  2   reg   crrc    -11-    1--1    --1221--    --    1', 'city2nwr.png   3   reg   crrc    -11-    1--1    --1221--    --    1', 'city2we.png    1   reg   gcgc    ----    -1-1    11--22--    --   12', 'city2weq.png   2   reg   gcgc    ----    -1-1    11--22--    --   12', 'city3.png      3   reg   ccgc    ----    11-1    ----11--    --    1', 'city3q.png     1   reg   ccgc    ----    11-1    ----11--    --    1', 'city3qr.png    2   reg   ccrc    --1-    11-1    ----12--    --   12', 'city3r.png     1   reg   ccrc    --1-    11-1    ----12--    --   12', 'city4q.png     1   reg   cccc    ----    1111    --------    --    -', 'city11ne.png   2   reg   ccgg    ----    12--    ----1111    11    1', 'city11we.png   3   reg   gcgc    ----    -1-2    11--11--    11    1', 'cloister.png   4   reg   gggg    ----    ----    11111111    --    -', 'cloisterr.png  2   reg   ggrg    --1-    ----    11111111    --    -', 'road2ns.png    8   reg   rgrg    1-1-    ----    12222111    --    -', 'road2sw.png    9   reg   ggrr    --11    ----    11111221    --    -', 'road3.png      4   reg   grrr    -123    ----    11122331    --    -', 'road4.png      1   reg   rrrr    1234    ----    12233441    --    -'];
-      tileSets = (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = tileDefinitions.length; _i < _len; _i++) {
-          tileDef = tileDefinitions[_i];
-          regExp = RegExp(' +', 'g');
-          tile = tileDef.replace(regExp, ' ').split(' ');
-          count = tile[1];
-          image = tile[0];
-          isStart = tile[2] === 'start';
-          hasTwoCities = tile[7] === '11';
-          hasPennant = __indexOf.call(image, 'q') >= 0;
-          citysFields = tile[8].split('');
-          isCloister = image.indexOf("cloister") >= 0;
-          edges = tile[3].split('');
-          road = tile[4].split('');
-          city = tile[5].split('');
-          grass = tile[6].split('');
-          roadEdgeCount = ((function() {
-            var _j, _len2, _results2;
-            _results2 = [];
-            for (_j = 0, _len2 = edges.length; _j < _len2; _j++) {
-              edge = edges[_j];
-              if (edge === 'r') {
-                _results2.push(edge);
+      this.cloisters = [];
+      this.cities = [];
+      this.roads = [];
+      this.farms = [];
+      this.tiles = {};
+      this.edges = {};
+      this.origin = window.location.origin;
+      this.game_id = $('#game_id').html();
+      setupBoard = __bind(function() {
+        return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=placed", __bind(function(data) {
+          var count, draw, id, obj, place_tile, tile_instance, total, _i, _len;
+          total = data.length;
+          count = 0;
+          place_tile = __bind(function(tile_instance) {
+            var place_tile_helper;
+            place_tile_helper = __bind(function() {
+              var id, tile;
+              id = tile_instance.tile_id;
+              if (this.tiles[id] != null) {
+                tile = new Tile(this.tiles[id]);
+                tile.rotate(tile_instance.rotation);
+                this.placeTileBare(tile_instance.x, tile_instance.y, tile);
+                return count += 1;
+              } else {
+                return setTimeout(place_tile_helper, 1000);
               }
+            }, this);
+            return place_tile_helper();
+          }, this);
+          draw = __bind(function() {
+            if (count === total) {
+              return this.drawBoard();
+            } else {
+              return setTimeout(draw, 1000);
             }
-            return _results2;
-          })()).length;
-          hasRoadEnd = roadEdgeCount === 1 || roadEdgeCount === 3 || roadEdgeCount === 4;
-          north = new Edge(edgeDefs[edges[0]], road[0], city[0], grass[0], grass[1]);
-          east = new Edge(edgeDefs[edges[1]], road[1], city[1], grass[2], grass[3]);
-          south = new Edge(edgeDefs[edges[2]], road[2], city[2], grass[4], grass[5]);
-          west = new Edge(edgeDefs[edges[3]], road[3], city[3], grass[6], grass[7]);
-          tile = {
-            image: image,
-            north: north,
-            east: east,
-            south: south,
-            west: west,
-            hasTwoCities: hasTwoCities,
-            hasRoadEnd: hasRoadEnd,
-            hasPennant: hasPennant,
-            citysFields: citysFields,
-            isCloister: isCloister,
-            isStart: isStart
-          };
-          _results.push((function() {
-            var _results2;
-            _results2 = [];
-            for (i = 1; 1 <= count ? i <= count : i >= count; 1 <= count ? i++ : i--) {
-              _results2.push(new Tile(tile));
+          }, this);
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            obj = data[_i];
+            tile_instance = obj.tile_instance;
+            id = tile_instance.tile_id;
+            if (!(this.tiles[id] != null)) {
+              $.getJSON("" + this.origin + "/tiles/" + id + ".json", __bind(function(data) {
+                return this.tiles[data.tile.id] = data.tile;
+              }, this));
             }
-            return _results2;
-          })());
-        }
-        return _results;
-      })();
-      tiles = (_ref = []).concat.apply(_ref, tileSets);
-      return [tiles[0]].concat(_(tiles.slice(1, (tiles.length + 1) || 9e9)).sortBy(function() {
-        return Math.random();
-      }));
-    };
+            place_tile(tile_instance);
+          }
+          return draw();
+        }, this));
+      }, this);
+      setupBoard();
+    }
     World.prototype.findValidPositions = function(tile) {
       var candidate, candidates, col, i, invalids, other, otherCol, otherRow, row, side, sortedCandidates, turns, valids, _i, _len, _ref, _ref2, _ref3, _ref4, _ref5;
       candidates = [];
@@ -622,6 +596,13 @@
         }
         return _results;
       }
+    };
+    World.prototype.placeTileBare = function(row, col, tile) {
+      this.board[row][col] = tile;
+      this.maxrow = Math.max(this.maxrow, row);
+      this.minrow = Math.min(this.minrow, row);
+      this.maxcol = Math.max(this.maxcol, col);
+      return this.mincol = Math.min(this.mincol, col);
     };
     World.prototype.placeTile = function(row, col, tile, neighbours) {
       var added, cities, city, cloister, dir, edge, farm, farms, handled, n, neighbour, otherCol, otherEdge, otherFarm, otherRow, otherTile, road, roads, seen, _i, _j, _k, _l, _len, _len10, _len2, _len3, _len4, _len5, _len6, _len7, _len8, _len9, _m, _n, _o, _p, _q, _r, _ref, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _results;
@@ -921,7 +902,7 @@
       }
       return world.drawBoard();
     });
-    return $('#step').click(function() {
+    $('#step').click(function() {
       var tile;
       $('.candidate').unbind().prop('class', '');
       tile = world.tiles.shift();
@@ -933,6 +914,9 @@
         $('#go').unbind().prop('disabled', 'disabled');
         return $('#step').unbind().prop('disabled', 'disabled');
       }
+    });
+    return $('#draw').click(function() {
+      return world.drawBoard();
     });
   });
 }).call(this);

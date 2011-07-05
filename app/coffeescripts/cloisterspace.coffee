@@ -42,10 +42,10 @@ class Tile
     @isStart = tile.isStart
 
     @edges =
-      north: tile.north
-      east:  tile.east
-      south: tile.south
-      west:  tile.west
+      north: tile.northEdge
+      east:  tile.eastEdge
+      south: tile.southEdge
+      west:  tile.westEdge
 
     @rotation = 0
     @rotationClass = 'r0'
@@ -266,115 +266,62 @@ class Farm
       out += "#{address}; "
     out.slice(0, -2) + "), size: #{@size}, score: #{@score}"
 
-
 class World
   constructor: ->
-    @tiles = @generateRandomTileSet()
-
-    @center = @minrow = @maxrow = @mincol = @maxcol = @tiles.length
+    @center = @minrow = @maxrow = @mincol = @maxcol = parseInt($('#num_tiles').html())
     @maxSize = @center * 2
+    @board = (new Array(@maxSize) for i in [1..@maxSize])
 
     @cloisters = []
     @cities = []
     @roads = []
     @farms = []
 
-    @board = (new Array(@maxSize) for i in [1..@maxSize])
-    @placeTile(@center, @center, @tiles.shift(), [])
+    @tiles = {}
+    @edges = {}
 
-  generateRandomTileSet: ->
-    # order of edge specs is NESW
-    #
-    # More edge details:
-    # RoadMap (order NESW),
-    # CityMap (order NESW),
-    # GrassMap (clockwise-order starting from top-edge on the left side.
-    #           Or in compass notation: NNW,NNE,ENE,ESE,SSE,SSW,WSW,WNW)
+    @origin = window.location.origin
+    @game_id = $('#game_id').html()
 
-    edgeDefs =
-      'r': 'road'
-      'g': 'grass'
-      'c': 'city'
+    setupBoard = =>
+      $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=placed", (data) =>
 
-    tileDefinitions = [
-        # FOOFOOFOO
-        ##########################################
-        ##########################################
-        'city1rwe.png   1   start crgr    -1-1    1---    --122221    --    1',
-        'city1.png      5   reg   cggg    ----    1---    --111111    --    1',
-        'city1rse.png   3   reg   crrg    -11-    1---    --122111    --    1',
-        'city1rsw.png   3   reg   cgrr    --11    1---    --111221    --    1',
-        'city1rswe.png  3   reg   crrr    -123    1---    --122331    --    1',
-        'city1rwe.png   3   reg   crgr    -1-1    1---    --122221    --    1',
-        'city2nw.png    3   reg   cggc    ----    1--1    --1111--    --    1',
-        'city2nwq.png   2   reg   cggc    ----    1--1    --1111--    --    1',
-        'city2nwqr.png  2   reg   crrc    -11-    1--1    --1221--    --    1',
-        'city2nwr.png   3   reg   crrc    -11-    1--1    --1221--    --    1',
-        'city2we.png    1   reg   gcgc    ----    -1-1    11--22--    --   12',
-        'city2weq.png   2   reg   gcgc    ----    -1-1    11--22--    --   12',
-        'city3.png      3   reg   ccgc    ----    11-1    ----11--    --    1',
-        'city3q.png     1   reg   ccgc    ----    11-1    ----11--    --    1',
-        'city3qr.png    2   reg   ccrc    --1-    11-1    ----12--    --   12',
-        'city3r.png     1   reg   ccrc    --1-    11-1    ----12--    --   12',
-        'city4q.png     1   reg   cccc    ----    1111    --------    --    -',
-        'city11ne.png   2   reg   ccgg    ----    12--    ----1111    11    1',
-        'city11we.png   3   reg   gcgc    ----    -1-2    11--11--    11    1',
-        'cloister.png   4   reg   gggg    ----    ----    11111111    --    -',
-        'cloisterr.png  2   reg   ggrg    --1-    ----    11111111    --    -',
-        'road2ns.png    8   reg   rgrg    1-1-    ----    12222111    --    -',
-        'road2sw.png    9   reg   ggrr    --11    ----    11111221    --    -',
-        'road3.png      4   reg   grrr    -123    ----    11122331    --    -',
-        'road4.png      1   reg   rrrr    1234    ----    12233441    --    -'
-      ]
+        total = data.length
+        count = 0
 
-    tileSets = for tileDef in tileDefinitions
-      regExp = RegExp(' +', 'g')
-      tile = tileDef.replace(regExp, ' ').split(' ')
+        place_tile = (tile_instance) =>
+          place_tile_helper = =>
+            id = tile_instance.tile_id
+            if @tiles[id]?
+              tile = new Tile(@tiles[id])
+              tile.rotate(tile_instance.rotation)
+              @placeTileBare(tile_instance.x, tile_instance.y, tile)
+              count += 1
+            else
+              setTimeout(place_tile_helper,1000)
+          place_tile_helper()
 
-      count = tile[1]
+        draw = =>
+          if count is total
+            @drawBoard()
+          else
+            setTimeout(draw, 1000)
 
-      image = tile[0]
-      isStart = tile[2] is 'start'
-      hasTwoCities = tile[7] is '11'
-      hasPennant = 'q' in image
-      citysFields = tile[8].split('')
+        for obj in data
+          tile_instance = obj.tile_instance
+          id = tile_instance.tile_id
 
-      # The line: 'cloister' in image, fails for some reason.
-      isCloister = image.indexOf("cloister") >= 0
+          if not @tiles[id]?
+            $.getJSON("#{@origin}/tiles/#{id}.json", (data) =>
+              @tiles[data.tile.id] = data.tile
+            )
 
-      edges = tile[3].split('')
-      road  = tile[4].split('')
-      city  = tile[5].split('')
-      grass = tile[6].split('')
+          place_tile(tile_instance)
 
-      roadEdgeCount = (edge for edge in edges when edge is 'r').length
-      hasRoadEnd = (roadEdgeCount is 1 or roadEdgeCount is 3 or roadEdgeCount is 4)
+        draw()
+      )
 
-      north = new Edge(edgeDefs[edges[0]], road[0], city[0], grass[0], grass[1])
-      east  = new Edge(edgeDefs[edges[1]], road[1], city[1], grass[2], grass[3])
-      south = new Edge(edgeDefs[edges[2]], road[2], city[2], grass[4], grass[5])
-      west  = new Edge(edgeDefs[edges[3]], road[3], city[3], grass[6], grass[7])
-
-      tile =
-        image: image,
-        north: north,
-        east: east,
-        south: south,
-        west: west,
-        hasTwoCities: hasTwoCities,
-        hasRoadEnd: hasRoadEnd,
-        hasPennant: hasPennant
-        citysFields: citysFields,
-        isCloister: isCloister,
-        isStart: isStart
-
-      for i in [1..count]
-        new Tile(tile)
-
-    tiles = [].concat tileSets...
-
-    # This operation is ugly, but necessary
-    [tiles[0]].concat _(tiles[1..tiles.length]).sortBy(-> Math.random())
+    setupBoard()
 
   findValidPositions: (tile) ->
     candidates = []
@@ -544,6 +491,14 @@ class World
 
       for farm in @farms
         farm.calculateScore(@cities)
+
+  placeTileBare: (row, col, tile) ->
+    @board[row][col] = tile
+
+    @maxrow = Math.max(@maxrow, row)
+    @minrow = Math.min(@minrow, row)
+    @maxcol = Math.max(@maxcol, col)
+    @mincol = Math.min(@mincol, col)
 
   placeTile: (row, col, tile, neighbours) ->
     if neighbours.length is 0 and not tile.isStart
@@ -815,4 +770,8 @@ $ ->
     if world.tiles.length is 0
       $('#go').unbind().prop('disabled', 'disabled')
       $('#step').unbind().prop('disabled', 'disabled')
+  )
+
+  $('#draw').click(->
+    world.drawBoard()
   )

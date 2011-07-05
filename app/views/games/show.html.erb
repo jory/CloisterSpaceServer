@@ -14,6 +14,7 @@
       <div id="play">
         <input id="go" type="button" value="Go!"/><br/>
         <input id="step" type="button" value="Step"/><br/>
+        <input id="draw" type="button" value="Draw"/><br/>
       </div>
       <div id="features">  
         <input id="features_all" type="button" value="Features: All"/><br/>
@@ -26,6 +27,7 @@
   </div>
   <div style="display:none">
     <div id="game_id"><%= @game.id %></div>
+    <div id="num_tiles">72</div>
   </div>
 </div>
 <%= link_to 'Edit', edit_game_path(@game) %> |

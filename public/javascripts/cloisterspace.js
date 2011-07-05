@@ -52,19 +52,19 @@
     return Edge;
   })();
   Tile = (function() {
-    function Tile(image, north, east, south, west, hasTwoCities, hasRoadEnd, hasPennant, cityFields, isCloister, isStart) {
-      this.image = image;
-      this.hasTwoCities = hasTwoCities;
-      this.hasRoadEnd = hasRoadEnd;
-      this.hasPennant = hasPennant;
-      this.cityFields = cityFields;
-      this.isCloister = isCloister;
-      this.isStart = isStart;
+    function Tile(tile) {
+      this.image = tile.image;
+      this.hasTwoCities = tile.hasTwoCities;
+      this.hasRoadEnd = tile.hasRoadEnd;
+      this.hasPennant = tile.hasPennant;
+      this.citysFields = tile.citysFields;
+      this.isCloister = tile.isCloister;
+      this.isStart = tile.isStart;
       this.edges = {
-        north: north,
-        east: east,
-        south: south,
-        west: west
+        north: tile.north,
+        east: tile.east,
+        south: tile.south,
+        west: tile.west
       };
       this.rotation = 0;
       this.rotationClass = 'r0';
@@ -171,7 +171,7 @@
     return Road;
   })();
   City = (function() {
-    function City(row, col, edge, id, cityFields, hasPennant) {
+    function City(row, col, edge, id, citysFields, hasPennant) {
       this.tiles = {};
       this.ids = {};
       this.edges = {};
@@ -179,13 +179,13 @@
       this.size = 0;
       this.numPennants = 0;
       this.finished = false;
-      this.add(row, col, edge, id, cityFields, hasPennant);
+      this.add(row, col, edge, id, citysFields, hasPennant);
     }
-    City.prototype.add = function(row, col, edge, id, cityFields, hasPennant) {
+    City.prototype.add = function(row, col, edge, id, citysFields, hasPennant) {
       var address, otherAddress, otherCol, otherRow, _ref;
       address = "" + row + "," + col;
       if (!(this.tiles[address] != null)) {
-        this.tiles[address] = cityFields;
+        this.tiles[address] = citysFields;
         this.size += 1;
         if (hasPennant) {
           this.numPennants += 1;
@@ -365,7 +365,7 @@
       this.placeTile(this.center, this.center, this.tiles.shift(), []);
     }
     World.prototype.generateRandomTileSet = function() {
-      var city, cityFields, count, east, edge, edgeDefs, edges, grass, hasPennant, hasRoadEnd, hasTwoCities, i, image, isCloister, isStart, north, regExp, road, roadEdgeCount, south, tile, tileDef, tileDefinitions, tileSets, tiles, west, _ref;
+      var city, citysFields, count, east, edge, edgeDefs, edges, grass, hasPennant, hasRoadEnd, hasTwoCities, i, image, isCloister, isStart, north, regExp, road, roadEdgeCount, south, tile, tileDef, tileDefinitions, tileSets, tiles, west, _ref;
       edgeDefs = {
         'r': 'road',
         'g': 'grass',
@@ -384,7 +384,7 @@
           isStart = tile[2] === 'start';
           hasTwoCities = tile[7] === '11';
           hasPennant = __indexOf.call(image, 'q') >= 0;
-          cityFields = tile[8].split('');
+          citysFields = tile[8].split('');
           isCloister = image.indexOf("cloister") >= 0;
           edges = tile[3].split('');
           road = tile[4].split('');
@@ -406,11 +406,24 @@
           east = new Edge(edgeDefs[edges[1]], road[1], city[1], grass[2], grass[3]);
           south = new Edge(edgeDefs[edges[2]], road[2], city[2], grass[4], grass[5]);
           west = new Edge(edgeDefs[edges[3]], road[3], city[3], grass[6], grass[7]);
+          tile = {
+            image: image,
+            north: north,
+            east: east,
+            south: south,
+            west: west,
+            hasTwoCities: hasTwoCities,
+            hasRoadEnd: hasRoadEnd,
+            hasPennant: hasPennant,
+            citysFields: citysFields,
+            isCloister: isCloister,
+            isStart: isStart
+          };
           _results.push((function() {
             var _results2;
             _results2 = [];
             for (i = 1; 1 <= count ? i <= count : i >= count; 1 <= count ? i++ : i--) {
-              _results2.push(new Tile(image, north, east, south, west, hasTwoCities, hasRoadEnd, hasPennant, cityFields, isCloister, isStart));
+              _results2.push(new Tile(tile));
             }
             return _results2;
           })());
@@ -743,7 +756,7 @@
             for (_q = 0, _len9 = _ref10.length; _q < _len9; _q++) {
               city = _ref10[_q];
               if (!added && city.has(otherRow, otherCol, otherEdge.city)) {
-                city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+                city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
                 added = true;
                 if (cities[0] !== city) {
                   cities[0].merge(city);
@@ -756,7 +769,7 @@
             for (_r = 0, _len10 = _ref11.length; _r < _len10; _r++) {
               city = _ref11[_r];
               if (!added && city.has(otherRow, otherCol, otherEdge.city)) {
-                city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+                city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
                 cities.push(city);
                 added = true;
               }
@@ -818,12 +831,12 @@
               for (_v = 0, _len14 = _ref15.length; _v < _len14; _v++) {
                 city = _ref15[_v];
                 if (!added && city.has(row, col, edge.city)) {
-                  city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+                  city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
                   added = true;
                 }
               }
               if (!added) {
-                return this.cities.push(new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant));
+                return this.cities.push(new City(row, col, dir, edge.city, tile.citysFields, tile.hasPennant));
               }
             }
           }

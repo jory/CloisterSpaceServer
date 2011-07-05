@@ -31,12 +31,21 @@ class Edge
 
 
 class Tile
-  constructor: (@image, north, east, south, west, @hasTwoCities, @hasRoadEnd, @hasPennant, @cityFields, @isCloister, @isStart) ->
+  constructor: (tile) ->
+    @image = tile.image
+
+    @hasTwoCities = tile.hasTwoCities
+    @hasRoadEnd = tile.hasRoadEnd
+    @hasPennant = tile.hasPennant
+    @citysFields = tile.citysFields
+    @isCloister = tile.isCloister
+    @isStart = tile.isStart
+
     @edges =
-      north: north
-      east:  east
-      south: south
-      west:  west
+      north: tile.north
+      east:  tile.east
+      south: tile.south
+      west:  tile.west
 
     @rotation = 0
     @rotationClass = 'r0'
@@ -117,7 +126,7 @@ class Road
 
 
 class City
-  constructor: (row, col, edge, id, cityFields, hasPennant) ->
+  constructor: (row, col, edge, id, citysFields, hasPennant) ->
     @tiles = {}
     @ids = {}
     @edges = {}
@@ -126,13 +135,13 @@ class City
     @numPennants = 0
     @finished = false
 
-    @add(row, col, edge, id, cityFields, hasPennant)
+    @add(row, col, edge, id, citysFields, hasPennant)
 
-  add: (row, col, edge, id, cityFields, hasPennant) ->
+  add: (row, col, edge, id, citysFields, hasPennant) ->
     address = "#{row},#{col}"
 
     if not @tiles[address]?
-      @tiles[address] = cityFields
+      @tiles[address] = citysFields
       @size += 1
       if hasPennant
         @numPennants += 1
@@ -328,7 +337,7 @@ class World
       isStart = tile[2] is 'start'
       hasTwoCities = tile[7] is '11'
       hasPennant = 'q' in image
-      cityFields = tile[8].split('')
+      citysFields = tile[8].split('')
 
       # The line: 'cloister' in image, fails for some reason.
       isCloister = image.indexOf("cloister") >= 0
@@ -346,9 +355,21 @@ class World
       south = new Edge(edgeDefs[edges[2]], road[2], city[2], grass[4], grass[5])
       west  = new Edge(edgeDefs[edges[3]], road[3], city[3], grass[6], grass[7])
 
+      tile =
+        image: image,
+        north: north,
+        east: east,
+        south: south,
+        west: west,
+        hasTwoCities: hasTwoCities,
+        hasRoadEnd: hasRoadEnd,
+        hasPennant: hasPennant
+        citysFields: citysFields,
+        isCloister: isCloister,
+        isStart: isStart
+
       for i in [1..count]
-        new Tile(image, north, east, south, west,
-                 hasTwoCities, hasRoadEnd, hasPennant, cityFields, isCloister, isStart)
+        new Tile(tile)
 
     tiles = [].concat tileSets...
 
@@ -652,7 +673,7 @@ class World
           for city in @cities
             if not added and city.has(otherRow, otherCol, otherEdge.city)
 
-              city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+              city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant)
               added = true
 
               if cities[0] isnt city
@@ -665,7 +686,7 @@ class World
           # merge.
           for city in @cities
             if not added and city.has(otherRow, otherCol, otherEdge.city)
-              city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+              city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant)
               cities.push(city)
               added = true
 
@@ -714,11 +735,11 @@ class World
         else if edge.type is 'city'
           for city in @cities
             if not added and city.has(row, col, edge.city)
-              city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+              city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant)
               added = true
 
           if not added
-            @cities.push(new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant))
+            @cities.push(new City(row, col, dir, edge.city, tile.citysFields, tile.hasPennant))
 
 
 print_features = (all) ->

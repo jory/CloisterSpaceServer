@@ -28,9 +28,10 @@ ActiveRecord::Schema.define(:version => 20110703171116) do
   end
 
   create_table "tile_instances", :force => true do |t|
+    t.string   "status"
     t.integer  "x"
     t.integer  "y"
-    t.string   "status"
+    t.integer  "rotation"
     t.integer  "tile_id"
     t.integer  "game_id"
     t.datetime "created_at"
@@ -45,7 +46,6 @@ ActiveRecord::Schema.define(:version => 20110703171116) do
     t.boolean  "hasPennant"
     t.boolean  "isCloister"
     t.boolean  "isStart"
-    t.integer  "rotation"
     t.integer  "citysFields"
     t.integer  "northEdge"
     t.integer  "southEdge"

@@ -1,9 +1,10 @@
 class CreateTileInstances < ActiveRecord::Migration
   def self.up
     create_table :tile_instances do |t|
+      t.string :status
       t.integer :x
       t.integer :y
-      t.string :status
+      t.integer :rotation
       t.references :tile
       t.references :game
 

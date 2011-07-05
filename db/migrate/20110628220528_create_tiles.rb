@@ -8,7 +8,6 @@ class CreateTiles < ActiveRecord::Migration
       t.boolean :hasPennant
       t.boolean :isCloister
       t.boolean :isStart
-      t.integer :rotation
       t.integer :citysFields
       t.integer :northEdge
       t.integer :southEdge

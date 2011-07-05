@@ -1,5 +1,5 @@
 (function() {
-  var City, Cloister, Edge, Farm, Road, Tile, World, adjacents, offset, oppositeDirection, print_features;
+  var City, Cloister, Farm, Road, Tile, World, adjacents, offset, oppositeDirection, print_features;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -41,16 +41,6 @@
     offsets = adjacents[edge];
     return [row + offsets.row, col + offsets.col];
   };
-  Edge = (function() {
-    function Edge(type, road, city, grassA, grassB) {
-      this.type = type;
-      this.road = road;
-      this.city = city;
-      this.grassA = grassA;
-      this.grassB = grassB;
-    }
-    return Edge;
-  })();
   Tile = (function() {
     function Tile(tile) {
       this.image = tile.image;
@@ -111,7 +101,7 @@
       }
     };
     Tile.prototype.connectableTo = function(from, other) {
-      return this.edges[from].type === other.edges[oppositeDirection[from]].type;
+      return this.edges[from].kind === other.edges[oppositeDirection[from]].kind;
     };
     return Tile;
   })();
@@ -346,7 +336,7 @@
   })();
   World = (function() {
     function World() {
-      var i, setupBoard;
+      var checkEdges, getEdges, haveEdges, i, setupBoard;
       this.center = this.minrow = this.maxrow = this.mincol = this.maxcol = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.board = (function() {
@@ -365,6 +355,18 @@
       this.edges = {};
       this.origin = window.location.origin;
       this.game_id = $('#game_id').html();
+      haveEdges = false;
+      getEdges = __bind(function() {
+        return $.getJSON("" + this.origin + "/edges.json", __bind(function(data) {
+          var edge, obj, _i, _len;
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            obj = data[_i];
+            edge = obj.edge;
+            this.edges[edge.id] = edge;
+          }
+          return haveEdges = true;
+        }, this));
+      }, this);
       setupBoard = __bind(function() {
         return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=placed", __bind(function(data) {
           var count, draw, id, obj, place_tile, tile_instance, total, _i, _len;
@@ -388,7 +390,8 @@
           }, this);
           draw = __bind(function() {
             if (count === total) {
-              return this.drawBoard();
+              this.drawBoard();
+              return this.next();
             } else {
               return setTimeout(draw, 1000);
             }
@@ -399,6 +402,10 @@
             id = tile_instance.tile_id;
             if (!(this.tiles[id] != null)) {
               $.getJSON("" + this.origin + "/tiles/" + id + ".json", __bind(function(data) {
+                data.tile.northEdge = this.edges[data.tile.northEdge];
+                data.tile.southEdge = this.edges[data.tile.southEdge];
+                data.tile.westEdge = this.edges[data.tile.westEdge];
+                data.tile.eastEdge = this.edges[data.tile.eastEdge];
                 return this.tiles[data.tile.id] = data.tile;
               }, this));
             }
@@ -407,8 +414,69 @@
           return draw();
         }, this));
       }, this);
-      setupBoard();
+      getEdges();
+      checkEdges = __bind(function() {
+        if (haveEdges) {
+          return setupBoard();
+        } else {
+          return setTimeout(checkEdges, 1000);
+        }
+      }, this);
+      checkEdges();
     }
+    World.prototype.placeTileBare = function(row, col, tile) {
+      this.board[row][col] = tile;
+      this.maxrow = Math.max(this.maxrow, row);
+      this.minrow = Math.min(this.minrow, row);
+      this.maxcol = Math.max(this.maxcol, col);
+      return this.mincol = Math.min(this.mincol, col);
+    };
+    World.prototype.next = function() {
+      return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
+        var farm, find_positions, id, obj, tile_instance, _i, _len, _ref, _results;
+        obj = _arg[0];
+        if (obj != null) {
+          tile_instance = obj.tile_instance;
+          find_positions = __bind(function(tile_instance) {
+            var find_positions_helper;
+            find_positions_helper = __bind(function() {
+              var candidates, id, tile;
+              id = tile_instance.tile_id;
+              if (this.tiles[id] != null) {
+                tile = new Tile(this.tiles[id]);
+                candidates = this.findValidPositions(tile);
+                return this.drawCandidates(tile, candidates);
+              } else {
+                return setTimeout(find_positions_helper, 1000);
+              }
+            }, this);
+            return find_positions_helper();
+          }, this);
+          id = tile_instance.tile_id;
+          if (!(this.tiles[id] != null)) {
+            $.getJSON("" + this.origin + "/tiles/" + id + ".json", __bind(function(data) {
+              data.tile.northEdge = this.edges[data.tile.northEdge];
+              data.tile.southEdge = this.edges[data.tile.southEdge];
+              data.tile.westEdge = this.edges[data.tile.westEdge];
+              data.tile.eastEdge = this.edges[data.tile.eastEdge];
+              return this.tiles[data.tile.id] = data.tile;
+            }, this));
+          }
+          return find_positions(tile_instance);
+        } else {
+          $('#candidate > img').attr('style', 'visibility: hidden');
+          $('#left').unbind().prop('disabled', 'disabled');
+          $('#right').unbind().prop('disabled', 'disabled');
+          _ref = this.farms;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            farm = _ref[_i];
+            _results.push(farm.calculateScore(this.cities));
+          }
+          return _results;
+        }
+      }, this));
+    };
     World.prototype.findValidPositions = function(tile) {
       var candidate, candidates, col, i, invalids, other, otherCol, otherRow, row, side, sortedCandidates, turns, valids, _i, _len, _ref, _ref2, _ref3, _ref4, _ref5;
       candidates = [];
@@ -508,8 +576,9 @@
       return $("#board").empty().append(table);
     };
     World.prototype.drawCandidates = function(tile, candidates) {
-      var actives, attach, candidate, col, disableAll, neighbours, row, turns;
-      $('#candidate').prop('src', "/images/" + tile.image).prop('class', tile.rotationClass);
+      var actives, attach, candidate, col, disableAll, img, neighbours, row, turns;
+      img = $('#candidate > img').attr('src', "/images/" + tile.image);
+      img.attr('class', tile.rotationClass).attr('style', '');
       disableAll = function() {
         var item, _i, _len;
         for (_i = 0, _len = actives.length; _i < _len; _i++) {
@@ -577,32 +646,6 @@
         tile.rotate(1);
         return this.drawCandidates(tile, candidates);
       }, this)).prop('disabled', '');
-    };
-    World.prototype.next = function() {
-      var candidates, farm, tile, _i, _len, _ref, _results;
-      if (this.tiles.length > 0) {
-        tile = this.tiles[0];
-        candidates = this.findValidPositions(tile);
-        return this.drawCandidates(tile, candidates);
-      } else {
-        $('#candidate').attr('style', 'visibility: hidden');
-        $('#left').unbind().prop('disabled', 'disabled');
-        $('#right').unbind().prop('disabled', 'disabled');
-        _ref = this.farms;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          farm = _ref[_i];
-          _results.push(farm.calculateScore(this.cities));
-        }
-        return _results;
-      }
-    };
-    World.prototype.placeTileBare = function(row, col, tile) {
-      this.board[row][col] = tile;
-      this.maxrow = Math.max(this.maxrow, row);
-      this.minrow = Math.min(this.minrow, row);
-      this.maxcol = Math.max(this.maxcol, col);
-      return this.mincol = Math.min(this.mincol, col);
     };
     World.prototype.placeTile = function(row, col, tile, neighbours) {
       var added, cities, city, cloister, dir, edge, farm, farms, handled, n, neighbour, otherCol, otherEdge, otherFarm, otherRow, otherTile, road, roads, seen, _i, _j, _k, _l, _len, _len10, _len2, _len3, _len4, _len5, _len6, _len7, _len8, _len9, _m, _n, _o, _p, _q, _r, _ref, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _results;
@@ -862,8 +905,6 @@
   $(function() {
     var world;
     world = new World();
-    world.drawBoard();
-    world.next();
     $('#features_all').click(function() {
       return print_features(true);
     });
@@ -890,7 +931,7 @@
         world.randomlyPlaceTile(tile, world.findValidPositions(tile));
       }
       world.tiles = [];
-      $('#candidate').attr('style', 'visibility: hidden');
+      $('#candidate > img').attr('style', 'visibility: hidden');
       $('#left').unbind().prop('disabled', 'disabled');
       $('#right').unbind().prop('disabled', 'disabled');
       $('#go').unbind().prop('disabled', 'disabled');

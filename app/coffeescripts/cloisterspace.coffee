@@ -25,11 +25,6 @@ offset = (edge, row, col) ->
   [row + offsets.row, col + offsets.col]
 
 
-class Edge
-  constructor: (@type, @road, @city, @grassA, @grassB) ->
-    # @string = "type: #{@type}, road: #{@road}, city: #{@city}, grassA: #{@grassA}, grassB: #{@grassB}"
-
-
 class Tile
   constructor: (tile) ->
     @image = tile.image
@@ -76,7 +71,7 @@ class Tile
     @rotate(4 - @rotation) if @rotation > 0
 
   connectableTo: (from, other) ->
-    @edges[from].type is other.edges[oppositeDirection[from]].type
+    @edges[from].kind is other.edges[oppositeDirection[from]].kind
 
 
 class Road
@@ -283,6 +278,17 @@ class World
     @origin = window.location.origin
     @game_id = $('#game_id').html()
 
+    haveEdges = false
+
+    getEdges = =>
+      $.getJSON("#{@origin}/edges.json", (data) =>
+        for obj in data
+          edge = obj.edge
+          @edges[edge.id] = edge
+
+        haveEdges = true
+      )
+
     setupBoard = =>
       $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=placed", (data) =>
 
@@ -304,6 +310,7 @@ class World
         draw = =>
           if count is total
             @drawBoard()
+            @next()
           else
             setTimeout(draw, 1000)
 
@@ -313,6 +320,10 @@ class World
 
           if not @tiles[id]?
             $.getJSON("#{@origin}/tiles/#{id}.json", (data) =>
+              data.tile.northEdge = @edges[data.tile.northEdge]
+              data.tile.southEdge = @edges[data.tile.southEdge]
+              data.tile.westEdge  = @edges[data.tile.westEdge]
+              data.tile.eastEdge  = @edges[data.tile.eastEdge]
               @tiles[data.tile.id] = data.tile
             )
 
@@ -321,7 +332,61 @@ class World
         draw()
       )
 
-    setupBoard()
+    getEdges()
+
+    checkEdges = =>
+      if haveEdges
+        setupBoard()
+      else
+        setTimeout(checkEdges ,1000)
+
+    checkEdges()
+
+  placeTileBare: (row, col, tile) ->
+    @board[row][col] = tile
+
+    @maxrow = Math.max(@maxrow, row)
+    @minrow = Math.min(@minrow, row)
+    @maxcol = Math.max(@maxcol, col)
+    @mincol = Math.min(@mincol, col)
+
+  next: ->
+    $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=current", ([obj]) =>
+      if obj?
+        tile_instance = obj.tile_instance
+
+        find_positions = (tile_instance) =>
+          find_positions_helper = =>
+            id = tile_instance.tile_id
+            if @tiles[id]?
+              tile = new Tile(@tiles[id])
+              candidates = @findValidPositions(tile)
+              @drawCandidates(tile, candidates)
+            else
+              setTimeout(find_positions_helper, 1000)
+          find_positions_helper()
+
+        id = tile_instance.tile_id
+
+        if not @tiles[id]?
+          $.getJSON("#{@origin}/tiles/#{id}.json", (data) =>
+            data.tile.northEdge = @edges[data.tile.northEdge]
+            data.tile.southEdge = @edges[data.tile.southEdge]
+            data.tile.westEdge  = @edges[data.tile.westEdge]
+            data.tile.eastEdge  = @edges[data.tile.eastEdge]
+            @tiles[data.tile.id] = data.tile
+          )
+
+        find_positions(tile_instance)
+
+      else
+        $('#candidate > img').attr('style', 'visibility: hidden')
+        $('#left').unbind().prop('disabled', 'disabled')
+        $('#right').unbind().prop('disabled', 'disabled')
+
+        for farm in @farms
+          farm.calculateScore(@cities)
+    )
 
   findValidPositions: (tile) ->
     candidates = []
@@ -401,7 +466,8 @@ class World
     $("#board").empty().append(table)
 
   drawCandidates: (tile, candidates) ->
-    $('#candidate').prop('src', "/images/#{tile.image}").prop('class', tile.rotationClass)
+    img = $('#candidate > img').attr('src', "/images/#{tile.image}")
+    img.attr('class', tile.rotationClass).attr('style', '')
 
     disableAll = ->
       for item in actives
@@ -478,27 +544,6 @@ class World
       tile.rotate(1)
       @drawCandidates(tile, candidates)
     ).prop('disabled', '')
-
-  next: ->
-    if @tiles.length > 0
-      tile = @tiles[0]
-      candidates = @findValidPositions(tile)
-      @drawCandidates(tile, candidates)
-    else
-      $('#candidate').attr('style', 'visibility: hidden')
-      $('#left').unbind().prop('disabled', 'disabled')
-      $('#right').unbind().prop('disabled', 'disabled')
-
-      for farm in @farms
-        farm.calculateScore(@cities)
-
-  placeTileBare: (row, col, tile) ->
-    @board[row][col] = tile
-
-    @maxrow = Math.max(@maxrow, row)
-    @minrow = Math.min(@minrow, row)
-    @maxcol = Math.max(@maxcol, col)
-    @mincol = Math.min(@mincol, col)
 
   placeTile: (row, col, tile, neighbours) ->
     if neighbours.length is 0 and not tile.isStart
@@ -717,8 +762,6 @@ print_features = (all) ->
 
 $ ->
   world = new World()
-  world.drawBoard()
-  world.next()
 
   $('#features_all').click(->
     print_features(true)
@@ -743,7 +786,7 @@ $ ->
 
     world.tiles = []
 
-    $('#candidate').attr('style', 'visibility: hidden')
+    $('#candidate > img').attr('style', 'visibility: hidden')
     $('#left').unbind().prop('disabled', 'disabled')
     $('#right').unbind().prop('disabled', 'disabled')
 

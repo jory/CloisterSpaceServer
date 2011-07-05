@@ -1,12 +1,12 @@
 CloisterSpaceServer::Application.routes.draw do
   resources :games
 
-  resources :tiles do
-  end
+  resources :tiles
   
-  resources :edges do
-  end
+  resources :edges
   
+  resources :tileInstances
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

@@ -2,22 +2,21 @@ class Game < ActiveRecord::Base
   has_many :tileInstances
 
   def self.new(attributes = nil)
-    g = super
-
+    game = super
+    startingTile = nil
+    
     Tile.all.each do |tile|
       for i in 1..tile.count
-        t = TileInstance.create(:tile => tile, :game => g)
+        tileInstance = TileInstance.create(:tile => tile, :game => game)
       end
 
       if tile.isStart?
-        t.x = 72
-        t.y = 72
-        t.status = "placed"
-        t.save
+        startingTile = tileInstance
       end
     end
 
-    g
+    startingTile.place(72, 72, 0)
+    game
   end
 
 end

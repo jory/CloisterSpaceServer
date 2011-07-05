@@ -1,59 +1,60 @@
-.r1 {
+#game .r1 {
     transform: rotate(90deg);
     -webkit-transform: rotate(90deg);
     -moz-transform: rotate(90deg);
 }
-.r2 {
+#game .r2 {
     transform: rotate(180deg);
     -webkit-transform: rotate(180deg);
     -moz-transform: rotate(180deg);
 }
-.r3 {
+#game .r3 {
     transform: rotate(270deg);
     -webkit-transform: rotate(270deg);
     -moz-transform: rotate(270deg);
 }
 
-tr {
+#game tr {
     height: 90px;
 }
 
-td {
+#game td {
+    height: 90px;
     width: 90px;
 }
 
-.candidate {
+#game .candidate {
     background: #002b36;
 }
 
-#board {
+#game #board {
     overflow: scroll;
 }
 
-#sideboard {
+#game #sideboard {
     height: 120px;
 }
 
-#candidate {
+#game #candidate {
     float: left;
     height: 90px;
     width: 90px;
     background: #002b36;
 }
 
-#controls {
+#game #controls {
     float: left;
 }
 
-#play {
+#game #play {
     float: left;
     height: 90px;
 }
 
-#features {
+#game #features {
 
 }
 
-.debug {
+#game .debug {
     background: red;
 }

@@ -277,72 +277,79 @@ class World
 
     @origin = window.location.origin
     @game_id = $('#game_id').html()
-
-    haveEdges = false
-
-    getEdges = =>
-      $.getJSON("#{@origin}/edges.json", (data) =>
-        for obj in data
-          edge = obj.edge
-          @edges[edge.id] = edge
-
-        haveEdges = true
-      )
+    @timeout = 1
 
     setupBoard = =>
-      $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=placed", (data) =>
+      haveEdges = false
+      count = 0
+      total = -1
 
-        total = data.length
-        count = 0
+      getEdges = =>
+        $.getJSON("#{@origin}/edges.json", (data) =>
+          for obj in data
+            edge = obj.edge
+            @edges[edge.id] = edge
 
-        place_tile = (tile_instance) =>
-          place_tile_helper = =>
-            id = tile_instance.tile_id
-            if @tiles[id]?
-              tile = new Tile(@tiles[id])
-              tile.rotate(tile_instance.rotation)
-              @placeTileBare(tile_instance.x, tile_instance.y, tile)
-              count += 1
-            else
-              setTimeout(place_tile_helper,1000)
-          place_tile_helper()
+          haveEdges = true
+        )
 
-        draw = =>
-          if count is total
-            @drawBoard()
-            @next()
-          else
-            setTimeout(draw, 1000)
+      getTile = (id) =>
+        $.getJSON("#{@origin}/tiles/#{id}.json", (data) =>
+          tile = data.tile
+          tile.northEdge = @edges[tile.northEdge]
+          tile.southEdge = @edges[tile.southEdge]
+          tile.westEdge  = @edges[tile.westEdge]
+          tile.eastEdge  = @edges[tile.eastEdge]
+          @tiles[id] = tile
+        )
 
-        for obj in data
-          tile_instance = obj.tile_instance
-          id = tile_instance.tile_id
+      createTile = (instance) =>
+        id = instance.tile_id
 
+        createTileHelper = =>
           if not @tiles[id]?
-            $.getJSON("#{@origin}/tiles/#{id}.json", (data) =>
-              data.tile.northEdge = @edges[data.tile.northEdge]
-              data.tile.southEdge = @edges[data.tile.southEdge]
-              data.tile.westEdge  = @edges[data.tile.westEdge]
-              data.tile.eastEdge  = @edges[data.tile.eastEdge]
-              @tiles[data.tile.id] = data.tile
-            )
+            setTimeout(createTileHelper, @timeout)
+          else
+            tile = new Tile(@tiles[id])
+            tile.rotate(instance.rotation)
+            @barePlaceTile(instance.x, instance.y, tile)
+            count += 1
 
-          place_tile(tile_instance)
+        createTileHelper()
 
-        draw()
-      )
+      draw = =>
+        if count isnt total
+          setTimeout(draw, @timeout)
+        else
+          @drawBoard()
+          @next()
 
-    getEdges()
+      getTileInstances = =>
+        if not haveEdges
+          setTimeout(getTileInstances, @timeout)
+        else
+          $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=placed", (data) =>
 
-    checkEdges = =>
-      if haveEdges
-        setupBoard()
-      else
-        setTimeout(checkEdges ,1000)
+            total = data.length
+            count = 0
 
-    checkEdges()
+            for obj in data
+              tile_instance = obj.tile_instance
+              id = tile_instance.tile_id
 
-  placeTileBare: (row, col, tile) ->
+              if not @tiles[id]?
+                getTile(id)
+
+              createTile(tile_instance)
+          )
+
+      getEdges()
+      getTileInstances()
+      draw()
+
+    setupBoard()
+
+  barePlaceTile: (row, col, tile) ->
     @board[row][col] = tile
 
     @maxrow = Math.max(@maxrow, row)

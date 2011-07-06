@@ -336,7 +336,7 @@
   })();
   World = (function() {
     function World() {
-      var checkEdges, getEdges, haveEdges, i, setupBoard;
+      var i, setupBoard;
       this.center = this.minrow = this.maxrow = this.mincol = this.maxcol = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.board = (function() {
@@ -355,76 +355,87 @@
       this.edges = {};
       this.origin = window.location.origin;
       this.game_id = $('#game_id').html();
-      haveEdges = false;
-      getEdges = __bind(function() {
-        return $.getJSON("" + this.origin + "/edges.json", __bind(function(data) {
-          var edge, obj, _i, _len;
-          for (_i = 0, _len = data.length; _i < _len; _i++) {
-            obj = data[_i];
-            edge = obj.edge;
-            this.edges[edge.id] = edge;
-          }
-          return haveEdges = true;
-        }, this));
-      }, this);
+      this.timeout = 1;
       setupBoard = __bind(function() {
-        return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=placed", __bind(function(data) {
-          var count, draw, id, obj, place_tile, tile_instance, total, _i, _len;
-          total = data.length;
-          count = 0;
-          place_tile = __bind(function(tile_instance) {
-            var place_tile_helper;
-            place_tile_helper = __bind(function() {
-              var id, tile;
-              id = tile_instance.tile_id;
-              if (this.tiles[id] != null) {
-                tile = new Tile(this.tiles[id]);
-                tile.rotate(tile_instance.rotation);
-                this.placeTileBare(tile_instance.x, tile_instance.y, tile);
-                return count += 1;
-              } else {
-                return setTimeout(place_tile_helper, 1000);
-              }
-            }, this);
-            return place_tile_helper();
-          }, this);
-          draw = __bind(function() {
-            if (count === total) {
-              this.drawBoard();
-              return this.next();
-            } else {
-              return setTimeout(draw, 1000);
+        var count, createTile, draw, getEdges, getTile, getTileInstances, haveEdges, total;
+        haveEdges = false;
+        count = 0;
+        total = -1;
+        getEdges = __bind(function() {
+          return $.getJSON("" + this.origin + "/edges.json", __bind(function(data) {
+            var edge, obj, _i, _len;
+            for (_i = 0, _len = data.length; _i < _len; _i++) {
+              obj = data[_i];
+              edge = obj.edge;
+              this.edges[edge.id] = edge;
             }
-          }, this);
-          for (_i = 0, _len = data.length; _i < _len; _i++) {
-            obj = data[_i];
-            tile_instance = obj.tile_instance;
-            id = tile_instance.tile_id;
+            return haveEdges = true;
+          }, this));
+        }, this);
+        getTile = __bind(function(id) {
+          return $.getJSON("" + this.origin + "/tiles/" + id + ".json", __bind(function(data) {
+            var tile;
+            tile = data.tile;
+            tile.northEdge = this.edges[tile.northEdge];
+            tile.southEdge = this.edges[tile.southEdge];
+            tile.westEdge = this.edges[tile.westEdge];
+            tile.eastEdge = this.edges[tile.eastEdge];
+            return this.tiles[id] = tile;
+          }, this));
+        }, this);
+        createTile = __bind(function(instance) {
+          var createTileHelper, id;
+          id = instance.tile_id;
+          createTileHelper = __bind(function() {
+            var tile;
             if (!(this.tiles[id] != null)) {
-              $.getJSON("" + this.origin + "/tiles/" + id + ".json", __bind(function(data) {
-                data.tile.northEdge = this.edges[data.tile.northEdge];
-                data.tile.southEdge = this.edges[data.tile.southEdge];
-                data.tile.westEdge = this.edges[data.tile.westEdge];
-                data.tile.eastEdge = this.edges[data.tile.eastEdge];
-                return this.tiles[data.tile.id] = data.tile;
-              }, this));
+              return setTimeout(createTileHelper, this.timeout);
+            } else {
+              tile = new Tile(this.tiles[id]);
+              tile.rotate(instance.rotation);
+              this.barePlaceTile(instance.x, instance.y, tile);
+              return count += 1;
             }
-            place_tile(tile_instance);
+          }, this);
+          return createTileHelper();
+        }, this);
+        draw = __bind(function() {
+          if (count !== total) {
+            return setTimeout(draw, this.timeout);
+          } else {
+            this.drawBoard();
+            return this.next();
           }
-          return draw();
-        }, this));
+        }, this);
+        getTileInstances = __bind(function() {
+          if (!haveEdges) {
+            return setTimeout(getTileInstances, this.timeout);
+          } else {
+            return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=placed", __bind(function(data) {
+              var id, obj, tile_instance, _i, _len, _results;
+              total = data.length;
+              count = 0;
+              _results = [];
+              for (_i = 0, _len = data.length; _i < _len; _i++) {
+                obj = data[_i];
+                tile_instance = obj.tile_instance;
+                id = tile_instance.tile_id;
+                if (!(this.tiles[id] != null)) {
+                  getTile(id);
+                }
+                _results.push(createTile(tile_instance));
+              }
+              return _results;
+            }, this));
+          }
+        }, this);
+        getEdges();
+        getTileInstances();
+        return draw();
       }, this);
-      getEdges();
-      checkEdges = __bind(function() {
-        if (haveEdges) {
-          return setupBoard();
-        } else {
-          return setTimeout(checkEdges, 1000);
-        }
-      }, this);
-      checkEdges();
+      setupBoard();
     }
-    World.prototype.placeTileBare = function(row, col, tile) {
+    World.prototype.barePlaceTile = function(row, col, tile) {
       this.board[row][col] = tile;
       this.maxrow = Math.max(this.maxrow, row);
       this.minrow = Math.min(this.minrow, row);

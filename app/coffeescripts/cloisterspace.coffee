@@ -293,16 +293,6 @@ class World
           haveEdges = true
         )
 
-      getTile = (id) =>
-        $.getJSON("#{@origin}/tiles/#{id}.json", (data) =>
-          tile = data.tile
-          tile.northEdge = @edges[tile.northEdge]
-          tile.southEdge = @edges[tile.southEdge]
-          tile.westEdge  = @edges[tile.westEdge]
-          tile.eastEdge  = @edges[tile.eastEdge]
-          @tiles[id] = tile
-        )
-
       createTile = (instance) =>
         id = instance.tile_id
 
@@ -338,7 +328,7 @@ class World
               id = tile_instance.tile_id
 
               if not @tiles[id]?
-                getTile(id)
+                @getTile(id)
 
               createTile(tile_instance)
           )
@@ -349,6 +339,16 @@ class World
 
     setupBoard()
 
+  getTile: (id) =>
+    $.getJSON("#{@origin}/tiles/#{id}.json", (data) =>
+      tile = data.tile
+      tile.northEdge = @edges[tile.northEdge]
+      tile.southEdge = @edges[tile.southEdge]
+      tile.westEdge  = @edges[tile.westEdge]
+      tile.eastEdge  = @edges[tile.eastEdge]
+      @tiles[id] = tile
+    )
+
   barePlaceTile: (row, col, tile) ->
     @board[row][col] = tile
 
@@ -358,33 +358,25 @@ class World
     @mincol = Math.min(@mincol, col)
 
   next: ->
+    findPositions = (id) =>
+      findPositionsHelper = =>
+        if not @tiles[id]?
+          setTimeout(findPositionsHelper, @timeout)
+        else
+          tile = new Tile(@tiles[id])
+          candidates = @findValidPositions(tile)
+          @drawCandidates(tile, candidates)
+
+      findPositionsHelper()
+
     $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=current", ([obj]) =>
       if obj?
-        tile_instance = obj.tile_instance
-
-        find_positions = (tile_instance) =>
-          find_positions_helper = =>
-            id = tile_instance.tile_id
-            if @tiles[id]?
-              tile = new Tile(@tiles[id])
-              candidates = @findValidPositions(tile)
-              @drawCandidates(tile, candidates)
-            else
-              setTimeout(find_positions_helper, 1000)
-          find_positions_helper()
-
-        id = tile_instance.tile_id
+        id = obj.tile_instance.tile_id
 
         if not @tiles[id]?
-          $.getJSON("#{@origin}/tiles/#{id}.json", (data) =>
-            data.tile.northEdge = @edges[data.tile.northEdge]
-            data.tile.southEdge = @edges[data.tile.southEdge]
-            data.tile.westEdge  = @edges[data.tile.westEdge]
-            data.tile.eastEdge  = @edges[data.tile.eastEdge]
-            @tiles[data.tile.id] = data.tile
-          )
+          @getTile(id)
 
-        find_positions(tile_instance)
+        findPositions(id)
 
       else
         $('#candidate > img').attr('style', 'visibility: hidden')

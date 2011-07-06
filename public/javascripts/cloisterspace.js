@@ -336,7 +336,7 @@
   })();
   World = (function() {
     function World() {
-      var i, setupBoard;
+      this.getTile = __bind(this.getTile, this);      var i, setupBoard;
       this.center = this.minrow = this.maxrow = this.mincol = this.maxcol = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.board = (function() {
@@ -357,7 +357,7 @@
       this.game_id = $('#game_id').html();
       this.timeout = 1;
       setupBoard = __bind(function() {
-        var count, createTile, draw, getEdges, getTile, getTileInstances, haveEdges, total;
+        var count, createTile, draw, getEdges, getTileInstances, haveEdges, total;
         haveEdges = false;
         count = 0;
         total = -1;
@@ -370,17 +370,6 @@
               this.edges[edge.id] = edge;
             }
             return haveEdges = true;
-          }, this));
-        }, this);
-        getTile = __bind(function(id) {
-          return $.getJSON("" + this.origin + "/tiles/" + id + ".json", __bind(function(data) {
-            var tile;
-            tile = data.tile;
-            tile.northEdge = this.edges[tile.northEdge];
-            tile.southEdge = this.edges[tile.southEdge];
-            tile.westEdge = this.edges[tile.westEdge];
-            tile.eastEdge = this.edges[tile.eastEdge];
-            return this.tiles[id] = tile;
           }, this));
         }, this);
         createTile = __bind(function(instance) {
@@ -421,7 +410,7 @@
                 tile_instance = obj.tile_instance;
                 id = tile_instance.tile_id;
                 if (!(this.tiles[id] != null)) {
-                  getTile(id);
+                  this.getTile(id);
                 }
                 _results.push(createTile(tile_instance));
               }
@@ -435,6 +424,17 @@
       }, this);
       setupBoard();
     }
+    World.prototype.getTile = function(id) {
+      return $.getJSON("" + this.origin + "/tiles/" + id + ".json", __bind(function(data) {
+        var tile;
+        tile = data.tile;
+        tile.northEdge = this.edges[tile.northEdge];
+        tile.southEdge = this.edges[tile.southEdge];
+        tile.westEdge = this.edges[tile.westEdge];
+        tile.eastEdge = this.edges[tile.eastEdge];
+        return this.tiles[id] = tile;
+      }, this));
+    };
     World.prototype.barePlaceTile = function(row, col, tile) {
       this.board[row][col] = tile;
       this.maxrow = Math.max(this.maxrow, row);
@@ -443,37 +443,30 @@
       return this.mincol = Math.min(this.mincol, col);
     };
     World.prototype.next = function() {
+      var findPositions;
+      findPositions = __bind(function(id) {
+        var findPositionsHelper;
+        findPositionsHelper = __bind(function() {
+          var candidates, tile;
+          if (!(this.tiles[id] != null)) {
+            return setTimeout(findPositionsHelper, this.timeout);
+          } else {
+            tile = new Tile(this.tiles[id]);
+            candidates = this.findValidPositions(tile);
+            return this.drawCandidates(tile, candidates);
+          }
+        }, this);
+        return findPositionsHelper();
+      }, this);
       return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
-        var farm, find_positions, id, obj, tile_instance, _i, _len, _ref, _results;
+        var farm, id, obj, _i, _len, _ref, _results;
         obj = _arg[0];
         if (obj != null) {
-          tile_instance = obj.tile_instance;
-          find_positions = __bind(function(tile_instance) {
-            var find_positions_helper;
-            find_positions_helper = __bind(function() {
-              var candidates, id, tile;
-              id = tile_instance.tile_id;
-              if (this.tiles[id] != null) {
-                tile = new Tile(this.tiles[id]);
-                candidates = this.findValidPositions(tile);
-                return this.drawCandidates(tile, candidates);
-              } else {
-                return setTimeout(find_positions_helper, 1000);
-              }
-            }, this);
-            return find_positions_helper();
-          }, this);
-          id = tile_instance.tile_id;
+          id = obj.tile_instance.tile_id;
           if (!(this.tiles[id] != null)) {
-            $.getJSON("" + this.origin + "/tiles/" + id + ".json", __bind(function(data) {
-              data.tile.northEdge = this.edges[data.tile.northEdge];
-              data.tile.southEdge = this.edges[data.tile.southEdge];
-              data.tile.westEdge = this.edges[data.tile.westEdge];
-              data.tile.eastEdge = this.edges[data.tile.eastEdge];
-              return this.tiles[data.tile.id] = data.tile;
-            }, this));
+            this.getTile(id);
           }
-          return find_positions(tile_instance);
+          return findPositions(id);
         } else {
           $('#candidate > img').attr('style', 'visibility: hidden');
           $('#left').unbind().prop('disabled', 'disabled');

@@ -336,22 +336,12 @@ class World
     @mincol = Math.min(@mincol, col)
 
   next: ->
-    findPositions = (instance) =>
-      tile_id = instance.tile_id
-
-      findPositionsHelper = =>
-        if not @tiles[tile_id]?
-          setTimeout(findPositionsHelper, @timeout)
-        else
-          tile = new Tile(@tiles[tile_id], instance.id)
-          candidates = @findValidPositions(tile)
-          @drawCandidates(tile, candidates)
-
-      findPositionsHelper()
-
     $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=current", ([obj]) =>
       if obj?
-        findPositions(obj.tile_instance)
+        instance = obj.tile_instance
+        tile = new Tile(@tiles[instance.tile_id], instance.id)
+        candidates = @findValidPositions(tile)
+        @drawCandidates(tile, candidates)
 
       else
         $('#candidate > img').attr('style', 'visibility: hidden')

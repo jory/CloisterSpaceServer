@@ -419,27 +419,14 @@
       return this.mincol = Math.min(this.mincol, col);
     };
     World.prototype.next = function() {
-      var findPositions;
-      findPositions = __bind(function(instance) {
-        var findPositionsHelper, tile_id;
-        tile_id = instance.tile_id;
-        findPositionsHelper = __bind(function() {
-          var candidates, tile;
-          if (!(this.tiles[tile_id] != null)) {
-            return setTimeout(findPositionsHelper, this.timeout);
-          } else {
-            tile = new Tile(this.tiles[tile_id], instance.id);
-            candidates = this.findValidPositions(tile);
-            return this.drawCandidates(tile, candidates);
-          }
-        }, this);
-        return findPositionsHelper();
-      }, this);
       return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
-        var farm, obj, _i, _len, _ref, _results;
+        var candidates, farm, instance, obj, tile, _i, _len, _ref, _results;
         obj = _arg[0];
         if (obj != null) {
-          return findPositions(obj.tile_instance);
+          instance = obj.tile_instance;
+          tile = new Tile(this.tiles[instance.tile_id], instance.id);
+          candidates = this.findValidPositions(tile);
+          return this.drawCandidates(tile, candidates);
         } else {
           $('#candidate > img').attr('style', 'visibility: hidden');
           $('#left').unbind().prop('disabled', 'disabled');

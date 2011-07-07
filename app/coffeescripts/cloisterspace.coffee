@@ -275,6 +275,10 @@ class World
     @origin = window.location.origin
     @game_id = $('#game_id').html()
     @timeout = 1
+    @finished = false
+
+    @currentTile = null
+    @candidates = []
 
     @edges = {}
     @tiles = {}
@@ -339,11 +343,13 @@ class World
     $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=current", ([obj]) =>
       if obj?
         instance = obj.tile_instance
-        tile = new Tile(@tiles[instance.tile_id], instance.id)
-        candidates = @findValidPositions(tile)
-        @drawCandidates(tile, candidates)
+        @currentTile = new Tile(@tiles[instance.tile_id], instance.id)
+        @candidates = @findValidPositions()
+        @drawCandidates()
 
       else
+        @finished = true
+
         $('#candidate > img').attr('style', 'visibility: hidden')
         $('#left').unbind().prop('disabled', 'disabled')
         $('#right').unbind().prop('disabled', 'disabled')
@@ -352,7 +358,7 @@ class World
           farm.calculateScore(@cities)
     )
 
-  findValidPositions: (tile) ->
+  findValidPositions: (tile = @currentTile) ->
     candidates = []
 
     for row in [@minrow - 1..@maxrow + 1]
@@ -388,7 +394,7 @@ class World
 
     sortedCandidates
 
-  randomlyPlaceTile: (tile, candidates) ->
+  randomlyPlaceTile: (tile = @currentTile, candidates = @candidates) ->
     candidates = [].concat candidates...
 
     if candidates.length > 0
@@ -429,7 +435,7 @@ class World
       tbody.append(tr)
     $("#board").empty().append(table)
 
-  drawCandidates: (tile, candidates) ->
+  drawCandidates: (tile = @currentTile, candidates = @candidates) ->
     img = $('#candidate > img').attr('src', "/images/#{tile.image}")
     img.attr('class', tile.rotationClass).attr('style', '')
 

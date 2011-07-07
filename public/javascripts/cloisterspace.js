@@ -355,6 +355,9 @@
       this.origin = window.location.origin;
       this.game_id = $('#game_id').html();
       this.timeout = 1;
+      this.finished = false;
+      this.currentTile = null;
+      this.candidates = [];
       this.edges = {};
       this.tiles = {};
       haveEdges = false;
@@ -420,14 +423,15 @@
     };
     World.prototype.next = function() {
       return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
-        var candidates, farm, instance, obj, tile, _i, _len, _ref, _results;
+        var farm, instance, obj, _i, _len, _ref, _results;
         obj = _arg[0];
         if (obj != null) {
           instance = obj.tile_instance;
-          tile = new Tile(this.tiles[instance.tile_id], instance.id);
-          candidates = this.findValidPositions(tile);
-          return this.drawCandidates(tile, candidates);
+          this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);
+          this.candidates = this.findValidPositions();
+          return this.drawCandidates();
         } else {
+          this.finished = true;
           $('#candidate > img').attr('style', 'visibility: hidden');
           $('#left').unbind().prop('disabled', 'disabled');
           $('#right').unbind().prop('disabled', 'disabled');
@@ -443,6 +447,9 @@
     };
     World.prototype.findValidPositions = function(tile) {
       var candidate, candidates, col, i, invalids, other, otherCol, otherRow, row, side, sortedCandidates, turns, valids, _i, _len, _ref, _ref2, _ref3, _ref4, _ref5;
+      if (tile == null) {
+        tile = this.currentTile;
+      }
       candidates = [];
       for (row = _ref = this.minrow - 1, _ref2 = this.maxrow + 1; _ref <= _ref2 ? row <= _ref2 : row >= _ref2; _ref <= _ref2 ? row++ : row--) {
         for (col = _ref3 = this.mincol - 1, _ref4 = this.maxcol + 1; _ref3 <= _ref4 ? col <= _ref4 : col >= _ref4; _ref3 <= _ref4 ? col++ : col--) {
@@ -488,6 +495,12 @@
     };
     World.prototype.randomlyPlaceTile = function(tile, candidates) {
       var candidate, col, i, index, j, neighbours, row, subcandidates, turns, _i, _len, _ref, _ref2;
+      if (tile == null) {
+        tile = this.currentTile;
+      }
+      if (candidates == null) {
+        candidates = this.candidates;
+      }
       candidates = (_ref = []).concat.apply(_ref, candidates);
       if (candidates.length > 0) {
         subcandidates = (function() {
@@ -541,6 +554,12 @@
     };
     World.prototype.drawCandidates = function(tile, candidates) {
       var actives, attach, candidate, col, disableAll, img, neighbours, row, turns;
+      if (tile == null) {
+        tile = this.currentTile;
+      }
+      if (candidates == null) {
+        candidates = this.candidates;
+      }
       img = $('#candidate > img').attr('src', "/images/" + tile.image);
       img.attr('class', tile.rotationClass).attr('style', '');
       disableAll = function() {

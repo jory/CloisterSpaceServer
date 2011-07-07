@@ -928,7 +928,7 @@
       }
       return world.drawBoard();
     });
-    $('#step').click(function() {
+    return $('#step').click(function() {
       var tile;
       $('.candidate').unbind().prop('class', '');
       tile = world.tiles.shift();
@@ -940,9 +940,6 @@
         $('#go').unbind().prop('disabled', 'disabled');
         return $('#step').unbind().prop('disabled', 'disabled');
       }
-    });
-    return $('#draw').click(function() {
-      return world.drawBoard();
     });
   });
 }).call(this);

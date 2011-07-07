@@ -782,6 +782,3 @@ $ ->
       $('#step').unbind().prop('disabled', 'disabled')
   )
 
-  $('#draw').click(->
-    world.drawBoard()
-  )

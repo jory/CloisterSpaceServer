@@ -42,7 +42,8 @@
     return [row + offsets.row, col + offsets.col];
   };
   Tile = (function() {
-    function Tile(tile) {
+    function Tile(tile, id) {
+      this.id = id != null ? id : null;
       this.image = tile.image;
       this.hasTwoCities = tile.hasTwoCities;
       this.hasRoadEnd = tile.hasRoadEnd;
@@ -380,7 +381,7 @@
             if (!(this.tiles[id] != null)) {
               return setTimeout(createTileHelper, this.timeout);
             } else {
-              tile = new Tile(this.tiles[id]);
+              tile = new Tile(this.tiles[id], instance.id);
               tile.rotate(instance.rotation);
               this.barePlaceTile(instance.x, instance.y, tile);
               return count += 1;
@@ -444,14 +445,15 @@
     };
     World.prototype.next = function() {
       var findPositions;
-      findPositions = __bind(function(id) {
-        var findPositionsHelper;
+      findPositions = __bind(function(instance) {
+        var findPositionsHelper, tile_id;
+        tile_id = instance.tile_id;
         findPositionsHelper = __bind(function() {
           var candidates, tile;
-          if (!(this.tiles[id] != null)) {
+          if (!(this.tiles[tile_id] != null)) {
             return setTimeout(findPositionsHelper, this.timeout);
           } else {
-            tile = new Tile(this.tiles[id]);
+            tile = new Tile(this.tiles[tile_id], instance.id);
             candidates = this.findValidPositions(tile);
             return this.drawCandidates(tile, candidates);
           }
@@ -459,14 +461,15 @@
         return findPositionsHelper();
       }, this);
       return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
-        var farm, id, obj, _i, _len, _ref, _results;
+        var farm, id, instance, obj, _i, _len, _ref, _results;
         obj = _arg[0];
         if (obj != null) {
-          id = obj.tile_instance.tile_id;
+          instance = obj.tile_instance;
+          id = instance.tile_id;
           if (!(this.tiles[id] != null)) {
             this.getTile(id);
           }
-          return findPositions(id);
+          return findPositions(instance);
         } else {
           $('#candidate > img').attr('style', 'visibility: hidden');
           $('#left').unbind().prop('disabled', 'disabled');
@@ -590,43 +593,21 @@
           item.prop('class', '').unbind();
         }
         $('#left').unbind().prop('disabled', 'disabled');
-        $('#right').unbind().prop('disabled', 'disabled');
-        return $('#next').unbind().prop('disabled', 'disabled');
+        return $('#right').unbind().prop('disabled', 'disabled');
       };
       attach = __bind(function(cell, row, col, neighbours) {
         return cell.unbind().click(__bind(function() {
-          var area, i, j, map, name, num, size, x, xp, y, yp;
           disableAll();
           this.placeTile(row, col, tile, neighbours);
           this.drawBoard();
-          map = $("<map name='clicky' id='clicky'></map>");
-          num = 5;
-          size = 90 / num;
-          for (i = 0; 0 <= num ? i < num : i > num; 0 <= num ? i++ : i--) {
-            for (j = 0; 0 <= num ? j < num : j > num; 0 <= num ? j++ : j--) {
-              x = j * size;
-              xp = x + size;
-              y = i * size;
-              yp = y + size;
-              name = (i * num) + j;
-              area = $("<area name='" + name + "' shape='rect' coords='" + x + "," + y + "," + xp + "," + yp + "'/>");
-              area.click((function(name) {
-                return function() {
-                  return console.log(name);
-                };
-              })(name));
-              map.append(area);
-            }
-          }
-          $('#board').append(map);
-          $("td[row=" + row + "][col=" + col + "]").find('img').prop('usemap', 'clicky');
-          return $('#next').click(__bind(function() {
-            map.remove();
-            $("td[row=" + row + "][col=" + col + "]").find('img').prop('usemap', '');
-            $('#next').unbind().prop('disabled', 'disabled');
-            this.tiles.shift();
-            return this.next();
-          }, this)).prop('disabled', '');
+          return $.ajax({
+            url: "" + this.origin + "/tileInstances/" + tile.id,
+            data: "x=" + row + "&y=" + col + "&rotation=" + tile.rotation,
+            type: "PUT",
+            success: __bind(function() {
+              return this.next();
+            }, this)
+          });
         }, this)).prop('class', 'candidate');
       }, this);
       actives = (function() {

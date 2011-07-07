@@ -26,7 +26,7 @@ offset = (edge, row, col) ->
 
 
 class Tile
-  constructor: (tile) ->
+  constructor: (tile, @id = null) ->
     @image = tile.image
 
     @hasTwoCities = tile.hasTwoCities
@@ -300,7 +300,7 @@ class World
           if not @tiles[id]?
             setTimeout(createTileHelper, @timeout)
           else
-            tile = new Tile(@tiles[id])
+            tile = new Tile(@tiles[id], instance.id)
             tile.rotate(instance.rotation)
             @barePlaceTile(instance.x, instance.y, tile)
             count += 1
@@ -358,12 +358,14 @@ class World
     @mincol = Math.min(@mincol, col)
 
   next: ->
-    findPositions = (id) =>
+    findPositions = (instance) =>
+      tile_id = instance.tile_id
+
       findPositionsHelper = =>
-        if not @tiles[id]?
+        if not @tiles[tile_id]?
           setTimeout(findPositionsHelper, @timeout)
         else
-          tile = new Tile(@tiles[id])
+          tile = new Tile(@tiles[tile_id], instance.id)
           candidates = @findValidPositions(tile)
           @drawCandidates(tile, candidates)
 
@@ -371,12 +373,13 @@ class World
 
     $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=current", ([obj]) =>
       if obj?
-        id = obj.tile_instance.tile_id
+        instance = obj.tile_instance
+        id = instance.tile_id
 
         if not @tiles[id]?
           @getTile(id)
 
-        findPositions(id)
+        findPositions(instance)
 
       else
         $('#candidate > img').attr('style', 'visibility: hidden')
@@ -474,7 +477,6 @@ class World
 
       $('#left').unbind().prop('disabled', 'disabled')
       $('#right').unbind().prop('disabled', 'disabled')
-      $('#next').unbind().prop('disabled', 'disabled')
 
     attach = (cell, row, col, neighbours) =>
       cell.unbind().click(=>
@@ -485,47 +487,13 @@ class World
         # Add clicking here!
         # <map...>
 
-        map = $("<map name='clicky' id='clicky'></map>")
-
-        num = 5
-        size = 90 / num
-
-        for i in [0...num]
-          for j in [0...num]
-
-            x = j * size
-            xp = x + size
-            y = i * size
-            yp = y + size
-
-            name = (i * num) + j
-            area = $("<area name='#{name}' shape='rect' coords='#{x},#{y},#{xp},#{yp}'/>")
-
-            # announce = (name) ->
-            #   ->
-            #     console.log(name)
-            #------------------------------------------
-            # Both of these methods are butt-ugly.
-            # There's got to be a better way to do it, but I'm brain-farting right now.
-            #------------------------------------------
-
-            area.click(do (name) ->
-              ->
-                console.log(name)
-            )
-
-            map.append(area)
-
-        $('#board').append(map)
-        $("td[row=#{row}][col=#{col}]").find('img').prop('usemap', 'clicky')
-
-        $('#next').click(=>
-          map.remove()
-          $("td[row=#{row}][col=#{col}]").find('img').prop('usemap', '')
-          $('#next').unbind().prop('disabled', 'disabled')
-          @tiles.shift()
-          @next()
-        ).prop('disabled', '')
+        $.ajax(
+          url: "#{@origin}/tileInstances/#{tile.id}"
+          data: "x=#{row}&y=#{col}&rotation=#{tile.rotation}"
+          type: "PUT"
+          success: =>
+            @next()
+        )
       ).prop('class', 'candidate')
 
     actives = for candidate in candidates[tile.rotation]

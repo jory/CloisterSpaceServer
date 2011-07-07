@@ -272,82 +272,60 @@ class World
     @roads = []
     @farms = []
 
-    @tiles = {}
-    @edges = {}
-
     @origin = window.location.origin
     @game_id = $('#game_id').html()
     @timeout = 1
 
-    setupBoard = =>
-      haveEdges = false
-      count = 0
-      total = -1
+    @edges = {}
+    @tiles = {}
 
-      getEdges = =>
-        $.getJSON("#{@origin}/edges.json", (data) =>
+    haveEdges = false
+    haveTiles = false
+
+    getEdges = =>
+      $.getJSON("#{@origin}/edges.json", (data) =>
+        for obj in data
+          edge = obj.edge
+          @edges[edge.id] = edge
+
+        haveEdges = true
+      )
+
+    getTiles = =>
+      if not haveEdges
+        setTimeout(getTiles, @timeout)
+      else
+        $.getJSON("#{@origin}/tiles.json", (data) =>
           for obj in data
-            edge = obj.edge
-            @edges[edge.id] = edge
+            tile = obj.tile
+            tile.northEdge = @edges[tile.northEdge]
+            tile.southEdge = @edges[tile.southEdge]
+            tile.westEdge  = @edges[tile.westEdge]
+            tile.eastEdge  = @edges[tile.eastEdge]
+            @tiles[tile.id] = tile
 
-          haveEdges = true
+          haveTiles = true
         )
 
-      createTile = (instance) =>
-        id = instance.tile_id
+    setupBoard = =>
+      if not haveTiles
+        setTimeout(setupBoard, @timeout)
+      else
+        $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=placed", (data) =>
 
-        createTileHelper = =>
-          if not @tiles[id]?
-            setTimeout(createTileHelper, @timeout)
-          else
-            tile = new Tile(@tiles[id], instance.id)
+          for obj in data
+            instance = obj.tile_instance
+            tile = new Tile(@tiles[instance.tile_id], instance.id)
             tile.rotate(instance.rotation)
             @barePlaceTile(instance.x, instance.y, tile)
-            count += 1
 
-        createTileHelper()
-
-      draw = =>
-        if count isnt total
-          setTimeout(draw, @timeout)
-        else
           @drawBoard()
           @next()
+        )
 
-      getTileInstances = =>
-        if not haveEdges
-          setTimeout(getTileInstances, @timeout)
-        else
-          $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=placed", (data) =>
-
-            total = data.length
-            count = 0
-
-            for obj in data
-              tile_instance = obj.tile_instance
-              id = tile_instance.tile_id
-
-              if not @tiles[id]?
-                @getTile(id)
-
-              createTile(tile_instance)
-          )
-
-      getEdges()
-      getTileInstances()
-      draw()
-
+    getEdges()
+    getTiles()
     setupBoard()
-
-  getTile: (id) =>
-    $.getJSON("#{@origin}/tiles/#{id}.json", (data) =>
-      tile = data.tile
-      tile.northEdge = @edges[tile.northEdge]
-      tile.southEdge = @edges[tile.southEdge]
-      tile.westEdge  = @edges[tile.westEdge]
-      tile.eastEdge  = @edges[tile.eastEdge]
-      @tiles[id] = tile
-    )
 
   barePlaceTile: (row, col, tile) ->
     @board[row][col] = tile
@@ -373,13 +351,7 @@ class World
 
     $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=current", ([obj]) =>
       if obj?
-        instance = obj.tile_instance
-        id = instance.tile_id
-
-        if not @tiles[id]?
-          @getTile(id)
-
-        findPositions(instance)
+        findPositions(obj.tile_instance)
 
       else
         $('#candidate > img').attr('style', 'visibility: hidden')

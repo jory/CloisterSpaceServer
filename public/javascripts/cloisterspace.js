@@ -337,7 +337,7 @@
   })();
   World = (function() {
     function World() {
-      this.getTile = __bind(this.getTile, this);      var i, setupBoard;
+      var getEdges, getTiles, haveEdges, haveTiles, i, setupBoard;
       this.center = this.minrow = this.maxrow = this.mincol = this.maxcol = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.board = (function() {
@@ -352,90 +352,65 @@
       this.cities = [];
       this.roads = [];
       this.farms = [];
-      this.tiles = {};
-      this.edges = {};
       this.origin = window.location.origin;
       this.game_id = $('#game_id').html();
       this.timeout = 1;
-      setupBoard = __bind(function() {
-        var count, createTile, draw, getEdges, getTileInstances, haveEdges, total;
-        haveEdges = false;
-        count = 0;
-        total = -1;
-        getEdges = __bind(function() {
-          return $.getJSON("" + this.origin + "/edges.json", __bind(function(data) {
-            var edge, obj, _i, _len;
+      this.edges = {};
+      this.tiles = {};
+      haveEdges = false;
+      haveTiles = false;
+      getEdges = __bind(function() {
+        return $.getJSON("" + this.origin + "/edges.json", __bind(function(data) {
+          var edge, obj, _i, _len;
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            obj = data[_i];
+            edge = obj.edge;
+            this.edges[edge.id] = edge;
+          }
+          return haveEdges = true;
+        }, this));
+      }, this);
+      getTiles = __bind(function() {
+        if (!haveEdges) {
+          return setTimeout(getTiles, this.timeout);
+        } else {
+          return $.getJSON("" + this.origin + "/tiles.json", __bind(function(data) {
+            var obj, tile, _i, _len;
             for (_i = 0, _len = data.length; _i < _len; _i++) {
               obj = data[_i];
-              edge = obj.edge;
-              this.edges[edge.id] = edge;
+              tile = obj.tile;
+              tile.northEdge = this.edges[tile.northEdge];
+              tile.southEdge = this.edges[tile.southEdge];
+              tile.westEdge = this.edges[tile.westEdge];
+              tile.eastEdge = this.edges[tile.eastEdge];
+              this.tiles[tile.id] = tile;
             }
-            return haveEdges = true;
+            return haveTiles = true;
           }, this));
-        }, this);
-        createTile = __bind(function(instance) {
-          var createTileHelper, id;
-          id = instance.tile_id;
-          createTileHelper = __bind(function() {
-            var tile;
-            if (!(this.tiles[id] != null)) {
-              return setTimeout(createTileHelper, this.timeout);
-            } else {
-              tile = new Tile(this.tiles[id], instance.id);
+        }
+      }, this);
+      setupBoard = __bind(function() {
+        if (!haveTiles) {
+          return setTimeout(setupBoard, this.timeout);
+        } else {
+          return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=placed", __bind(function(data) {
+            var instance, obj, tile, _i, _len;
+            for (_i = 0, _len = data.length; _i < _len; _i++) {
+              obj = data[_i];
+              instance = obj.tile_instance;
+              tile = new Tile(this.tiles[instance.tile_id], instance.id);
               tile.rotate(instance.rotation);
               this.barePlaceTile(instance.x, instance.y, tile);
-              return count += 1;
             }
-          }, this);
-          return createTileHelper();
-        }, this);
-        draw = __bind(function() {
-          if (count !== total) {
-            return setTimeout(draw, this.timeout);
-          } else {
             this.drawBoard();
             return this.next();
-          }
-        }, this);
-        getTileInstances = __bind(function() {
-          if (!haveEdges) {
-            return setTimeout(getTileInstances, this.timeout);
-          } else {
-            return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=placed", __bind(function(data) {
-              var id, obj, tile_instance, _i, _len, _results;
-              total = data.length;
-              count = 0;
-              _results = [];
-              for (_i = 0, _len = data.length; _i < _len; _i++) {
-                obj = data[_i];
-                tile_instance = obj.tile_instance;
-                id = tile_instance.tile_id;
-                if (!(this.tiles[id] != null)) {
-                  this.getTile(id);
-                }
-                _results.push(createTile(tile_instance));
-              }
-              return _results;
-            }, this));
-          }
-        }, this);
-        getEdges();
-        getTileInstances();
-        return draw();
+          }, this));
+        }
       }, this);
+      getEdges();
+      getTiles();
       setupBoard();
     }
-    World.prototype.getTile = function(id) {
-      return $.getJSON("" + this.origin + "/tiles/" + id + ".json", __bind(function(data) {
-        var tile;
-        tile = data.tile;
-        tile.northEdge = this.edges[tile.northEdge];
-        tile.southEdge = this.edges[tile.southEdge];
-        tile.westEdge = this.edges[tile.westEdge];
-        tile.eastEdge = this.edges[tile.eastEdge];
-        return this.tiles[id] = tile;
-      }, this));
-    };
     World.prototype.barePlaceTile = function(row, col, tile) {
       this.board[row][col] = tile;
       this.maxrow = Math.max(this.maxrow, row);
@@ -461,15 +436,10 @@
         return findPositionsHelper();
       }, this);
       return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
-        var farm, id, instance, obj, _i, _len, _ref, _results;
+        var farm, obj, _i, _len, _ref, _results;
         obj = _arg[0];
         if (obj != null) {
-          instance = obj.tile_instance;
-          id = instance.tile_id;
-          if (!(this.tiles[id] != null)) {
-            this.getTile(id);
-          }
-          return findPositions(instance);
+          return findPositions(obj.tile_instance);
         } else {
           $('#candidate > img').attr('style', 'visibility: hidden');
           $('#left').unbind().prop('disabled', 'disabled');

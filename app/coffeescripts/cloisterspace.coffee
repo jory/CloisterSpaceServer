@@ -367,8 +367,10 @@ class World
             tile.reset()
 
     sortedCandidates = (new Array() for i in [0..3])
+
     for candidate in candidates
       sortedCandidates[candidate[2]].push(candidate)
+
     sortedCandidates
 
   validatePosition: (row, col, tile) ->
@@ -377,17 +379,20 @@ class World
 
     for side of adjacents
       [otherRow, otherCol] = offset(side, row, col)
+      other = @getTile(otherRow, otherCol)
 
-      if 0 <= otherRow < @maxSize and 0 <= otherCol < @maxSize
-        other = @board[otherRow][otherCol]
-        if other?
-          if tile.connectableTo(side, other)
-            valids.push(side)
-          else
-            invalids++
+      if other?
+        if tile.connectableTo(side, other)
+          valids.push(side)
+        else
+          invalids++
 
     if valids.length > 0 and invalids is 0
       return valids
+
+  getTile: (row, col) ->
+    if 0 <= row < @maxSize and 0 <= col < @maxSize
+      @board[row][col]
 
   placeTile: (row, col, tile, neighbours) ->
     if neighbours.length is 0 and not tile.isStart
@@ -424,9 +429,8 @@ class World
         otherRow = neighbour.row
         otherCol = neighbour.col
 
-        if 0 <= otherRow < @maxSize and 0 <= otherCol < @maxSize
-          if @board[otherRow][otherCol]?
-            cloister.add(otherRow, otherCol)
+        if @getTile(otherRow, otherCol)?
+          cloister.add(otherRow, otherCol)
 
       @cloisters.push(cloister)
 
@@ -436,7 +440,7 @@ class World
 
   getOtherEdge: (dir, row, col) ->
     [otherRow, otherCol] = offset(dir, row, col)
-    [otherRow, otherCol, @board[otherRow][otherCol].edges[oppositeDirection[dir]]]
+    [otherRow, otherCol, @getTile(otherRow,otherCol).edges[oppositeDirection[dir]]]
 
   handleRoads: (row, col, tile, neighbours) ->
     roads = []

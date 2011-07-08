@@ -483,19 +483,22 @@
       invalids = 0;
       for (side in adjacents) {
         _ref = offset(side, row, col), otherRow = _ref[0], otherCol = _ref[1];
-        if ((0 <= otherRow && otherRow < this.maxSize) && (0 <= otherCol && otherCol < this.maxSize)) {
-          other = this.board[otherRow][otherCol];
-          if (other != null) {
-            if (tile.connectableTo(side, other)) {
-              valids.push(side);
-            } else {
-              invalids++;
-            }
+        other = this.getTile(otherRow, otherCol);
+        if (other != null) {
+          if (tile.connectableTo(side, other)) {
+            valids.push(side);
+          } else {
+            invalids++;
           }
         }
       }
       if (valids.length > 0 && invalids === 0) {
         return valids;
+      }
+    };
+    World.prototype.getTile = function(row, col) {
+      if ((0 <= row && row < this.maxSize) && (0 <= col && col < this.maxSize)) {
+        return this.board[row][col];
       }
     };
     World.prototype.placeTile = function(row, col, tile, neighbours) {
@@ -532,10 +535,8 @@
           neighbour = _ref[n];
           otherRow = neighbour.row;
           otherCol = neighbour.col;
-          if ((0 <= otherRow && otherRow < this.maxSize) && (0 <= otherCol && otherCol < this.maxSize)) {
-            if (this.board[otherRow][otherCol] != null) {
-              cloister.add(otherRow, otherCol);
-            }
+          if (this.getTile(otherRow, otherCol) != null) {
+            cloister.add(otherRow, otherCol);
           }
         }
         this.cloisters.push(cloister);
@@ -551,7 +552,7 @@
     World.prototype.getOtherEdge = function(dir, row, col) {
       var otherCol, otherRow, _ref;
       _ref = offset(dir, row, col), otherRow = _ref[0], otherCol = _ref[1];
-      return [otherRow, otherCol, this.board[otherRow][otherCol].edges[oppositeDirection[dir]]];
+      return [otherRow, otherCol, this.getTile(otherRow, otherCol).edges[oppositeDirection[dir]]];
     };
     World.prototype.handleRoads = function(row, col, tile, neighbours) {
       var added, dir, edge, otherCol, otherEdge, otherRow, road, roads, _i, _j, _len, _len2, _ref, _ref2, _results;

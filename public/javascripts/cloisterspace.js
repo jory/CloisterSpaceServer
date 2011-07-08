@@ -110,28 +110,28 @@
     return Tile;
   })();
   Road = (function() {
-    function Road(row, col, edge, id, hasEnd) {
+    function Road(row, col, edge, num, hasEnd) {
       this.tiles = {};
-      this.ids = {};
+      this.nums = {};
       this.edges = {};
       this.length = 0;
       this.numEnds = 0;
       this.finished = false;
-      this.add(row, col, edge, id, hasEnd);
+      this.add(row, col, edge, num, hasEnd);
     }
-    Road.prototype.add = function(row, col, edge, id, hasEnd) {
+    Road.prototype.add = function(row, col, edge, num, hasEnd) {
       var address;
       address = "" + row + "," + col;
       if (!this.tiles[address]) {
         this.length += 1;
         this.tiles[address] = true;
       }
-      this.ids[address + ("," + id)] = true;
+      this.nums[address + ("," + num)] = true;
       this.edges[address + ("," + edge)] = {
         row: row,
         col: col,
         edge: edge,
-        id: id,
+        num: num,
         hasEnd: hasEnd
       };
       if (hasEnd) {
@@ -141,8 +141,8 @@
         }
       }
     };
-    Road.prototype.has = function(row, col, id) {
-      return this.ids["" + row + "," + col + "," + id];
+    Road.prototype.has = function(row, col, num) {
+      return this.nums["" + row + "," + col + "," + num];
     };
     Road.prototype.merge = function(other) {
       var e, edge, _ref, _results;
@@ -150,7 +150,7 @@
       _results = [];
       for (e in _ref) {
         edge = _ref[e];
-        _results.push(this.add(edge.row, edge.col, edge.edge, edge.id, edge.hasEnd));
+        _results.push(this.add(edge.row, edge.col, edge.edge, edge.num, edge.hasEnd));
       }
       return _results;
     };

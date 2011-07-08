@@ -76,30 +76,30 @@ class Tile
 
 
 class Road
-  constructor: (row, col, edge, id, hasEnd) ->
+  constructor: (row, col, edge, num, hasEnd) ->
     @tiles = {}
-    @ids = {}
+    @nums = {}
     @edges = {}
     @length = 0
     @numEnds = 0
     @finished = false
 
-    @add(row, col, edge, id, hasEnd)
+    @add(row, col, edge, num, hasEnd)
 
-  add: (row, col, edge, id, hasEnd) ->
+  add: (row, col, edge, num, hasEnd) ->
     address = "#{row},#{col}"
 
     if not @tiles[address]
       @length += 1
       @tiles[address] = true
 
-    @ids[address + ",#{id}"] = true
+    @nums[address + ",#{num}"] = true
 
     @edges[address + ",#{edge}"] =
       row: row
       col: col
       edge: edge
-      id: id
+      num: num
       hasEnd: hasEnd
 
     if hasEnd
@@ -107,12 +107,12 @@ class Road
       if @numEnds is 2
         @finished = true
 
-  has: (row, col, id) ->
-    @ids["#{row},#{col},#{id}"]
+  has: (row, col, num) ->
+    @nums["#{row},#{col},#{num}"]
 
   merge: (other) ->
     for e, edge of other.edges
-      @add(edge.row, edge.col, edge.edge, edge.id, edge.hasEnd)
+      @add(edge.row, edge.col, edge.edge, edge.num, edge.hasEnd)
 
   toString: ->
     out = "Road: ("

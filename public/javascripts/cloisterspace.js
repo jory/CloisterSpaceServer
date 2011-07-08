@@ -1,5 +1,5 @@
 (function() {
-  var City, Cloister, Farm, Road, Tile, World, adjacents, offset, oppositeDirection;
+  var City, Cloister, Farm, Road, Tile, World, adjacents, empty, offset, oppositeDirection;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -40,6 +40,9 @@
     var offsets;
     offsets = adjacents[edge];
     return [row + offsets.row, col + offsets.col];
+  };
+  empty = function(obj) {
+    return !(obj != null);
   };
   Tile = (function() {
     function Tile(tile, id) {
@@ -175,7 +178,7 @@
     City.prototype.add = function(row, col, edge, id, citysFields, hasPennant) {
       var address, otherAddress, otherCol, otherRow, _ref;
       address = "" + row + "," + col;
-      if (!(this.tiles[address] != null)) {
+      if (empty(this.tiles[address])) {
         this.tiles[address] = citysFields;
         this.size += 1;
         if (hasPennant) {
@@ -447,33 +450,19 @@
       }
     };
     World.prototype.findValidPositions = function(tile) {
-      var candidate, candidates, col, i, invalids, other, otherCol, otherRow, row, side, sortedCandidates, turns, valids, _i, _len, _ref, _ref2, _ref3, _ref4, _ref5;
+      var candidate, candidates, col, i, row, sortedCandidates, turns, valid, _i, _len, _ref, _ref2, _ref3, _ref4;
       if (tile == null) {
         tile = this.currentTile;
       }
       candidates = [];
       for (row = _ref = this.minrow - 1, _ref2 = this.maxrow + 1; _ref <= _ref2 ? row <= _ref2 : row >= _ref2; _ref <= _ref2 ? row++ : row--) {
         for (col = _ref3 = this.mincol - 1, _ref4 = this.maxcol + 1; _ref3 <= _ref4 ? col <= _ref4 : col >= _ref4; _ref3 <= _ref4 ? col++ : col--) {
-          if (!(this.board[row][col] != null)) {
+          if (empty(this.board[row][col])) {
             for (turns = 0; turns <= 3; turns++) {
               tile.rotate(turns);
-              valids = [];
-              invalids = 0;
-              for (side in adjacents) {
-                _ref5 = offset(side, row, col), otherRow = _ref5[0], otherCol = _ref5[1];
-                if ((0 <= otherRow && otherRow < this.maxSize) && (0 <= otherCol && otherCol < this.maxSize)) {
-                  other = this.board[otherRow][otherCol];
-                  if (other != null) {
-                    if (tile.connectableTo(side, other)) {
-                      valids.push(side);
-                    } else {
-                      invalids++;
-                    }
-                  }
-                }
-              }
-              if (valids.length > 0 && invalids === 0) {
-                candidates.push([row, col, turns, valids]);
+              valid = this.validatePosition(row, col, tile);
+              if (valid != null) {
+                candidates.push([row, col, turns, valid]);
               }
               tile.reset();
             }
@@ -493,6 +482,27 @@
         sortedCandidates[candidate[2]].push(candidate);
       }
       return sortedCandidates;
+    };
+    World.prototype.validatePosition = function(row, col, tile) {
+      var invalids, other, otherCol, otherRow, side, valids, _ref;
+      valids = [];
+      invalids = 0;
+      for (side in adjacents) {
+        _ref = offset(side, row, col), otherRow = _ref[0], otherCol = _ref[1];
+        if ((0 <= otherRow && otherRow < this.maxSize) && (0 <= otherCol && otherCol < this.maxSize)) {
+          other = this.board[otherRow][otherCol];
+          if (other != null) {
+            if (tile.connectableTo(side, other)) {
+              valids.push(side);
+            } else {
+              invalids++;
+            }
+          }
+        }
+      }
+      if (valids.length > 0 && invalids === 0) {
+        return valids;
+      }
     };
     World.prototype.randomlyPlaceTile = function(tile, candidates) {
       var candidate, col, i, index, j, neighbours, row, subcandidates, turns, _i, _len, _ref, _ref2;

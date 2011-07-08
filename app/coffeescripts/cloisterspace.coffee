@@ -24,11 +24,12 @@ offset = (edge, row, col) ->
   offsets = adjacents[edge]
   [row + offsets.row, col + offsets.col]
 
+empty = (obj) ->
+  return not obj?
 
 class Tile
   constructor: (tile, @id = null) ->
     @image = tile.image
-
     @hasTwoCities = tile.hasTwoCities
     @hasRoadEnd = tile.hasRoadEnd
     @hasPennant = tile.hasPennant
@@ -135,7 +136,7 @@ class City
   add: (row, col, edge, id, citysFields, hasPennant) ->
     address = "#{row},#{col}"
 
-    if not @tiles[address]?
+    if empty(@tiles[address])
       @tiles[address] = citysFields
       @size += 1
       if hasPennant
@@ -367,26 +368,13 @@ class World
     for row in [@minrow - 1..@maxrow + 1]
       for col in [@mincol - 1..@maxcol + 1]
 
-        if not @board[row][col]?
+        if empty(@board[row][col])
           for turns in [0..3]
             tile.rotate(turns)
 
-            valids = []
-            invalids = 0
-
-            for side of adjacents
-              [otherRow, otherCol] = offset(side, row, col)
-
-              if 0 <= otherRow < @maxSize and 0 <= otherCol < @maxSize
-                other = @board[otherRow][otherCol]
-                if other?
-                  if tile.connectableTo(side, other)
-                    valids.push(side)
-                  else
-                    invalids++
-
-            if valids.length > 0 and invalids is 0
-              candidates.push([row, col, turns, valids])
+            valid = @validatePosition(row, col, tile)
+            if valid?
+              candidates.push([row, col, turns, valid])
 
             tile.reset()
 
@@ -396,6 +384,24 @@ class World
       sortedCandidates[candidate[2]].push(candidate)
 
     sortedCandidates
+
+  validatePosition: (row, col, tile) ->
+    valids = []
+    invalids = 0
+
+    for side of adjacents
+      [otherRow, otherCol] = offset(side, row, col)
+
+      if 0 <= otherRow < @maxSize and 0 <= otherCol < @maxSize
+        other = @board[otherRow][otherCol]
+        if other?
+          if tile.connectableTo(side, other)
+            valids.push(side)
+          else
+            invalids++
+
+    if valids.length > 0 and invalids is 0
+      return valids
 
   randomlyPlaceTile: (tile = @currentTile, candidates = @candidates) ->
     candidates = [].concat candidates...

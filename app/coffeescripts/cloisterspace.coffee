@@ -321,7 +321,7 @@ class World
             instance = obj.tile_instance
             tile = new Tile(@tiles[instance.tile_id], instance.id)
             tile.rotate(instance.rotation)
-            @barePlaceTile(instance.x, instance.y, tile)
+            @placeTileOnBoard(instance.x, instance.y, tile)
           @drawBoard()
           @next()
         )
@@ -329,14 +329,6 @@ class World
     getEdges()
     getTiles()
     setupBoard()
-
-  barePlaceTile: (row, col, tile) ->
-    @board[row][col] = tile
-
-    @maxrow = Math.max(@maxrow, row)
-    @minrow = Math.min(@minrow, row)
-    @maxcol = Math.max(@maxcol, col)
-    @mincol = Math.min(@mincol, col)
 
   next: ->
     if not @finished
@@ -401,30 +393,40 @@ class World
     if neighbours.length is 0 and not tile.isStart
       throw "Invalid tile placement"
 
-    @barePlaceTile(row, col, tile)
+    @placeTileOnBoard(row, col, tile)
 
-    # Connect the features of the current tile to the world-level features.
-    #
-    # - Cloisters operate on the tile level, rather than the edge level.
-    #
-    # Keeping track of roads, cities and farms (per edge):
-    #
-    #  - every city edge must be connected to another city edge. If any
-    #    city edge is unconnected (i.e. singular), the city can't be complete
-    #
-    #  - roads must have two ends (or make a fully closed loop)
-    #
-    #  - farms... are complicated
-    #    - have to handle the grass type edge, but also have to handle the
-    #      grass on each individual edge.
+    @handleCloisters(row, col, tile)
+    @handleFarms(row, col, tile, neighbours)
+    @handleRoads(row, col, tile, neighbours)
+    @handleCities(row, col, tile, neighbours)
 
+    $.ajax(
+      url: "#{@origin}/tileInstances/#{tile.id}"
+      data: "x=#{row}&y=#{col}&rotation=#{tile.rotation}"
+      type: "PUT"
+      success: =>
+        @next()
+    )
+
+  placeTileOnBoard: (row, col, tile) ->
+    @board[row][col] = tile
+
+    @maxrow = Math.max(@maxrow, row)
+    @minrow = Math.min(@minrow, row)
+    @maxcol = Math.max(@maxcol, col)
+    @mincol = Math.min(@mincol, col)
+
+  handleCloisters: (row, col, tile) ->
     if tile.isCloister
       cloister = new Cloister(row, col)
 
       for n, neighbour of cloister.neighbours
-        if 0 <= neighbour.row < @maxSize and 0 <= neighbour.col < @maxSize
-          if @board[neighbour.row][neighbour.col]?
-            cloister.add(neighbour.row, neighbour.col)
+        otherRow = neighbour.row
+        otherCol = neighbour.col
+
+        if 0 <= otherRow < @maxSize and 0 <= otherCol < @maxSize
+          if @board[otherRow][otherCol]?
+            cloister.add(otherRow, otherCol)
 
       @cloisters.push(cloister)
 
@@ -432,25 +434,91 @@ class World
       if cloister.neighbours[row + "," + col]
         cloister.add(row, col)
 
-    handled =
-      north: false
-      south: false
-      east:  false
-      west:  false
+  getOtherEdge: (dir, row, col) ->
+    [otherRow, otherCol] = offset(dir, row, col)
+    [otherRow, otherCol, @board[otherRow][otherCol].edges[oppositeDirection[dir]]]
 
-    farms = []
+  handleRoads: (row, col, tile, neighbours) ->
     roads = []
+
+    for dir in neighbours
+      edge = tile.edges[dir]
+      [otherRow, otherCol, otherEdge] = @getOtherEdge(dir, row, col)
+      added = false
+
+      if edge.type is 'road'
+          for road in @roads
+            if not added and road.has(otherRow, otherCol, otherEdge.road)
+              if not tile.hasRoadEnd and roads.length > 0
+                if roads[0] is road
+                  # Closing a loop
+                  road.finished = true
+                  added = true
+                else
+                  # Merging two roads
+                  roads[0].merge(road)
+                  @roads.remove(road)
+                  added = true
+              else
+                # Adding to a road
+                road.add(row, col, dir, edge.road, tile.hasRoadEnd)
+                roads.push(road)
+                added = true
+
+    for dir of adjacents
+      if not (dir in neighbours)
+        edge = tile.edges[dir]
+        added = false
+
+        if edge.type is 'road'
+          for road in @roads
+            if not added and road.has(row, col, edge.road)
+              road.add(row, col, dir, edge.road, tile.hasRoadEnd)
+              added = true
+
+          if not added
+              @roads.push(new Road(row, col, dir, edge.road, tile.hasRoadEnd))
+
+  handleCities: (row, col, tile, neighbours) ->
     cities = []
 
     for dir in neighbours
       edge = tile.edges[dir]
+      [otherRow, otherCol, otherEdge] = @getOtherEdge(dir, row, col)
+      added = false
 
-      [otherRow, otherCol] = offset(dir, row, col)
-      otherTile = @board[otherRow][otherCol]
-      otherEdge = otherTile.edges[oppositeDirection[dir]]
+      if edge.type is 'city'
+          for city in @cities
+            if not added and city.has(otherRow, otherCol, otherEdge.city)
+              city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+              added = true
+              if not tile.hasTwoCities and cities.length > 0 and cities[0] isnt city
+                cities[0].merge(city)
+                @cities.remove(city)
+              else
+                cities.push(city)
 
-      # Add to the existings farms, if applicable.
+    for dir of adjacents
+      if not (dir in neighbours)
+        edge = tile.edges[dir]
+        added = false
 
+        if edge.type is 'city'
+          for city in @cities
+            if not added and city.has(row, col, edge.city)
+              city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+              added = true
+
+          if not added
+            @cities.push(new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant))
+
+
+  handleFarms: (row, col, tile, neighbours) ->
+    farms = []
+
+    for dir in neighbours
+      edge = tile.edges[dir]
+      [otherRow, otherCol, otherEdge] = @getOtherEdge(dir, row, col)
       added = false
 
       if edge.grassA isnt '-'
@@ -491,61 +559,9 @@ class World
               farms.push(farm)
               added = true
 
-      # Add to whatever other existing feature is on the edge.
-
-      added = false
-
-      if edge.type is 'road'
-        if not tile.hasRoadEnd and roads.length > 0
-          for road in @roads
-            if not added and road.has(otherRow, otherCol, otherEdge.road)
-              if roads[0] is road
-                # Closing a loop
-                road.finished = true
-                added = true
-              else
-                # Merging two roads
-                roads[0].merge(road)
-                @roads.remove(road)
-                added = true
-        else
-          for road in @roads
-            if not added and road.has(otherRow, otherCol, otherEdge.road)
-              road.add(row, col, dir, edge.road, tile.hasRoadEnd)
-              roads.push(road)
-              added = true
-
-      else if edge.type is 'city'
-        if not tile.hasTwoCities and cities.length > 0
-          for city in @cities
-            if not added and city.has(otherRow, otherCol, otherEdge.city)
-
-              city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant)
-              added = true
-
-              if cities[0] isnt city
-                cities[0].merge(city)
-                @cities.remove(city)
-
-        else
-          # If you are adding a tile with two cities, or you do not
-          # yet have a merge candidate, you do not need to perform a
-          # merge.
-          for city in @cities
-            if not added and city.has(otherRow, otherCol, otherEdge.city)
-              city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant)
-              cities.push(city)
-              added = true
-
-      handled[dir] = true
-
-    for dir, seen of handled
-      if not seen
+    for dir of adjacents
+      if not (dir in neighbours)
         edge = tile.edges[dir]
-
-        # either attach my features to existing ones on the current tile,
-        # or create new features.
-
         added = false
 
         if edge.grassA isnt '-'
@@ -567,34 +583,6 @@ class World
 
           if not added
             @farms.push(new Farm(row, col, dir, edge.grassB))
-
-        added = false
-
-        if edge.type is 'road'
-          for road in @roads
-            if not added and road.has(row, col, edge.road)
-              road.add(row, col, dir, edge.road, tile.hasRoadEnd)
-              added = true
-
-          if not added
-              @roads.push(new Road(row, col, dir, edge.road, tile.hasRoadEnd))
-
-        else if edge.type is 'city'
-          for city in @cities
-            if not added and city.has(row, col, edge.city)
-              city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant)
-              added = true
-
-          if not added
-            @cities.push(new City(row, col, dir, edge.city, tile.citysFields, tile.hasPennant))
-
-    $.ajax(
-      url: "#{@origin}/tileInstances/#{tile.id}"
-      data: "x=#{row}&y=#{col}&rotation=#{tile.rotation}"
-      type: "PUT"
-      success: =>
-        @next()
-    )
 
   drawCandidates: (tile = @currentTile, candidates = @candidates) ->
     img = $('#candidate > img').attr('src', "/images/#{tile.image}")

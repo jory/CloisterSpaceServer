@@ -407,7 +407,7 @@
               instance = obj.tile_instance;
               tile = new Tile(this.tiles[instance.tile_id], instance.id);
               tile.rotate(instance.rotation);
-              this.barePlaceTile(instance.x, instance.y, tile);
+              this.placeTileOnBoard(instance.x, instance.y, tile);
             }
             this.drawBoard();
             return this.next();
@@ -418,13 +418,6 @@
       getTiles();
       setupBoard();
     }
-    World.prototype.barePlaceTile = function(row, col, tile) {
-      this.board[row][col] = tile;
-      this.maxrow = Math.max(this.maxrow, row);
-      this.minrow = Math.min(this.minrow, row);
-      this.maxcol = Math.max(this.maxcol, col);
-      return this.mincol = Math.min(this.mincol, col);
-    };
     World.prototype.next = function() {
       if (!this.finished) {
         return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
@@ -506,55 +499,182 @@
       }
     };
     World.prototype.placeTile = function(row, col, tile, neighbours) {
-      var added, cities, city, cloister, dir, edge, farm, farms, handled, n, neighbour, otherCol, otherEdge, otherFarm, otherRow, otherTile, road, roads, seen, _i, _j, _k, _l, _len, _len10, _len11, _len12, _len13, _len14, _len2, _len3, _len4, _len5, _len6, _len7, _len8, _len9, _m, _n, _o, _p, _q, _r, _ref, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _s, _t, _u, _v;
       if (neighbours.length === 0 && !tile.isStart) {
         throw "Invalid tile placement";
       }
-      this.barePlaceTile(row, col, tile);
+      this.placeTileOnBoard(row, col, tile);
+      this.handleCloisters(row, col, tile);
+      this.handleFarms(row, col, tile, neighbours);
+      this.handleRoads(row, col, tile, neighbours);
+      this.handleCities(row, col, tile, neighbours);
+      return $.ajax({
+        url: "" + this.origin + "/tileInstances/" + tile.id,
+        data: "x=" + row + "&y=" + col + "&rotation=" + tile.rotation,
+        type: "PUT",
+        success: __bind(function() {
+          return this.next();
+        }, this)
+      });
+    };
+    World.prototype.placeTileOnBoard = function(row, col, tile) {
+      this.board[row][col] = tile;
+      this.maxrow = Math.max(this.maxrow, row);
+      this.minrow = Math.min(this.minrow, row);
+      this.maxcol = Math.max(this.maxcol, col);
+      return this.mincol = Math.min(this.mincol, col);
+    };
+    World.prototype.handleCloisters = function(row, col, tile) {
+      var cloister, n, neighbour, otherCol, otherRow, _i, _len, _ref, _ref2, _results;
       if (tile.isCloister) {
         cloister = new Cloister(row, col);
         _ref = cloister.neighbours;
         for (n in _ref) {
           neighbour = _ref[n];
-          if ((0 <= (_ref2 = neighbour.row) && _ref2 < this.maxSize) && (0 <= (_ref3 = neighbour.col) && _ref3 < this.maxSize)) {
-            if (this.board[neighbour.row][neighbour.col] != null) {
-              cloister.add(neighbour.row, neighbour.col);
+          otherRow = neighbour.row;
+          otherCol = neighbour.col;
+          if ((0 <= otherRow && otherRow < this.maxSize) && (0 <= otherCol && otherCol < this.maxSize)) {
+            if (this.board[otherRow][otherCol] != null) {
+              cloister.add(otherRow, otherCol);
             }
           }
         }
         this.cloisters.push(cloister);
       }
-      _ref4 = this.cloisters;
-      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
-        cloister = _ref4[_i];
-        if (cloister.neighbours[row + "," + col]) {
-          cloister.add(row, col);
+      _ref2 = this.cloisters;
+      _results = [];
+      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+        cloister = _ref2[_i];
+        _results.push(cloister.neighbours[row + "," + col] ? cloister.add(row, col) : void 0);
+      }
+      return _results;
+    };
+    World.prototype.getOtherEdge = function(dir, row, col) {
+      var otherCol, otherRow, _ref;
+      _ref = offset(dir, row, col), otherRow = _ref[0], otherCol = _ref[1];
+      return [otherRow, otherCol, this.board[otherRow][otherCol].edges[oppositeDirection[dir]]];
+    };
+    World.prototype.handleRoads = function(row, col, tile, neighbours) {
+      var added, dir, edge, otherCol, otherEdge, otherRow, road, roads, _i, _j, _len, _len2, _ref, _ref2, _results;
+      roads = [];
+      for (_i = 0, _len = neighbours.length; _i < _len; _i++) {
+        dir = neighbours[_i];
+        edge = tile.edges[dir];
+        _ref = this.getOtherEdge(dir, row, col), otherRow = _ref[0], otherCol = _ref[1], otherEdge = _ref[2];
+        added = false;
+        if (edge.type === 'road') {
+          _ref2 = this.roads;
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            road = _ref2[_j];
+            if (!added && road.has(otherRow, otherCol, otherEdge.road)) {
+              if (!tile.hasRoadEnd && roads.length > 0) {
+                if (roads[0] === road) {
+                  road.finished = true;
+                  added = true;
+                } else {
+                  roads[0].merge(road);
+                  this.roads.remove(road);
+                  added = true;
+                }
+              } else {
+                road.add(row, col, dir, edge.road, tile.hasRoadEnd);
+                roads.push(road);
+                added = true;
+              }
+            }
+          }
         }
       }
-      handled = {
-        north: false,
-        south: false,
-        east: false,
-        west: false
-      };
-      farms = [];
-      roads = [];
+      _results = [];
+      for (dir in adjacents) {
+        _results.push((function() {
+          var _k, _len3, _ref3;
+          if (!(__indexOf.call(neighbours, dir) >= 0)) {
+            edge = tile.edges[dir];
+            added = false;
+            if (edge.type === 'road') {
+              _ref3 = this.roads;
+              for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
+                road = _ref3[_k];
+                if (!added && road.has(row, col, edge.road)) {
+                  road.add(row, col, dir, edge.road, tile.hasRoadEnd);
+                  added = true;
+                }
+              }
+              if (!added) {
+                return this.roads.push(new Road(row, col, dir, edge.road, tile.hasRoadEnd));
+              }
+            }
+          }
+        }).call(this));
+      }
+      return _results;
+    };
+    World.prototype.handleCities = function(row, col, tile, neighbours) {
+      var added, cities, city, dir, edge, otherCol, otherEdge, otherRow, _i, _j, _len, _len2, _ref, _ref2, _results;
       cities = [];
-      for (_j = 0, _len2 = neighbours.length; _j < _len2; _j++) {
-        dir = neighbours[_j];
+      for (_i = 0, _len = neighbours.length; _i < _len; _i++) {
+        dir = neighbours[_i];
         edge = tile.edges[dir];
-        _ref5 = offset(dir, row, col), otherRow = _ref5[0], otherCol = _ref5[1];
-        otherTile = this.board[otherRow][otherCol];
-        otherEdge = otherTile.edges[oppositeDirection[dir]];
+        _ref = this.getOtherEdge(dir, row, col), otherRow = _ref[0], otherCol = _ref[1], otherEdge = _ref[2];
+        added = false;
+        if (edge.type === 'city') {
+          _ref2 = this.cities;
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            city = _ref2[_j];
+            if (!added && city.has(otherRow, otherCol, otherEdge.city)) {
+              city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+              added = true;
+              if (!tile.hasTwoCities && cities.length > 0 && cities[0] !== city) {
+                cities[0].merge(city);
+                this.cities.remove(city);
+              } else {
+                cities.push(city);
+              }
+            }
+          }
+        }
+      }
+      _results = [];
+      for (dir in adjacents) {
+        _results.push((function() {
+          var _k, _len3, _ref3;
+          if (!(__indexOf.call(neighbours, dir) >= 0)) {
+            edge = tile.edges[dir];
+            added = false;
+            if (edge.type === 'city') {
+              _ref3 = this.cities;
+              for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
+                city = _ref3[_k];
+                if (!added && city.has(row, col, edge.city)) {
+                  city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+                  added = true;
+                }
+              }
+              if (!added) {
+                return this.cities.push(new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant));
+              }
+            }
+          }
+        }).call(this));
+      }
+      return _results;
+    };
+    World.prototype.handleFarms = function(row, col, tile, neighbours) {
+      var added, dir, edge, farm, farms, otherCol, otherEdge, otherFarm, otherRow, _i, _j, _k, _l, _len, _len2, _len3, _len4, _len5, _m, _ref, _ref2, _ref3, _results;
+      farms = [];
+      for (_i = 0, _len = neighbours.length; _i < _len; _i++) {
+        dir = neighbours[_i];
+        edge = tile.edges[dir];
+        _ref = this.getOtherEdge(dir, row, col), otherRow = _ref[0], otherCol = _ref[1], otherEdge = _ref[2];
         added = false;
         if (edge.grassA !== '-') {
-          _ref6 = this.farms;
-          for (_k = 0, _len3 = _ref6.length; _k < _len3; _k++) {
-            farm = _ref6[_k];
+          _ref2 = this.farms;
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            farm = _ref2[_j];
             if (!added && farm.has(otherRow, otherCol, otherEdge.grassB)) {
               if (farms.length > 0) {
-                for (_l = 0, _len4 = farms.length; _l < _len4; _l++) {
-                  otherFarm = farms[_l];
+                for (_k = 0, _len3 = farms.length; _k < _len3; _k++) {
+                  otherFarm = farms[_k];
                   if (!added && otherFarm.has(row, col, edge.grassA)) {
                     if (otherFarm !== farm) {
                       otherFarm.add(row, col, dir, edge.grassA);
@@ -575,13 +695,13 @@
         }
         added = false;
         if (edge.grassB !== '-') {
-          _ref7 = this.farms;
-          for (_m = 0, _len5 = _ref7.length; _m < _len5; _m++) {
-            farm = _ref7[_m];
+          _ref3 = this.farms;
+          for (_l = 0, _len4 = _ref3.length; _l < _len4; _l++) {
+            farm = _ref3[_l];
             if (!added && farm.has(otherRow, otherCol, otherEdge.grassA)) {
               if (farms.length > 0) {
-                for (_n = 0, _len6 = farms.length; _n < _len6; _n++) {
-                  otherFarm = farms[_n];
+                for (_m = 0, _len5 = farms.length; _m < _len5; _m++) {
+                  otherFarm = farms[_m];
                   if (!added && otherFarm.has(row, col, edge.grassB)) {
                     if (otherFarm !== farm) {
                       otherFarm.add(row, col, dir, edge.grassB);
@@ -600,130 +720,45 @@
             }
           }
         }
-        added = false;
-        if (edge.type === 'road') {
-          if (!tile.hasRoadEnd && roads.length > 0) {
-            _ref8 = this.roads;
-            for (_o = 0, _len7 = _ref8.length; _o < _len7; _o++) {
-              road = _ref8[_o];
-              if (!added && road.has(otherRow, otherCol, otherEdge.road)) {
-                if (roads[0] === road) {
-                  road.finished = true;
-                  added = true;
-                } else {
-                  roads[0].merge(road);
-                  this.roads.remove(road);
+      }
+      _results = [];
+      for (dir in adjacents) {
+        _results.push((function() {
+          var _len6, _len7, _n, _o, _ref4, _ref5;
+          if (!(__indexOf.call(neighbours, dir) >= 0)) {
+            edge = tile.edges[dir];
+            added = false;
+            if (edge.grassA !== '-') {
+              _ref4 = this.farms;
+              for (_n = 0, _len6 = _ref4.length; _n < _len6; _n++) {
+                farm = _ref4[_n];
+                if (!added && farm.has(row, col, edge.grassA)) {
+                  farm.add(row, col, dir, edge.grassA);
                   added = true;
                 }
               }
-            }
-          } else {
-            _ref9 = this.roads;
-            for (_p = 0, _len8 = _ref9.length; _p < _len8; _p++) {
-              road = _ref9[_p];
-              if (!added && road.has(otherRow, otherCol, otherEdge.road)) {
-                road.add(row, col, dir, edge.road, tile.hasRoadEnd);
-                roads.push(road);
-                added = true;
+              if (!added) {
+                this.farms.push(new Farm(row, col, dir, edge.grassA));
               }
             }
-          }
-        } else if (edge.type === 'city') {
-          if (!tile.hasTwoCities && cities.length > 0) {
-            _ref10 = this.cities;
-            for (_q = 0, _len9 = _ref10.length; _q < _len9; _q++) {
-              city = _ref10[_q];
-              if (!added && city.has(otherRow, otherCol, otherEdge.city)) {
-                city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
-                added = true;
-                if (cities[0] !== city) {
-                  cities[0].merge(city);
-                  this.cities.remove(city);
+            added = false;
+            if (edge.grassB !== '-') {
+              _ref5 = this.farms;
+              for (_o = 0, _len7 = _ref5.length; _o < _len7; _o++) {
+                farm = _ref5[_o];
+                if (!added && farm.has(row, col, edge.grassB)) {
+                  farm.add(row, col, dir, edge.grassB);
+                  added = true;
                 }
               }
-            }
-          } else {
-            _ref11 = this.cities;
-            for (_r = 0, _len10 = _ref11.length; _r < _len10; _r++) {
-              city = _ref11[_r];
-              if (!added && city.has(otherRow, otherCol, otherEdge.city)) {
-                city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
-                cities.push(city);
-                added = true;
+              if (!added) {
+                return this.farms.push(new Farm(row, col, dir, edge.grassB));
               }
             }
           }
-        }
-        handled[dir] = true;
+        }).call(this));
       }
-      for (dir in handled) {
-        seen = handled[dir];
-        if (!seen) {
-          edge = tile.edges[dir];
-          added = false;
-          if (edge.grassA !== '-') {
-            _ref12 = this.farms;
-            for (_s = 0, _len11 = _ref12.length; _s < _len11; _s++) {
-              farm = _ref12[_s];
-              if (!added && farm.has(row, col, edge.grassA)) {
-                farm.add(row, col, dir, edge.grassA);
-                added = true;
-              }
-            }
-            if (!added) {
-              this.farms.push(new Farm(row, col, dir, edge.grassA));
-            }
-          }
-          added = false;
-          if (edge.grassB !== '-') {
-            _ref13 = this.farms;
-            for (_t = 0, _len12 = _ref13.length; _t < _len12; _t++) {
-              farm = _ref13[_t];
-              if (!added && farm.has(row, col, edge.grassB)) {
-                farm.add(row, col, dir, edge.grassB);
-                added = true;
-              }
-            }
-            if (!added) {
-              this.farms.push(new Farm(row, col, dir, edge.grassB));
-            }
-          }
-          added = false;
-          if (edge.type === 'road') {
-            _ref14 = this.roads;
-            for (_u = 0, _len13 = _ref14.length; _u < _len13; _u++) {
-              road = _ref14[_u];
-              if (!added && road.has(row, col, edge.road)) {
-                road.add(row, col, dir, edge.road, tile.hasRoadEnd);
-                added = true;
-              }
-            }
-            if (!added) {
-              this.roads.push(new Road(row, col, dir, edge.road, tile.hasRoadEnd));
-            }
-          } else if (edge.type === 'city') {
-            _ref15 = this.cities;
-            for (_v = 0, _len14 = _ref15.length; _v < _len14; _v++) {
-              city = _ref15[_v];
-              if (!added && city.has(row, col, edge.city)) {
-                city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
-                added = true;
-              }
-            }
-            if (!added) {
-              this.cities.push(new City(row, col, dir, edge.city, tile.citysFields, tile.hasPennant));
-            }
-          }
-        }
-      }
-      return $.ajax({
-        url: "" + this.origin + "/tileInstances/" + tile.id,
-        data: "x=" + row + "&y=" + col + "&rotation=" + tile.rotation,
-        type: "PUT",
-        success: __bind(function() {
-          return this.next();
-        }, this)
-      });
+      return _results;
     };
     World.prototype.drawCandidates = function(tile, candidates) {
       var actives, attach, candidate, col, disableAll, img, neighbours, row, turns;

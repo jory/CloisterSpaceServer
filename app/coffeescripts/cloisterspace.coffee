@@ -450,7 +450,7 @@ class World
       [otherRow, otherCol, otherEdge] = @getOtherEdge(dir, row, col)
       added = false
 
-      if edge.type is 'road'
+      if edge.kind is 'r'
           for road in @roads
             if not added and road.has(otherRow, otherCol, otherEdge.road)
               if not tile.hasRoadEnd and roads.length > 0
@@ -474,7 +474,7 @@ class World
         edge = tile.edges[dir]
         added = false
 
-        if edge.type is 'road'
+        if edge.kind is 'r'
           for road in @roads
             if not added and road.has(row, col, edge.road)
               road.add(row, col, dir, edge.road, tile.hasRoadEnd)
@@ -491,7 +491,7 @@ class World
       [otherRow, otherCol, otherEdge] = @getOtherEdge(dir, row, col)
       added = false
 
-      if edge.type is 'city'
+      if edge.kind is 'c'
           for city in @cities
             if not added and city.has(otherRow, otherCol, otherEdge.city)
               city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
@@ -507,7 +507,7 @@ class World
         edge = tile.edges[dir]
         added = false
 
-        if edge.type is 'city'
+        if edge.kind is 'c'
           for city in @cities
             if not added and city.has(row, col, edge.city)
               city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)

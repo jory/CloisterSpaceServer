@@ -562,7 +562,7 @@
         edge = tile.edges[dir];
         _ref = this.getOtherEdge(dir, row, col), otherRow = _ref[0], otherCol = _ref[1], otherEdge = _ref[2];
         added = false;
-        if (edge.type === 'road') {
+        if (edge.kind === 'r') {
           _ref2 = this.roads;
           for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
             road = _ref2[_j];
@@ -592,7 +592,7 @@
           if (!(__indexOf.call(neighbours, dir) >= 0)) {
             edge = tile.edges[dir];
             added = false;
-            if (edge.type === 'road') {
+            if (edge.kind === 'r') {
               _ref3 = this.roads;
               for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
                 road = _ref3[_k];
@@ -618,7 +618,7 @@
         edge = tile.edges[dir];
         _ref = this.getOtherEdge(dir, row, col), otherRow = _ref[0], otherCol = _ref[1], otherEdge = _ref[2];
         added = false;
-        if (edge.type === 'city') {
+        if (edge.kind === 'c') {
           _ref2 = this.cities;
           for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
             city = _ref2[_j];
@@ -642,7 +642,7 @@
           if (!(__indexOf.call(neighbours, dir) >= 0)) {
             edge = tile.edges[dir];
             added = false;
-            if (edge.type === 'city') {
+            if (edge.kind === 'c') {
               _ref3 = this.cities;
               for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
                 city = _ref3[_k];

@@ -1,5 +1,5 @@
 (function() {
-  var City, Cloister, Farm, Road, Tile, World, adjacents, offset, oppositeDirection, print_features;
+  var City, Cloister, Farm, Road, Tile, World, adjacents, offset, oppositeDirection;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
@@ -423,7 +423,7 @@
     };
     World.prototype.next = function() {
       return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
-        var farm, instance, obj, _i, _len, _ref, _results;
+        var farm, instance, obj, _i, _len, _ref;
         obj = _arg[0];
         if (obj != null) {
           instance = obj.tile_instance;
@@ -432,16 +432,15 @@
           return this.drawCandidates();
         } else {
           this.finished = true;
+          _ref = this.farms;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            farm = _ref[_i];
+            farm.calculateScore(this.cities);
+          }
           $('#candidate > img').attr('style', 'visibility: hidden');
           $('#left').unbind().prop('disabled', 'disabled');
           $('#right').unbind().prop('disabled', 'disabled');
-          _ref = this.farms;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            farm = _ref[_i];
-            _results.push(farm.calculateScore(this.cities));
-          }
-          return _results;
+          return $('#step').unbind().prop('disabled', 'disabled');
         }
       }, this));
     };
@@ -541,9 +540,6 @@
             tile = this.board[row][col];
             if (tile != null) {
               td = $(("<td row='" + row + "' col='" + col + "'>") + ("<img src='/images/" + tile.image + "' class='" + tile.rotationClass + "'/></td>"));
-              if (tile.isStart) {
-                td.prop('class', 'debug');
-              }
             }
             tr.append(td);
           }
@@ -575,15 +571,7 @@
         return cell.unbind().click(__bind(function() {
           disableAll();
           this.placeTile(row, col, tile, neighbours);
-          this.drawBoard();
-          return $.ajax({
-            url: "" + this.origin + "/tileInstances/" + tile.id,
-            data: "x=" + row + "&y=" + col + "&rotation=" + tile.rotation,
-            type: "PUT",
-            success: __bind(function() {
-              return this.next();
-            }, this)
-          });
+          return this.drawBoard();
         }, this)).prop('class', 'candidate');
       }, this);
       actives = (function() {
@@ -609,7 +597,7 @@
       }, this)).prop('disabled', '');
     };
     World.prototype.placeTile = function(row, col, tile, neighbours) {
-      var added, cities, city, cloister, dir, edge, farm, farms, handled, n, neighbour, otherCol, otherEdge, otherFarm, otherRow, otherTile, road, roads, seen, _i, _j, _k, _l, _len, _len10, _len2, _len3, _len4, _len5, _len6, _len7, _len8, _len9, _m, _n, _o, _p, _q, _r, _ref, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _results;
+      var added, cities, city, cloister, dir, edge, farm, farms, handled, n, neighbour, otherCol, otherEdge, otherFarm, otherRow, otherTile, road, roads, seen, _i, _j, _k, _l, _len, _len10, _len11, _len12, _len13, _len14, _len2, _len3, _len4, _len5, _len6, _len7, _len8, _len9, _m, _n, _o, _p, _q, _r, _ref, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _s, _t, _u, _v;
       if (neighbours.length === 0 && !tile.isStart) {
         throw "Invalid tile placement";
       }
@@ -763,109 +751,112 @@
         }
         handled[dir] = true;
       }
-      _results = [];
       for (dir in handled) {
         seen = handled[dir];
-        _results.push((function() {
-          var _len11, _len12, _len13, _len14, _ref12, _ref13, _ref14, _ref15, _s, _t, _u, _v;
-          if (!seen) {
-            edge = tile.edges[dir];
-            added = false;
-            if (edge.grassA !== '-') {
-              _ref12 = this.farms;
-              for (_s = 0, _len11 = _ref12.length; _s < _len11; _s++) {
-                farm = _ref12[_s];
-                if (!added && farm.has(row, col, edge.grassA)) {
-                  farm.add(row, col, dir, edge.grassA);
-                  added = true;
-                }
-              }
-              if (!added) {
-                this.farms.push(new Farm(row, col, dir, edge.grassA));
+        if (!seen) {
+          edge = tile.edges[dir];
+          added = false;
+          if (edge.grassA !== '-') {
+            _ref12 = this.farms;
+            for (_s = 0, _len11 = _ref12.length; _s < _len11; _s++) {
+              farm = _ref12[_s];
+              if (!added && farm.has(row, col, edge.grassA)) {
+                farm.add(row, col, dir, edge.grassA);
+                added = true;
               }
             }
-            added = false;
-            if (edge.grassB !== '-') {
-              _ref13 = this.farms;
-              for (_t = 0, _len12 = _ref13.length; _t < _len12; _t++) {
-                farm = _ref13[_t];
-                if (!added && farm.has(row, col, edge.grassB)) {
-                  farm.add(row, col, dir, edge.grassB);
-                  added = true;
-                }
-              }
-              if (!added) {
-                this.farms.push(new Farm(row, col, dir, edge.grassB));
-              }
-            }
-            added = false;
-            if (edge.type === 'road') {
-              _ref14 = this.roads;
-              for (_u = 0, _len13 = _ref14.length; _u < _len13; _u++) {
-                road = _ref14[_u];
-                if (!added && road.has(row, col, edge.road)) {
-                  road.add(row, col, dir, edge.road, tile.hasRoadEnd);
-                  added = true;
-                }
-              }
-              if (!added) {
-                return this.roads.push(new Road(row, col, dir, edge.road, tile.hasRoadEnd));
-              }
-            } else if (edge.type === 'city') {
-              _ref15 = this.cities;
-              for (_v = 0, _len14 = _ref15.length; _v < _len14; _v++) {
-                city = _ref15[_v];
-                if (!added && city.has(row, col, edge.city)) {
-                  city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
-                  added = true;
-                }
-              }
-              if (!added) {
-                return this.cities.push(new City(row, col, dir, edge.city, tile.citysFields, tile.hasPennant));
-              }
+            if (!added) {
+              this.farms.push(new Farm(row, col, dir, edge.grassA));
             }
           }
-        }).call(this));
+          added = false;
+          if (edge.grassB !== '-') {
+            _ref13 = this.farms;
+            for (_t = 0, _len12 = _ref13.length; _t < _len12; _t++) {
+              farm = _ref13[_t];
+              if (!added && farm.has(row, col, edge.grassB)) {
+                farm.add(row, col, dir, edge.grassB);
+                added = true;
+              }
+            }
+            if (!added) {
+              this.farms.push(new Farm(row, col, dir, edge.grassB));
+            }
+          }
+          added = false;
+          if (edge.type === 'road') {
+            _ref14 = this.roads;
+            for (_u = 0, _len13 = _ref14.length; _u < _len13; _u++) {
+              road = _ref14[_u];
+              if (!added && road.has(row, col, edge.road)) {
+                road.add(row, col, dir, edge.road, tile.hasRoadEnd);
+                added = true;
+              }
+            }
+            if (!added) {
+              this.roads.push(new Road(row, col, dir, edge.road, tile.hasRoadEnd));
+            }
+          } else if (edge.type === 'city') {
+            _ref15 = this.cities;
+            for (_v = 0, _len14 = _ref15.length; _v < _len14; _v++) {
+              city = _ref15[_v];
+              if (!added && city.has(row, col, edge.city)) {
+                city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
+                added = true;
+              }
+            }
+            if (!added) {
+              this.cities.push(new City(row, col, dir, edge.city, tile.citysFields, tile.hasPennant));
+            }
+          }
+        }
       }
-      return _results;
+      return $.ajax({
+        url: "" + this.origin + "/tileInstances/" + tile.id,
+        data: "x=" + row + "&y=" + col + "&rotation=" + tile.rotation,
+        type: "PUT",
+        success: __bind(function() {
+          return this.next();
+        }, this)
+      });
     };
     return World;
   })();
-  print_features = function(all) {
-    var city, cloister, farm, road, _i, _j, _k, _l, _len, _len2, _len3, _len4, _ref, _ref2, _ref3, _ref4, _results;
-    console.log('------------------------------------------');
-    _ref = world.cloisters;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      cloister = _ref[_i];
-      if (all || cloister.finished) {
-        console.log(cloister.toString());
-      }
-    }
-    _ref2 = world.cities;
-    for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-      city = _ref2[_j];
-      if (all || city.finished) {
-        console.log(city.toString());
-      }
-    }
-    _ref3 = world.roads;
-    for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
-      road = _ref3[_k];
-      if (all || road.finished) {
-        console.log(road.toString());
-      }
-    }
-    _ref4 = world.farms;
-    _results = [];
-    for (_l = 0, _len4 = _ref4.length; _l < _len4; _l++) {
-      farm = _ref4[_l];
-      _results.push(console.log(farm.toString()));
-    }
-    return _results;
-  };
   $(function() {
-    var world;
+    var print_features, world;
     world = new World();
+    print_features = function(all) {
+      var city, cloister, farm, road, _i, _j, _k, _l, _len, _len2, _len3, _len4, _ref, _ref2, _ref3, _ref4, _results;
+      console.log('------------------------------------------');
+      _ref = world.cloisters;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        cloister = _ref[_i];
+        if (all || cloister.finished) {
+          console.log(cloister.toString());
+        }
+      }
+      _ref2 = world.cities;
+      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+        city = _ref2[_j];
+        if (all || city.finished) {
+          console.log(city.toString());
+        }
+      }
+      _ref3 = world.roads;
+      for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
+        road = _ref3[_k];
+        if (all || road.finished) {
+          console.log(road.toString());
+        }
+      }
+      _ref4 = world.farms;
+      _results = [];
+      for (_l = 0, _len4 = _ref4.length; _l < _len4; _l++) {
+        farm = _ref4[_l];
+        _results.push(console.log(farm.toString()));
+      }
+      return _results;
+    };
     $('#features_all').click(function() {
       return print_features(true);
     });
@@ -883,39 +874,10 @@
       }
       return _results;
     });
-    $('#go').click(function() {
-      var farm, tile, _i, _j, _len, _len2, _ref, _ref2;
-      $('.candidate').unbind().prop('class', '');
-      _ref = world.tiles;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        tile = _ref[_i];
-        world.randomlyPlaceTile(tile, world.findValidPositions(tile));
-      }
-      world.tiles = [];
-      $('#candidate > img').attr('style', 'visibility: hidden');
-      $('#left').unbind().prop('disabled', 'disabled');
-      $('#right').unbind().prop('disabled', 'disabled');
-      $('#go').unbind().prop('disabled', 'disabled');
-      $('#step').unbind().prop('disabled', 'disabled');
-      _ref2 = world.farms;
-      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-        farm = _ref2[_j];
-        farm.calculateScore(world.cities);
-      }
-      return world.drawBoard();
-    });
     return $('#step').click(function() {
-      var tile;
       $('.candidate').unbind().prop('class', '');
-      tile = world.tiles.shift();
-      world.randomlyPlaceTile(tile, world.findValidPositions(tile));
-      world.drawBoard();
-      world.next();
-      print_features(true);
-      if (world.tiles.length === 0) {
-        $('#go').unbind().prop('disabled', 'disabled');
-        return $('#step').unbind().prop('disabled', 'disabled');
-      }
+      world.randomlyPlaceTile();
+      return world.drawBoard();
     });
   });
 }).call(this);

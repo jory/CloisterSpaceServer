@@ -261,6 +261,7 @@ class Farm
       out += "#{address}; "
     out.slice(0, -2) + "), size: #{@size}, score: #{@score}"
 
+
 class World
   constructor: ->
     @center = @minrow = @maxrow = @mincol = @maxcol = parseInt($('#num_tiles').html())
@@ -350,12 +351,13 @@ class World
       else
         @finished = true
 
+        for farm in @farms
+          farm.calculateScore(@cities)
+
         $('#candidate > img').attr('style', 'visibility: hidden')
         $('#left').unbind().prop('disabled', 'disabled')
         $('#right').unbind().prop('disabled', 'disabled')
-
-        for farm in @farms
-          farm.calculateScore(@cities)
+        $('#step').unbind().prop('disabled', 'disabled')
     )
 
   findValidPositions: (tile = @currentTile) ->
@@ -428,9 +430,6 @@ class World
           if tile?
             td = $("<td row='#{row}' col='#{col}'>" +
                    "<img src='/images/#{tile.image}' class='#{tile.rotationClass}'/></td>")
-            # TODO: Remove this!
-            if tile.isStart
-              td.prop('class', 'debug')
           tr.append(td)
       tbody.append(tr)
     $("#board").empty().append(table)
@@ -455,13 +454,6 @@ class World
         # Add clicking here!
         # <map...>
 
-        $.ajax(
-          url: "#{@origin}/tileInstances/#{tile.id}"
-          data: "x=#{row}&y=#{col}&rotation=#{tile.rotation}"
-          type: "PUT"
-          success: =>
-            @next()
-        )
       ).prop('class', 'candidate')
 
     actives = for candidate in candidates[tile.rotation]
@@ -676,27 +668,36 @@ class World
           if not added
             @cities.push(new City(row, col, dir, edge.city, tile.citysFields, tile.hasPennant))
 
+    $.ajax(
+      url: "#{@origin}/tileInstances/#{tile.id}"
+      data: "x=#{row}&y=#{col}&rotation=#{tile.rotation}"
+      type: "PUT"
+      success: =>
+        @next()
+    )
 
-print_features = (all) ->
-  console.log('------------------------------------------')
 
-  for cloister in world.cloisters
-    if all or cloister.finished
-      console.log(cloister.toString())
-
-  for city in world.cities
-    if all or city.finished
-      console.log(city.toString())
-
-  for road in world.roads
-    if all or road.finished
-      console.log(road.toString())
-
-  for farm in world.farms
-    console.log(farm.toString())
 
 $ ->
   world = new World()
+
+  print_features = (all) ->
+    console.log('------------------------------------------')
+
+    for cloister in world.cloisters
+      if all or cloister.finished
+        console.log(cloister.toString())
+
+    for city in world.cities
+      if all or city.finished
+        console.log(city.toString())
+
+    for road in world.roads
+      if all or road.finished
+        console.log(road.toString())
+
+    for farm in world.farms
+      console.log(farm.toString())
 
   $('#features_all').click(->
     print_features(true)
@@ -713,40 +714,10 @@ $ ->
       console.log(farm.toString())
   )
 
-  $('#go').click(->
-    $('.candidate').unbind().prop('class', '')
-
-    for tile in world.tiles
-      world.randomlyPlaceTile(tile, world.findValidPositions(tile))
-
-    world.tiles = []
-
-    $('#candidate > img').attr('style', 'visibility: hidden')
-    $('#left').unbind().prop('disabled', 'disabled')
-    $('#right').unbind().prop('disabled', 'disabled')
-
-    $('#go').unbind().prop('disabled', 'disabled')
-    $('#step').unbind().prop('disabled', 'disabled')
-
-    for farm in world.farms
-      farm.calculateScore(world.cities)
-
-    world.drawBoard()
-  )
-
   $('#step').click(->
     $('.candidate').unbind().prop('class', '')
 
-    tile = world.tiles.shift()
-    world.randomlyPlaceTile(tile, world.findValidPositions(tile))
-
+    world.randomlyPlaceTile()
     world.drawBoard()
-    world.next()
-
-    print_features(true)
-
-    if world.tiles.length is 0
-      $('#go').unbind().prop('disabled', 'disabled')
-      $('#step').unbind().prop('disabled', 'disabled')
   )
 

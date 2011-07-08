@@ -265,8 +265,20 @@ class Farm
 
 class World
   constructor: ->
-    @center = @minrow = @maxrow = @mincol = @maxcol = parseInt($('#num_tiles').html())
+    @center = parseInt($('#num_tiles').html())
     @maxSize = @center * 2
+    @origin = window.location.origin
+    @game_id = $('#game_id').html()
+    @timeout = 1
+
+    @edges = {}
+    haveEdges = false
+    @tiles = {}
+    haveTiles = false
+
+    @finished = false
+
+    @minrow = @maxrow = @mincol = @maxcol = @center
     @board = (new Array(@maxSize) for i in [1..@maxSize])
 
     @cloisters = []
@@ -274,26 +286,14 @@ class World
     @roads = []
     @farms = []
 
-    @origin = window.location.origin
-    @game_id = $('#game_id').html()
-    @timeout = 1
-    @finished = false
-
     @currentTile = null
     @candidates = []
-
-    @edges = {}
-    @tiles = {}
-
-    haveEdges = false
-    haveTiles = false
 
     getEdges = =>
       $.getJSON("#{@origin}/edges.json", (data) =>
         for obj in data
           edge = obj.edge
           @edges[edge.id] = edge
-
         haveEdges = true
       )
 
@@ -309,7 +309,6 @@ class World
             tile.westEdge  = @edges[tile.westEdge]
             tile.eastEdge  = @edges[tile.eastEdge]
             @tiles[tile.id] = tile
-
           haveTiles = true
         )
 
@@ -318,13 +317,11 @@ class World
         setTimeout(setupBoard, @timeout)
       else
         $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=placed", (data) =>
-
           for obj in data
             instance = obj.tile_instance
             tile = new Tile(@tiles[instance.tile_id], instance.id)
             tile.rotate(instance.rotation)
             @barePlaceTile(instance.x, instance.y, tile)
-
           @drawBoard()
           @next()
         )
@@ -367,7 +364,6 @@ class World
 
     for row in [@minrow - 1..@maxrow + 1]
       for col in [@mincol - 1..@maxcol + 1]
-
         if empty(@board[row][col])
           for turns in [0..3]
             tile.rotate(turns)
@@ -379,10 +375,8 @@ class World
             tile.reset()
 
     sortedCandidates = (new Array() for i in [0..3])
-
     for candidate in candidates
       sortedCandidates[candidate[2]].push(candidate)
-
     sortedCandidates
 
   validatePosition: (row, col, tile) ->
@@ -402,81 +396,6 @@ class World
 
     if valids.length > 0 and invalids is 0
       return valids
-
-  randomlyPlaceTile: (tile = @currentTile, candidates = @candidates) ->
-    candidates = [].concat candidates...
-
-    if candidates.length > 0
-      subcandidates = (new Array() for i in [0..4])
-
-      for candidate in candidates
-        subcandidates[candidate[3].length].push(candidate)
-
-      index = 0
-      for i in [0..4]
-        if subcandidates[i].length > 0
-          index = i
-
-      j = Math.round(Math.random() * (subcandidates[index].length - 1))
-      [row, col, turns, neighbours] = subcandidates[index][j]
-
-      tile.rotate(turns) if turns > 0
-      @placeTile(row, col, tile, neighbours)
-
-  drawBoard: ->
-    table = $("<table><tbody></tbody></table>")
-    tbody = table.find("tbody")
-
-    for row in [@minrow - 1..@maxrow + 1]
-      tr = $("<tr row='#{row}'></tr>")
-      for col in [@mincol - 1..@maxcol + 1]
-        if 0 <= row < @maxSize and 0 <= col < @maxSize
-          td = $("<td row='#{row}' col='#{col}'></td>")
-          tile = @board[row][col]
-          if tile?
-            td = $("<td row='#{row}' col='#{col}'>" +
-                   "<img src='/images/#{tile.image}' class='#{tile.rotationClass}'/></td>")
-          tr.append(td)
-      tbody.append(tr)
-    $("#board").empty().append(table)
-
-  drawCandidates: (tile = @currentTile, candidates = @candidates) ->
-    img = $('#candidate > img').attr('src', "/images/#{tile.image}")
-    img.attr('class', tile.rotationClass).attr('style', '')
-
-    disableAll = ->
-      for item in actives
-        item.prop('class', '').unbind()
-
-      $('#left').unbind().prop('disabled', 'disabled')
-      $('#right').unbind().prop('disabled', 'disabled')
-
-    attach = (cell, row, col, neighbours) =>
-      cell.unbind().click(=>
-        disableAll()
-        @placeTile(row, col, tile, neighbours)
-        @drawBoard()
-
-        # Add clicking here!
-        # <map...>
-
-      ).prop('class', 'candidate')
-
-    actives = for candidate in candidates[tile.rotation]
-      [row, col, turns, neighbours] = candidate
-      attach($("td[row=#{row}][col=#{col}]"), row, col, neighbours)
-
-    $('#left').unbind().click(=>
-      disableAll()
-      tile.rotate(-1)
-      @drawCandidates(tile, candidates)
-    ).prop('disabled', '')
-
-    $('#right').unbind().click(=>
-      disableAll()
-      tile.rotate(1)
-      @drawCandidates(tile, candidates)
-    ).prop('disabled', '')
 
   placeTile: (row, col, tile, neighbours) ->
     if neighbours.length is 0 and not tile.isStart
@@ -677,6 +596,80 @@ class World
         @next()
     )
 
+  drawCandidates: (tile = @currentTile, candidates = @candidates) ->
+    img = $('#candidate > img').attr('src', "/images/#{tile.image}")
+    img.attr('class', tile.rotationClass).attr('style', '')
+
+    disableAll = ->
+      for item in actives
+        item.prop('class', '').unbind()
+
+      $('#left').unbind().prop('disabled', 'disabled')
+      $('#right').unbind().prop('disabled', 'disabled')
+
+    attach = (cell, row, col, neighbours) =>
+      cell.unbind().click(=>
+        disableAll()
+        @placeTile(row, col, tile, neighbours)
+        @drawBoard()
+
+        # Add clicking here!
+        # <map...>
+
+      ).prop('class', 'candidate')
+
+    actives = for candidate in candidates[tile.rotation]
+      [row, col, turns, neighbours] = candidate
+      attach($("td[row=#{row}][col=#{col}]"), row, col, neighbours)
+
+    $('#left').unbind().click(=>
+      disableAll()
+      tile.rotate(-1)
+      @drawCandidates(tile, candidates)
+    ).prop('disabled', '')
+
+    $('#right').unbind().click(=>
+      disableAll()
+      tile.rotate(1)
+      @drawCandidates(tile, candidates)
+    ).prop('disabled', '')
+
+  randomlyPlaceTile: (tile = @currentTile, candidates = @candidates) ->
+    candidates = [].concat candidates...
+
+    if candidates.length > 0
+      subcandidates = (new Array() for i in [0..4])
+
+      for candidate in candidates
+        subcandidates[candidate[3].length].push(candidate)
+
+      index = 0
+      for i in [0..4]
+        if subcandidates[i].length > 0
+          index = i
+
+      j = Math.round(Math.random() * (subcandidates[index].length - 1))
+      [row, col, turns, neighbours] = subcandidates[index][j]
+
+      tile.rotate(turns) if turns > 0
+      @placeTile(row, col, tile, neighbours)
+
+  drawBoard: ->
+    table = $("<table><tbody></tbody></table>")
+    tbody = table.find("tbody")
+
+    for row in [@minrow - 1..@maxrow + 1]
+      tr = $("<tr row='#{row}'></tr>")
+      for col in [@mincol - 1..@maxcol + 1]
+        if 0 <= row < @maxSize and 0 <= col < @maxSize
+          td = $("<td row='#{row}' col='#{col}'></td>")
+          tile = @board[row][col]
+          if tile?
+            td = $("<td row='#{row}' col='#{col}'>" +
+                   "<img src='/images/#{tile.image}' class='#{tile.rotationClass}'/></td>")
+          tr.append(td)
+      tbody.append(tr)
+    $("#board").empty().append(table)
 
 
 $ ->

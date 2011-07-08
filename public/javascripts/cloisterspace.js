@@ -341,8 +341,17 @@
   World = (function() {
     function World() {
       var getEdges, getTiles, haveEdges, haveTiles, i, setupBoard;
-      this.center = this.minrow = this.maxrow = this.mincol = this.maxcol = parseInt($('#num_tiles').html());
+      this.center = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
+      this.origin = window.location.origin;
+      this.game_id = $('#game_id').html();
+      this.timeout = 1;
+      this.edges = {};
+      haveEdges = false;
+      this.tiles = {};
+      haveTiles = false;
+      this.finished = false;
+      this.minrow = this.maxrow = this.mincol = this.maxcol = this.center;
       this.board = (function() {
         var _ref, _results;
         _results = [];
@@ -355,16 +364,8 @@
       this.cities = [];
       this.roads = [];
       this.farms = [];
-      this.origin = window.location.origin;
-      this.game_id = $('#game_id').html();
-      this.timeout = 1;
-      this.finished = false;
       this.currentTile = null;
       this.candidates = [];
-      this.edges = {};
-      this.tiles = {};
-      haveEdges = false;
-      haveTiles = false;
       getEdges = __bind(function() {
         return $.getJSON("" + this.origin + "/edges.json", __bind(function(data) {
           var edge, obj, _i, _len;
@@ -503,110 +504,6 @@
       if (valids.length > 0 && invalids === 0) {
         return valids;
       }
-    };
-    World.prototype.randomlyPlaceTile = function(tile, candidates) {
-      var candidate, col, i, index, j, neighbours, row, subcandidates, turns, _i, _len, _ref, _ref2;
-      if (tile == null) {
-        tile = this.currentTile;
-      }
-      if (candidates == null) {
-        candidates = this.candidates;
-      }
-      candidates = (_ref = []).concat.apply(_ref, candidates);
-      if (candidates.length > 0) {
-        subcandidates = (function() {
-          var _results;
-          _results = [];
-          for (i = 0; i <= 4; i++) {
-            _results.push(new Array());
-          }
-          return _results;
-        })();
-        for (_i = 0, _len = candidates.length; _i < _len; _i++) {
-          candidate = candidates[_i];
-          subcandidates[candidate[3].length].push(candidate);
-        }
-        index = 0;
-        for (i = 0; i <= 4; i++) {
-          if (subcandidates[i].length > 0) {
-            index = i;
-          }
-        }
-        j = Math.round(Math.random() * (subcandidates[index].length - 1));
-        _ref2 = subcandidates[index][j], row = _ref2[0], col = _ref2[1], turns = _ref2[2], neighbours = _ref2[3];
-        if (turns > 0) {
-          tile.rotate(turns);
-        }
-        return this.placeTile(row, col, tile, neighbours);
-      }
-    };
-    World.prototype.drawBoard = function() {
-      var col, row, table, tbody, td, tile, tr, _ref, _ref2, _ref3, _ref4;
-      table = $("<table><tbody></tbody></table>");
-      tbody = table.find("tbody");
-      for (row = _ref = this.minrow - 1, _ref2 = this.maxrow + 1; _ref <= _ref2 ? row <= _ref2 : row >= _ref2; _ref <= _ref2 ? row++ : row--) {
-        tr = $("<tr row='" + row + "'></tr>");
-        for (col = _ref3 = this.mincol - 1, _ref4 = this.maxcol + 1; _ref3 <= _ref4 ? col <= _ref4 : col >= _ref4; _ref3 <= _ref4 ? col++ : col--) {
-          if ((0 <= row && row < this.maxSize) && (0 <= col && col < this.maxSize)) {
-            td = $("<td row='" + row + "' col='" + col + "'></td>");
-            tile = this.board[row][col];
-            if (tile != null) {
-              td = $(("<td row='" + row + "' col='" + col + "'>") + ("<img src='/images/" + tile.image + "' class='" + tile.rotationClass + "'/></td>"));
-            }
-            tr.append(td);
-          }
-        }
-        tbody.append(tr);
-      }
-      return $("#board").empty().append(table);
-    };
-    World.prototype.drawCandidates = function(tile, candidates) {
-      var actives, attach, candidate, col, disableAll, img, neighbours, row, turns;
-      if (tile == null) {
-        tile = this.currentTile;
-      }
-      if (candidates == null) {
-        candidates = this.candidates;
-      }
-      img = $('#candidate > img').attr('src', "/images/" + tile.image);
-      img.attr('class', tile.rotationClass).attr('style', '');
-      disableAll = function() {
-        var item, _i, _len;
-        for (_i = 0, _len = actives.length; _i < _len; _i++) {
-          item = actives[_i];
-          item.prop('class', '').unbind();
-        }
-        $('#left').unbind().prop('disabled', 'disabled');
-        return $('#right').unbind().prop('disabled', 'disabled');
-      };
-      attach = __bind(function(cell, row, col, neighbours) {
-        return cell.unbind().click(__bind(function() {
-          disableAll();
-          this.placeTile(row, col, tile, neighbours);
-          return this.drawBoard();
-        }, this)).prop('class', 'candidate');
-      }, this);
-      actives = (function() {
-        var _i, _len, _ref, _results;
-        _ref = candidates[tile.rotation];
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          candidate = _ref[_i];
-          row = candidate[0], col = candidate[1], turns = candidate[2], neighbours = candidate[3];
-          _results.push(attach($("td[row=" + row + "][col=" + col + "]"), row, col, neighbours));
-        }
-        return _results;
-      })();
-      $('#left').unbind().click(__bind(function() {
-        disableAll();
-        tile.rotate(-1);
-        return this.drawCandidates(tile, candidates);
-      }, this)).prop('disabled', '');
-      return $('#right').unbind().click(__bind(function() {
-        disableAll();
-        tile.rotate(1);
-        return this.drawCandidates(tile, candidates);
-      }, this)).prop('disabled', '');
     };
     World.prototype.placeTile = function(row, col, tile, neighbours) {
       var added, cities, city, cloister, dir, edge, farm, farms, handled, n, neighbour, otherCol, otherEdge, otherFarm, otherRow, otherTile, road, roads, seen, _i, _j, _k, _l, _len, _len10, _len11, _len12, _len13, _len14, _len2, _len3, _len4, _len5, _len6, _len7, _len8, _len9, _m, _n, _o, _p, _q, _r, _ref, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _s, _t, _u, _v;
@@ -827,6 +724,110 @@
           return this.next();
         }, this)
       });
+    };
+    World.prototype.drawCandidates = function(tile, candidates) {
+      var actives, attach, candidate, col, disableAll, img, neighbours, row, turns;
+      if (tile == null) {
+        tile = this.currentTile;
+      }
+      if (candidates == null) {
+        candidates = this.candidates;
+      }
+      img = $('#candidate > img').attr('src', "/images/" + tile.image);
+      img.attr('class', tile.rotationClass).attr('style', '');
+      disableAll = function() {
+        var item, _i, _len;
+        for (_i = 0, _len = actives.length; _i < _len; _i++) {
+          item = actives[_i];
+          item.prop('class', '').unbind();
+        }
+        $('#left').unbind().prop('disabled', 'disabled');
+        return $('#right').unbind().prop('disabled', 'disabled');
+      };
+      attach = __bind(function(cell, row, col, neighbours) {
+        return cell.unbind().click(__bind(function() {
+          disableAll();
+          this.placeTile(row, col, tile, neighbours);
+          return this.drawBoard();
+        }, this)).prop('class', 'candidate');
+      }, this);
+      actives = (function() {
+        var _i, _len, _ref, _results;
+        _ref = candidates[tile.rotation];
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          candidate = _ref[_i];
+          row = candidate[0], col = candidate[1], turns = candidate[2], neighbours = candidate[3];
+          _results.push(attach($("td[row=" + row + "][col=" + col + "]"), row, col, neighbours));
+        }
+        return _results;
+      })();
+      $('#left').unbind().click(__bind(function() {
+        disableAll();
+        tile.rotate(-1);
+        return this.drawCandidates(tile, candidates);
+      }, this)).prop('disabled', '');
+      return $('#right').unbind().click(__bind(function() {
+        disableAll();
+        tile.rotate(1);
+        return this.drawCandidates(tile, candidates);
+      }, this)).prop('disabled', '');
+    };
+    World.prototype.randomlyPlaceTile = function(tile, candidates) {
+      var candidate, col, i, index, j, neighbours, row, subcandidates, turns, _i, _len, _ref, _ref2;
+      if (tile == null) {
+        tile = this.currentTile;
+      }
+      if (candidates == null) {
+        candidates = this.candidates;
+      }
+      candidates = (_ref = []).concat.apply(_ref, candidates);
+      if (candidates.length > 0) {
+        subcandidates = (function() {
+          var _results;
+          _results = [];
+          for (i = 0; i <= 4; i++) {
+            _results.push(new Array());
+          }
+          return _results;
+        })();
+        for (_i = 0, _len = candidates.length; _i < _len; _i++) {
+          candidate = candidates[_i];
+          subcandidates[candidate[3].length].push(candidate);
+        }
+        index = 0;
+        for (i = 0; i <= 4; i++) {
+          if (subcandidates[i].length > 0) {
+            index = i;
+          }
+        }
+        j = Math.round(Math.random() * (subcandidates[index].length - 1));
+        _ref2 = subcandidates[index][j], row = _ref2[0], col = _ref2[1], turns = _ref2[2], neighbours = _ref2[3];
+        if (turns > 0) {
+          tile.rotate(turns);
+        }
+        return this.placeTile(row, col, tile, neighbours);
+      }
+    };
+    World.prototype.drawBoard = function() {
+      var col, row, table, tbody, td, tile, tr, _ref, _ref2, _ref3, _ref4;
+      table = $("<table><tbody></tbody></table>");
+      tbody = table.find("tbody");
+      for (row = _ref = this.minrow - 1, _ref2 = this.maxrow + 1; _ref <= _ref2 ? row <= _ref2 : row >= _ref2; _ref <= _ref2 ? row++ : row--) {
+        tr = $("<tr row='" + row + "'></tr>");
+        for (col = _ref3 = this.mincol - 1, _ref4 = this.maxcol + 1; _ref3 <= _ref4 ? col <= _ref4 : col >= _ref4; _ref3 <= _ref4 ? col++ : col--) {
+          if ((0 <= row && row < this.maxSize) && (0 <= col && col < this.maxSize)) {
+            td = $("<td row='" + row + "' col='" + col + "'></td>");
+            tile = this.board[row][col];
+            if (tile != null) {
+              td = $(("<td row='" + row + "' col='" + col + "'>") + ("<img src='/images/" + tile.image + "' class='" + tile.rotationClass + "'/></td>"));
+            }
+            tr.append(td);
+          }
+        }
+        tbody.append(tr);
+      }
+      return $("#board").empty().append(table);
     };
     return World;
   })();

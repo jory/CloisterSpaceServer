@@ -341,33 +341,34 @@ class World
     @mincol = Math.min(@mincol, col)
 
   next: ->
-    $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=current", ([obj]) =>
-      if obj?
-        instance = obj.tile_instance
-        @currentTile = new Tile(@tiles[instance.tile_id], instance.id)
-        @candidates = @findValidPositions()
-        @drawCandidates()
+    if not @finished
+      $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=current", ([obj]) =>
+        if obj?
+          instance = obj.tile_instance
+          @currentTile = new Tile(@tiles[instance.tile_id], instance.id)
+          @candidates = @findValidPositions()
+          @drawCandidates()
 
-      else
-        @finished = true
+        else
+          @finished = true
 
-        for farm in @farms
-          farm.calculateScore(@cities)
+          for farm in @farms
+            farm.calculateScore(@cities)
 
-        $('#candidate > img').attr('style', 'visibility: hidden')
-        $('#left').unbind().prop('disabled', 'disabled')
-        $('#right').unbind().prop('disabled', 'disabled')
-        $('#step').unbind().prop('disabled', 'disabled')
-    )
+          $('#candidate > img').attr('style', 'visibility: hidden')
+          $('#left').unbind().prop('disabled', 'disabled')
+          $('#right').unbind().prop('disabled', 'disabled')
+          $('#step').unbind().prop('disabled', 'disabled')
+      )
 
   findValidPositions: (tile = @currentTile) ->
     candidates = []
 
     for row in [@minrow - 1..@maxrow + 1]
       for col in [@mincol - 1..@maxcol + 1]
+
         if not @board[row][col]?
           for turns in [0..3]
-
             tile.rotate(turns)
 
             valids = []
@@ -414,7 +415,6 @@ class World
       [row, col, turns, neighbours] = subcandidates[index][j]
 
       tile.rotate(turns) if turns > 0
-
       @placeTile(row, col, tile, neighbours)
 
   drawBoard: ->
@@ -476,12 +476,7 @@ class World
     if neighbours.length is 0 and not tile.isStart
       throw "Invalid tile placement"
 
-    @board[row][col] = tile
-
-    @maxrow = Math.max(@maxrow, row)
-    @minrow = Math.min(@minrow, row)
-    @maxcol = Math.max(@maxcol, col)
-    @mincol = Math.min(@mincol, col)
+    @barePlaceTile(row, col, tile)
 
     # Connect the features of the current tile to the world-level features.
     #

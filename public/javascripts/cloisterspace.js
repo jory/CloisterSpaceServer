@@ -422,27 +422,29 @@
       return this.mincol = Math.min(this.mincol, col);
     };
     World.prototype.next = function() {
-      return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
-        var farm, instance, obj, _i, _len, _ref;
-        obj = _arg[0];
-        if (obj != null) {
-          instance = obj.tile_instance;
-          this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);
-          this.candidates = this.findValidPositions();
-          return this.drawCandidates();
-        } else {
-          this.finished = true;
-          _ref = this.farms;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            farm = _ref[_i];
-            farm.calculateScore(this.cities);
+      if (!this.finished) {
+        return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
+          var farm, instance, obj, _i, _len, _ref;
+          obj = _arg[0];
+          if (obj != null) {
+            instance = obj.tile_instance;
+            this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);
+            this.candidates = this.findValidPositions();
+            return this.drawCandidates();
+          } else {
+            this.finished = true;
+            _ref = this.farms;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              farm = _ref[_i];
+              farm.calculateScore(this.cities);
+            }
+            $('#candidate > img').attr('style', 'visibility: hidden');
+            $('#left').unbind().prop('disabled', 'disabled');
+            $('#right').unbind().prop('disabled', 'disabled');
+            return $('#step').unbind().prop('disabled', 'disabled');
           }
-          $('#candidate > img').attr('style', 'visibility: hidden');
-          $('#left').unbind().prop('disabled', 'disabled');
-          $('#right').unbind().prop('disabled', 'disabled');
-          return $('#step').unbind().prop('disabled', 'disabled');
-        }
-      }, this));
+        }, this));
+      }
     };
     World.prototype.findValidPositions = function(tile) {
       var candidate, candidates, col, i, invalids, other, otherCol, otherRow, row, side, sortedCandidates, turns, valids, _i, _len, _ref, _ref2, _ref3, _ref4, _ref5;
@@ -601,11 +603,7 @@
       if (neighbours.length === 0 && !tile.isStart) {
         throw "Invalid tile placement";
       }
-      this.board[row][col] = tile;
-      this.maxrow = Math.max(this.maxrow, row);
-      this.minrow = Math.min(this.minrow, row);
-      this.maxcol = Math.max(this.maxcol, col);
-      this.mincol = Math.min(this.mincol, col);
+      this.barePlaceTile(row, col, tile);
       if (tile.isCloister) {
         cloister = new Cloister(row, col);
         _ref = cloister.neighbours;

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110703171116) do
+ActiveRecord::Schema.define(:version => 20110708213303) do
 
   create_table "edges", :force => true do |t|
     t.string   "kind"
@@ -23,6 +23,17 @@ ActiveRecord::Schema.define(:version => 20110703171116) do
   end
 
   create_table "games", :force => true do |t|
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "roads", :force => true do |t|
+    t.integer  "row"
+    t.integer  "col"
+    t.string   "edge"
+    t.integer  "num"
+    t.boolean  "hasEnd"
+    t.integer  "game_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

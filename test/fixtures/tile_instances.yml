@@ -1,15 +1,1 @@
 # Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
-
-one:
-  x: 
-  y: 
-  status: MyString
-  tile: 
-  game: 
-
-two:
-  x: 
-  y: 
-  status: MyString
-  tile: 
-  game: 

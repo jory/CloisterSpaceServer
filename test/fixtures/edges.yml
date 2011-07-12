@@ -1,15 +1,28 @@
 # Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
-
 one:
-  type: MyString
-  road: 1
+  kind: 'c'
+  road: 0
   city: 1
-  grassA: 1
-  grassB: 1
+  grassA: 0
+  grassB: 0
 
 two:
-  type: MyString
+  kind: 'g'
+  road: 0
+  city: 0
+  grassA: 2
+  grassB: 2
+
+three:
+  kind: 'r'
   road: 1
-  city: 1
+  city: 0
   grassA: 1
+  grassB: 2
+
+four:
+  kind: 'r'
+  road: 1
+  city: 0
+  grassA: 2
   grassB: 1

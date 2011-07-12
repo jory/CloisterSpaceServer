@@ -3,7 +3,6 @@ class Game < ActiveRecord::Base
 
   def self.new(attributes = nil)
     game = super
-    startingTile = nil
     
     Tile.all.each do |tile|
       for i in 1..tile.count
@@ -11,11 +10,10 @@ class Game < ActiveRecord::Base
       end
 
       if tile.isStart?
-        startingTile = tileInstance
+        tileInstance.place(72, 72, 0)
       end
     end
 
-    startingTile.place(72, 72, 0)
     game
   end
 

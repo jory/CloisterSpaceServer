@@ -332,7 +332,7 @@ class World
 
   next: ->
     if not @finished
-      $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=current", ([obj]) =>
+      $.getJSON("#{@origin}/tileInstances/next.json", "game=#{@game_id}", (obj) =>
         if obj?
           instance = obj.tile_instance
           @currentTile = new Tile(@tiles[instance.tile_id], instance.id)

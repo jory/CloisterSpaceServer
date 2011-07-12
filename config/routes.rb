@@ -1,12 +1,10 @@
 CloisterSpaceServer::Application.routes.draw do
-  resources :games
+  resources :games, :tiles, :edges
 
-  resources :tiles
-  
-  resources :edges
-  
+  match 'tileInstances/next' => 'tileInstances#next'
+
   resources :tileInstances
-
+  
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

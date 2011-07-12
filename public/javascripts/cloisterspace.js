@@ -420,9 +420,8 @@
     }
     World.prototype.next = function() {
       if (!this.finished) {
-        return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=current", __bind(function(_arg) {
-          var farm, instance, obj, _i, _len, _ref;
-          obj = _arg[0];
+        return $.getJSON("" + this.origin + "/tileInstances/next.json", "game=" + this.game_id, __bind(function(obj) {
+          var farm, instance, _i, _len, _ref;
           if (obj != null) {
             instance = obj.tile_instance;
             this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);

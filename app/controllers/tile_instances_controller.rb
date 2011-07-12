@@ -7,6 +7,11 @@ class TileInstancesController < ApplicationController
     respond_with(@tileInstances)
   end
 
+  def next
+    @tileInstance = TileInstance.next(params[:game])
+    respond_with(@tileInstance)
+  end
+  
   def update
     @tileInstance = TileInstance.find(params[:id])
     @tileInstance.place(params[:x], params[:y], params[:rotation])

@@ -16,6 +16,7 @@ class TileInstance < ActiveRecord::Base
   validates :game, :presence => true
 
   def place(x, y, rotation)
+
     if self.status == "placed"
       return false
     end
@@ -27,13 +28,46 @@ class TileInstance < ActiveRecord::Base
     if not TileInstance.where(:game_id => self.game, :x => x, :y => y).empty?
       return false
     end
-    
-    self.x = x
-    self.y = y
-    self.rotation = rotation
-    self.status = "placed"
 
-    self.save
+    valid = false
+    
+    if self.tile.isStart
+      valid = true
+    end
+
+    neighbours = find_neighbours(x, y)
+
+    if not neighbours.empty?
+      valid = true
+
+      opposite = {}
+      opposite['north'] = 'south'
+      opposite['south'] = 'north'
+      opposite['east']  = 'west'
+      opposite['west']  = 'east'
+      
+      neighbours.each do |dir, tile|
+
+        my = Edge.find(self.tile[dir + "Edge"])
+        your = Edge.find(tile.tile[opposite[dir] + "Edge"])
+
+        if not my.kind == your.kind
+          valid = false
+        end
+
+      end
+    end
+    
+    if valid
+      self.x = x
+      self.y = y
+      self.rotation = rotation
+      self.status = "placed"
+      self.save
+    else
+      return false
+    end
+    
   end
 
   def self.next(game_id)
@@ -52,4 +86,33 @@ class TileInstance < ActiveRecord::Base
       return tile
     end
   end
+
+  private
+
+  def find_neighbours(x, y)
+    n = {}
+
+    north = TileInstance.where(:game_id => self.game, :x => (x - 1), :y => y)
+    if not north.empty?
+      n['north'] = north.first
+    end
+
+    south = TileInstance.where(:game_id => self.game, :x => (x + 1), :y => y)
+    if not south.empty?
+      n['south'] = south.first
+    end
+
+    west = TileInstance.where(:game_id => self.game, :x => x, :y => (y - 1))
+    if not west.empty?
+      n['west'] = west.first
+    end
+
+    east = TileInstance.where(:game_id => self.game, :x => x, :y => (y + 1))
+    if not east.empty?
+      n['east'] = east.first
+    end
+
+    return n
+  end
+  
 end

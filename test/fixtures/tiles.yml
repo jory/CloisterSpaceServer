@@ -9,7 +9,20 @@ start:
   isStart: true
   citysFields: 1
   northEdge: 1
-  southEdge: 3
-  eastEdge: 2
+  southEdge: 2
+  eastEdge: 3
   westEdge: 4
   
+second:
+  image: 'city1rwe.png'
+  count: 1
+  hasTwoCities: false
+  hasRoadEnd: false
+  hasPennant: false
+  isCloister: false
+  isStart: false
+  citysFields: 1
+  northEdge: 1
+  southEdge: 2
+  eastEdge: 3
+  westEdge: 4

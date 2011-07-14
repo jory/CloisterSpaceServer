@@ -1,6 +1,7 @@
 class RoadFeature < ActiveRecord::Base
   validates :length, :numericality => true
   validates :numEnds, :numericality => true
+  validates :finished, :presence => true
 
   validates :game, :presence => true
 

@@ -33,6 +33,7 @@ ActiveRecord::Schema.define(:version => 20110714174004) do
     t.datetime "updated_at"
     t.integer  "length",     :default => 0
     t.integer  "numEnds",    :default => 0
+    t.boolean  "finished",   :default => false
   end
 
   create_table "road_sections", :force => true do |t|

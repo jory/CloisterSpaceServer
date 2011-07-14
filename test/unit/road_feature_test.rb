@@ -20,4 +20,9 @@ class RoadFeatureTest < ActiveSupport::TestCase
     assert !rf.add(0, 0, :north, nil, false)    
     assert !rf.add(0, 0, :north, 0, nil)    
   end
+
+  test "finished defaults to false" do
+    rf = RoadFeature.create(:game => @game)
+    assert !rf.finished
+  end
 end

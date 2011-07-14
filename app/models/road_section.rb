@@ -6,7 +6,7 @@ class RoadSection < ActiveRecord::Base
   validates :num, :numericality => true
 
   # TODO: Figure out validator for boolean-ness
-  validates :hasEnd, :presence => true
+  # validates :hasEnd, :presence => true
 
   validates :road_feature, :presence => true
   

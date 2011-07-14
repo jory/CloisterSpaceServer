@@ -26,3 +26,17 @@ second:
   southEdge: 2
   eastEdge: 3
   westEdge: 4
+
+city4:
+  image: 'city4q.png'
+  count: 1
+  hasTwoCities: false
+  hasRoadEnd: false
+  hasPennant: true
+  isCloister: false
+  isStart: false
+  citysFields: 0
+  northEdge: 1
+  southEdge: 1
+  eastEdge: 1
+  westEdge: 1

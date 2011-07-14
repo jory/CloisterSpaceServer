@@ -14,7 +14,7 @@ class TileInstancesController < ApplicationController
   
   def update
     @tileInstance = TileInstance.find(params[:id])
-    @tileInstance.place(params[:x], params[:y], params[:rotation])
+    @tileInstance.place(params[:x].to_i, params[:y].to_i, params[:rotation].to_i)
     respond_with(@tileInstance)
   end
 

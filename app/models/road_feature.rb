@@ -1,4 +1,5 @@
 class RoadFeature < ActiveRecord::Base
+  # TODO: Figure out how to make these read only to the outside world.
   validates :length, :numericality => true
   validates :numEnds, :numericality => true
 
@@ -23,13 +24,8 @@ class RoadFeature < ActiveRecord::Base
     self.numEnds += 1 if hasEnd
     self.finished = true if numEnds == 2
     
-    section = RoadSection.create(:road_feature => self)
-    section.x = x
-    section.y = y
-    section.edge = edge.to_s
-    section.num = num
-    section.hasEnd = hasEnd
-    section.save
+    RoadSection.create(:road_feature => self, :x => x, :y => y,
+                       :edge => edge.to_s, :num => num, :hasEnd => hasEnd)
   end
 
   def merge(other)
@@ -55,8 +51,7 @@ class RoadFeature < ActiveRecord::Base
       return false
     end
 
-    if not self.roadSections.where(:x => x, :y => y,
-                                   :edge => edge, :num => num,
+    if not self.roadSections.where(:x => x, :y => y, :edge => edge, :num => num,
                                    :hasEnd => hasEnd).empty?
       return false
     end

@@ -11,8 +11,8 @@ class RoadFeature < ActiveRecord::Base
 
   has_many :roadSections
 
-  def add(x, y, edge, num, hasEnd)
-    if not meets_add_preconditions? x, y, edge, num, hasEnd
+  def add(x, y, edge, num, hasEnd, merging=false)
+    if not meets_add_preconditions? x, y, edge, num, hasEnd, merging
       return false
     end
 
@@ -38,7 +38,7 @@ class RoadFeature < ActiveRecord::Base
     end
     
     for section in other.roadSections
-      add(section.x, section.y, section.edge, section.num, section.hasEnd)
+      add(section.x, section.y, section.edge, section.num, section.hasEnd, true)
     end
 
     return true
@@ -46,12 +46,12 @@ class RoadFeature < ActiveRecord::Base
 
   private
 
-  def meets_add_preconditions?(x, y, edge, num, hasEnd)
+  def meets_add_preconditions?(x, y, edge, num, hasEnd, merging)
     if x.nil? or y.nil? or edge.nil? or num.nil? or hasEnd.nil?
       return false
     end
 
-    if self.finished
+    if self.finished and not merging
       return false
     end
 
@@ -78,6 +78,10 @@ class RoadFeature < ActiveRecord::Base
     end
 
     if self.finished
+      return false
+    end
+
+    if other.finished
       return false
     end
 

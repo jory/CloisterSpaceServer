@@ -42,8 +42,8 @@ class RoadFeatureTest < ActiveSupport::TestCase
 
   test "can't add to something that's finished" do
     @rf.add(0, 0, :north, 0, true)
-    @rf.add(0, 0, :north, 0, true)
-    assert !@rf.add(0, 0, :north, 0, true)
+    @rf.add(0, 1, :north, 0, true)
+    assert !@rf.add(0, 2, :north, 0, true)
   end
 
   test "can't merge with nil" do
@@ -70,12 +70,20 @@ class RoadFeatureTest < ActiveSupport::TestCase
     assert !@rf.merge(@rf)
   end
 
-  test "can't merge with a finished road" do
+  test "can't merge when already finished" do
     @rf.add(0, 0, :north, 0, true)
     @rf.add(0, 1, :north, 0, true)
     assert @rf.finished
     
     other = RoadFeature.create(:game => @game)
+    assert !@rf.merge(other)
+  end
+
+  test "can't merge with a finished road" do
+    other = RoadFeature.create(:game => @game)
+    other.add(0, 0, :north, 0, true)
+    other.add(0, 1, :north, 0, true)
+    assert other.finished
 
     assert !@rf.merge(other)
   end

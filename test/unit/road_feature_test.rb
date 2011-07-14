@@ -35,7 +35,7 @@ class RoadFeatureTest < ActiveSupport::TestCase
     @rf.add(0, 0, :north, 0, true)
     assert @rf.numEnds == 1
 
-    @rf.add(0, 0, :north, 0, true)
+    @rf.add(0, 1, :north, 0, true)
     assert @rf.numEnds == 2
     assert @rf.finished
   end
@@ -71,10 +71,11 @@ class RoadFeatureTest < ActiveSupport::TestCase
   end
 
   test "can't merge with a finished road" do
+    @rf.add(0, 0, :north, 0, true)
+    @rf.add(0, 1, :north, 0, true)
+    assert @rf.finished
+    
     other = RoadFeature.create(:game => @game)
-
-    @rf.add(0, 0, :north, 0, true)
-    @rf.add(0, 0, :north, 0, true)
 
     assert !@rf.merge(other)
   end
@@ -92,4 +93,24 @@ class RoadFeatureTest < ActiveSupport::TestCase
     assert @rf.length == 2
   end
 
+  test "can't add the same thing twice" do
+    @rf.add(0, 0, :north, 0, false)
+    assert !@rf.add(0, 0, :north, 0, false)
+  end
+
+  test "adding order shouldn't matter" do
+    @rf.add(0, 0, :north, 0, true)
+
+    assert @rf.length == 1
+
+    other = RoadFeature.create(:game => @game)
+    other.add(0, 1, :north, 0, true)
+    other.add(0, 2, :north, 0, false)
+
+    assert other.length == 2
+
+    @rf.merge(other)
+
+    assert @rf.length == 3
+  end
 end

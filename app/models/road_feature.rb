@@ -7,15 +7,12 @@ class RoadFeature < ActiveRecord::Base
 
   validates :game, :presence => true
 
-  has_many :roadSections
   belongs_to :game
 
-  def add(x, y, edge, num, hasEnd)
-    if x.nil? or y.nil? or edge.nil? or num.nil? or hasEnd.nil?
-      return false
-    end
+  has_many :roadSections
 
-    if self.finished
+  def add(x, y, edge, num, hasEnd)
+    if not meets_add_preconditions? x, y, edge, num, hasEnd
       return false
     end
 
@@ -36,6 +33,38 @@ class RoadFeature < ActiveRecord::Base
   end
 
   def merge(other)
+    if not meets_merge_preconditions? other
+      return false
+    end
+    
+    for section in other.roadSections
+      add(section.x, section.y, section.edge, section.num, section.hasEnd)
+    end
+
+    return true
+  end
+
+  private
+
+  def meets_add_preconditions?(x, y, edge, num, hasEnd)
+    if x.nil? or y.nil? or edge.nil? or num.nil? or hasEnd.nil?
+      return false
+    end
+
+    if self.finished
+      return false
+    end
+
+    if not self.roadSections.where(:x => x, :y => y,
+                                   :edge => edge, :num => num,
+                                   :hasEnd => hasEnd).empty?
+      return false
+    end
+
+    return true
+  end
+
+  def meets_merge_preconditions?(other)
     if other.nil?
       return false
     end
@@ -50,10 +79,6 @@ class RoadFeature < ActiveRecord::Base
 
     if self.finished
       return false
-    end
-
-    for section in other.roadSections
-      add(section.x, section.y, section.edge, section.num, section.hasEnd)
     end
 
     return true

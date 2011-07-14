@@ -10,8 +10,8 @@ class RoadSection < ActiveRecord::Base
   # TODO: Figure out validator for boolean-ness
   validates :hasEnd, :presence => true
 
-  validates :road_feature, :presence => true
+  validates :roadFeature, :presence => true
   
-  belongs_to :road_feature
+  belongs_to :roadFeature
 
 end

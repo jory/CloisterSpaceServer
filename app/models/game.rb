@@ -1,5 +1,6 @@
 class Game < ActiveRecord::Base
   has_many :tileInstances
+  has_many :roadFeatures
 
   def self.new(attributes = nil)
     game = super
@@ -14,7 +15,7 @@ class Game < ActiveRecord::Base
       end
     end
 
-    game
+    return game
   end
 
 end

@@ -66,7 +66,17 @@ class TileInstanceTest < ActiveSupport::TestCase
     p.place(72, 72, 0)
     
     q = TileInstance.create(:tile => @otherTile, :game => @game)
-    assert q.place(73, 72, 2)
+    assert q.place(73, 72, 2), "Couldn't place rotated next to non-rotated."
+
+    r = TileInstance.create(:tile => @otherTile, :game => @game)
+    assert r.place(73, 73, 2), "Couldn't place rotated next to rotated."
+
+    s = TileInstance.create(:tile => @otherTile, :game => @game)
+    assert s.place(73, 74, 0), "Couldn't place non-rotated next to rotated."
+
+    t = TileInstance.create(:tile => @otherTile, :game => @game)
+    assert t.place(72, 73, 0), "Couldn't place non-rotated next to both."
+    
   end
   
 end

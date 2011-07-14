@@ -118,7 +118,8 @@ class Road
     out = "Road: ("
     for address of @tiles
       out += "#{address}; "
-    out.slice(0, -2) + "), length: #{@length}, finished: #{@finished}, numEnds: #{@numEnds}"
+    out.slice(0, -2) +
+        "), length: #{@length}, finished: #{@finished}, numEnds: #{@numEnds}"
 
 
 class City

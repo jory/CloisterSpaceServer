@@ -79,17 +79,17 @@ class RoadFeatureTest < ActiveSupport::TestCase
     assert !@rf.merge(other)
   end
 
-  # test "length should increase properly" do
-  #   assert @rf.length == 0
+  test "length should increase properly" do
+    assert @rf.length == 0
 
-  #   @rf.add(0, 0, :north, 0, false)
-  #   assert @rf.length == 1
+    @rf.add(0, 0, :north, 0, false)
+    assert @rf.length == 1
 
-  #   @rf.add(0, 0, :south, 0, false)
-  #   assert @rf.length == 1
+    @rf.add(0, 0, :south, 0, false)
+    assert @rf.length == 1
 
-  #   @rf.add(0, 1, :north, 0, false)
-  #   assert @rf.length == 2
-  # end
+    @rf.add(0, 1, :north, 0, false)
+    assert @rf.length == 2
+  end
 
 end

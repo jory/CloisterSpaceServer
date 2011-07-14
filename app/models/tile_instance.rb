@@ -23,21 +23,16 @@ class TileInstance < ActiveRecord::Base
   @@Opposite[:west]  = :east
   
   def place(x, y, rotation)
-
     if not meets_place_preconditions? x, y, rotation
       return false
     end
 
     if is_valid_placement? x, y, rotation
-      self.x = x
-      self.y = y
-      self.rotation = rotation
-      self.status = "placed"
-      self.save
+      self.update_attributes(:x => x, :y => y, :rotation => rotation,
+                             :status => "placed")
     else
       return false
     end
-    
   end
 
   def TileInstance.next(game_id)

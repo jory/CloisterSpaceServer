@@ -38,10 +38,10 @@ class Tile
     @isStart = tile.isStart
 
     @edges =
-      north: tile.northEdge
-      east:  tile.eastEdge
-      south: tile.southEdge
-      west:  tile.westEdge
+      north: tile.north
+      east:  tile.east
+      south: tile.south
+      west:  tile.west
 
     @rotation = 0
     @rotationClass = 'r0'
@@ -305,10 +305,10 @@ class World
         $.getJSON("#{@origin}/tiles.json", (data) =>
           for obj in data
             tile = obj.tile
-            tile.northEdge = @edges[tile.northEdge]
-            tile.southEdge = @edges[tile.southEdge]
-            tile.westEdge  = @edges[tile.westEdge]
-            tile.eastEdge  = @edges[tile.eastEdge]
+            tile.north = @edges[tile.north]
+            tile.south = @edges[tile.south]
+            tile.west  = @edges[tile.west]
+            tile.east  = @edges[tile.east]
             @tiles[tile.id] = tile
           haveTiles = true
         )

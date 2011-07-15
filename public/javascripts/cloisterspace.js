@@ -55,10 +55,10 @@
       this.isCloister = tile.isCloister;
       this.isStart = tile.isStart;
       this.edges = {
-        north: tile.northEdge,
-        east: tile.eastEdge,
-        south: tile.southEdge,
-        west: tile.westEdge
+        north: tile.north,
+        east: tile.east,
+        south: tile.south,
+        west: tile.west
       };
       this.rotation = 0;
       this.rotationClass = 'r0';
@@ -386,10 +386,10 @@
             for (_i = 0, _len = data.length; _i < _len; _i++) {
               obj = data[_i];
               tile = obj.tile;
-              tile.northEdge = this.edges[tile.northEdge];
-              tile.southEdge = this.edges[tile.southEdge];
-              tile.westEdge = this.edges[tile.westEdge];
-              tile.eastEdge = this.edges[tile.eastEdge];
+              tile.north = this.edges[tile.north];
+              tile.south = this.edges[tile.south];
+              tile.west = this.edges[tile.west];
+              tile.east = this.edges[tile.east];
               this.tiles[tile.id] = tile;
             }
             return haveTiles = true;

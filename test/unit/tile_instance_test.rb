@@ -6,7 +6,7 @@ class TileInstanceTest < ActiveSupport::TestCase
     @game = games(:one)
 
     @startingTile = tiles(:start)
-    @otherTile = tiles(:second)
+    @otherTile = tiles(:city1rwe)
   end
   
   test "needs game" do
@@ -86,7 +86,7 @@ class TileInstanceTest < ActiveSupport::TestCase
     q.status = "current"
     q.save
 
-    r = TileInstance.create(:tile => tiles(:city4), :game => @game)
+    r = TileInstance.create(:tile => tiles(:city4q), :game => @game)
     
     assert q === TileInstance.next(@game)
   end
@@ -97,13 +97,13 @@ class TileInstanceTest < ActiveSupport::TestCase
 
     q = TileInstance.create(:tile => @otherTile, :game => @game)
 
-    r = TileInstance.create(:tile => tiles(:city4), :game => @game)
+    r = TileInstance.create(:tile => tiles(:city4q), :game => @game)
     
     assert TileInstance.next(@game)
   end
 
   ##########################################
-  # Unlikely, but definitely needs to be handled at some point.
+  # TODO: Uncomment this test, and handle it.
   ##########################################
   # test "shouldn't return unusable tiles" do
   #   p = TileInstance.create(:tile => @startingTile, :game => @game)
@@ -112,17 +112,17 @@ class TileInstanceTest < ActiveSupport::TestCase
   #   q = TileInstance.create(:tile => @otherTile, :game => @game)
   #   q.place(71, 72, 2)
     
-  #   r = TileInstance.create(:tile => tiles(:city4), :game => @game)
+  #   r = TileInstance.create(:tile => tiles(:city4q), :game => @game)
   #   assert !TileInstance.next(@game)
   # end
   ##########################################
 
   ##########################################
-  # I wonder, is this the right place for the following tests?
+  # Because @game is a fixture, it doesn't seem to support looking up
+  # the RoadFeatures via @game.roadFeatures
+  #
+  # TODO: Figure out how to get that style of lookup working.
   ##########################################
-
-  # TODO: Figure out why the @game.roadFeatures style query is
-  # failing, whereas the RoadFeature.where(...) one is working.
 
   test "starting tile should create a road feature" do
     assert RoadFeature.where(:game_id => @game).empty?

@@ -99,8 +99,8 @@ class TileInstance < ActiveRecord::Base
 
         otherEdges = rotate(tile.rotation)
         
-        this = Edge.find(@tile[@edges[dir].to_s + "Edge"])
-        other = Edge.find(tile.tile[otherEdges[@@Opposite[dir]].to_s + "Edge"])
+        this = Edge.find(@tile[@edges[dir]])
+        other = Edge.find(tile.tile[otherEdges[@@Opposite[dir]]])
 
         if not this.kind == other.kind
           return false
@@ -160,7 +160,7 @@ class TileInstance < ActiveRecord::Base
     @@Directions.each { |dir|
       if not @neighbours[dir]
 
-        edge = Edge.find(@tile[@edges[dir].to_s + "Edge"])
+        edge = Edge.find(@tile[@edges[dir]])
         if edge.kind == 'r'
 
           added = false

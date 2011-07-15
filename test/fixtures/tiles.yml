@@ -8,12 +8,12 @@ start:
   isCloister: false
   isStart: true
   citysFields: 1
-  northEdge: 1
-  southEdge: 2
-  eastEdge: 3
-  westEdge: 4
+  north: 1
+  south: 2
+  east: 3
+  west: 4
   
-second:
+city1rwe:
   image: 'city1rwe.png'
   count: 1
   hasTwoCities: false
@@ -22,12 +22,12 @@ second:
   isCloister: false
   isStart: false
   citysFields: 1
-  northEdge: 1
-  southEdge: 2
-  eastEdge: 3
-  westEdge: 4
+  north: 1
+  south: 2
+  east: 3
+  west: 4
 
-city4:
+city4q:
   image: 'city4q.png'
   count: 1
   hasTwoCities: false
@@ -36,7 +36,7 @@ city4:
   isCloister: false
   isStart: false
   citysFields: 0
-  northEdge: 1
-  southEdge: 1
-  eastEdge: 1
-  westEdge: 1
+  north: 1
+  south: 1
+  east: 1
+  west: 1

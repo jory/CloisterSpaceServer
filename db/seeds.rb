@@ -57,15 +57,14 @@ tileDefinitions.each do |definition|
   roadEdgeCount = tile[3].count 'r'
   hasRoadEnd = (roadEdgeCount == 1 or roadEdgeCount == 3 or roadEdgeCount == 4)
 
-  northEdge = Edge.find_or_create(edges[0], road[0], city[0], grass[0], grass[1]).id
-  eastEdge  = Edge.find_or_create(edges[1], road[1], city[1], grass[2], grass[3]).id
-  southEdge = Edge.find_or_create(edges[2], road[2], city[2], grass[4], grass[5]).id
-  westEdge  = Edge.find_or_create(edges[3], road[3], city[3], grass[6], grass[7]).id
+  north = Edge.find_or_create(edges[0], road[0], city[0], grass[0], grass[1]).id
+  east  = Edge.find_or_create(edges[1], road[1], city[1], grass[2], grass[3]).id
+  south = Edge.find_or_create(edges[2], road[2], city[2], grass[4], grass[5]).id
+  west  = Edge.find_or_create(edges[3], road[3], city[3], grass[6], grass[7]).id
   
-  Tile.create(:image => image, :count => count, :northEdge => northEdge,
-              :eastEdge => eastEdge, :southEdge => southEdge,
-              :westEdge => westEdge, :hasTwoCities => hasTwoCities,
-              :hasRoadEnd => hasRoadEnd, :hasPennant => hasPennant,
-              :citysFields => citysFields, :isCloister => isCloister,
-              :isStart => isStart)
+  Tile.create(:image => image, :count => count, :north => north,
+              :east => east, :south => south, :west => west,
+              :hasTwoCities => hasTwoCities, :hasRoadEnd => hasRoadEnd,
+              :hasPennant => hasPennant, :citysFields => citysFields,
+              :isCloister => isCloister, :isStart => isStart)
 end

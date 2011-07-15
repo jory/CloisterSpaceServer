@@ -26,6 +26,8 @@ class RoadFeature < ActiveRecord::Base
     
     RoadSection.create(:road_feature => self, :x => x, :y => y,
                        :edge => edge.to_s, :num => num, :hasEnd => hasEnd)
+
+    self.save
   end
 
   def merge(other)

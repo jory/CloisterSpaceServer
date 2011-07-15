@@ -3,7 +3,7 @@ require 'test_helper'
 class TileInstanceTest < ActiveSupport::TestCase
 
   def setup
-    @game = Game.first
+    @game = games(:one)
 
     @startingTile = tiles(:start)
     @otherTile = tiles(:second)
@@ -120,22 +120,27 @@ class TileInstanceTest < ActiveSupport::TestCase
   ##########################################
   # I wonder, is this the right place for the following tests?
   ##########################################
+
+  # TODO: Figure out why the @game.roadFeatures style query is
+  # failing, whereas the RoadFeature.where(...) one is working.
+
   test "starting tile should create a road feature" do
-    assert @game.roadFeatures.empty?
+    assert RoadFeature.where(:game_id => @game).empty?
 
     p = TileInstance.create(:tile => @startingTile, :game => @game)
     p.place(72, 72, 0)
 
-    assert !@game.roadFeatures.empty?, "RoadFeatures is still empty!"
+    assert !RoadFeature.where(:game_id => @game).empty?, "RoadFeatures is still empty!"
   end
 
   test "starting tile should create a *single* road feature" do
-    assert @game.roadFeatures.empty?
+    assert RoadFeature.where(:game_id => @game).empty?
 
     p = TileInstance.create(:tile => @startingTile, :game => @game)
     p.place(72, 72, 0)
 
-    assert @game.roadFeatures.length == 1, "Didn't create a single road feature"
+    assert RoadFeature.where(:game_id => @game).length == 1,
+    "Didn't create a singular road feature"
   end
 
 end

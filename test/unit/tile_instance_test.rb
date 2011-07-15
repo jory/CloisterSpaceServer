@@ -32,7 +32,7 @@ class TileInstanceTest < ActiveSupport::TestCase
 
   test "no double placement" do
     p = TileInstance.create(:tile => @startingTile, :game => @game)
-    p.place(0, 0, 0)
+    assert p.place(0, 0, 0)
     assert !p.place(1, 1, 1)
   end
 

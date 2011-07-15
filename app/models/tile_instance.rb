@@ -1,6 +1,6 @@
 class TileInstance < ActiveRecord::Base
 
-  validates :status, :inclusion => { :in => ["current", "placed", "discarded"],
+  validates :status, :inclusion => { :in => %w(current placed discarded),
                                      :allow_nil => true }
 
   validates :x, :numericality => { :greater_than => -1, :less_than => 145,
@@ -55,6 +55,8 @@ class TileInstance < ActiveRecord::Base
   private
 
   def meets_place_preconditions?(x, y, rotation)
+    # TODO: Figure out why this only works when it's self.status,
+    # rather than @status.
     if self.status == "placed"
       return false
     end
@@ -63,7 +65,7 @@ class TileInstance < ActiveRecord::Base
       return false
     end
 
-    if not TileInstance.where(:game_id => self.game, :x => x, :y => y).empty?
+    if not TileInstance.where(:game_id => @game, :x => x, :y => y).empty?
       return false
     end
 
@@ -73,20 +75,20 @@ class TileInstance < ActiveRecord::Base
   def is_valid_placement?(x, y, rotation)
     valid = false
     
-    if self.tile.isStart
+    if @tile.isStart
       valid = true
     else
-      neighbours = find_neighbours(x, y)
-      if not neighbours.empty?
+      @neighbours = find_neighbours(x, y)
+      if not @neighbours.empty?
 
         valid = true
         edges = rotate(rotation)
         
-        neighbours.each do |dir, tile|
+        @neighbours.each do |dir, tile|
 
           otherEdges = rotate(tile.rotation)
           
-          this = Edge.find(self.tile[edges[dir].to_s + "Edge"])
+          this = Edge.find(@tile[edges[dir].to_s + "Edge"])
           other = Edge.find(tile.tile[otherEdges[@@Opposite[dir]].to_s + "Edge"])
 
           if not this.kind == other.kind
@@ -103,22 +105,22 @@ class TileInstance < ActiveRecord::Base
   def find_neighbours(x, y)
     n = {}
 
-    north = TileInstance.where(:game_id => self.game, :x => (x - 1), :y => y)
+    north = TileInstance.where(:game_id => @game, :x => (x - 1), :y => y)
     if not north.empty?
       n[:north] = north.first
     end
 
-    south = TileInstance.where(:game_id => self.game, :x => (x + 1), :y => y)
+    south = TileInstance.where(:game_id => @game, :x => (x + 1), :y => y)
     if not south.empty?
       n[:south] = south.first
     end
 
-    west = TileInstance.where(:game_id => self.game, :x => x, :y => (y - 1))
+    west = TileInstance.where(:game_id => @game, :x => x, :y => (y - 1))
     if not west.empty?
       n[:west] = west.first
     end
 
-    east = TileInstance.where(:game_id => self.game, :x => x, :y => (y + 1))
+    east = TileInstance.where(:game_id => @game, :x => x, :y => (y + 1))
     if not east.empty?
       n[:east] = east.first
     end

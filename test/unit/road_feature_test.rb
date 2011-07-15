@@ -121,4 +121,23 @@ class RoadFeatureTest < ActiveSupport::TestCase
 
     assert @rf.length == 3
   end
+
+  test "has shouldn't accept nil" do
+    assert !@rf.has(nil, nil, nil)
+    assert !@rf.has(nil, 0, 0)
+    assert !@rf.has(0, nil, 0)
+    assert !@rf.has(0, 0, nil)
+  end
+
+  test "has should return false if it doesn't haz" do
+    assert !@rf.has(0, 0, 0)
+    @rf.add(1, 1, :north, 1, true)
+    assert !@rf.has(0, 0, 0)
+  end
+
+  test "has should return true when it haz" do
+    @rf.add(0, 0, :north, 0, false)
+    assert @rf.has(0, 0, 0)
+  end
+    
 end

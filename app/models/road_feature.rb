@@ -42,6 +42,12 @@ class RoadFeature < ActiveRecord::Base
     return true
   end
 
+  def has(x, y, num)
+    if not self.roadSections.where(:x => x, :y => y, :num => num).empty?
+      return true
+    end
+  end
+  
   private
 
   def meets_add_preconditions?(x, y, edge, num, hasEnd, merging)

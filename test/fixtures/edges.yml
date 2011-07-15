@@ -1,5 +1,4 @@
-# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
-one:
+ 1:
   id: 1
   kind: 'c'
   road: 0
@@ -7,7 +6,7 @@ one:
   grassA: 0
   grassB: 0
 
-two:
+ 2:
   id: 2
   kind: 'r'
   road: 1
@@ -15,7 +14,7 @@ two:
   grassA: 1
   grassB: 2
 
-three:
+ 3:
   id: 3
   kind: 'g'
   road: 0
@@ -23,7 +22,7 @@ three:
   grassA: 2
   grassB: 2
 
-four:
+ 4:
   id: 4
   kind: 'r'
   road: 1
@@ -31,7 +30,7 @@ four:
   grassA: 2
   grassB: 1
 
-five:
+ 5:
   id: 5
   kind: 'g'
   road: 0
@@ -39,7 +38,7 @@ five:
   grassA: 1
   grassB: 1
 
-six:
+ 6:
   id: 6
   kind: 'r'
   road: 2
@@ -47,7 +46,7 @@ six:
   grassA: 2
   grassB: 3
 
-seven:
+ 7:
   id: 7
   kind: 'r'
   road: 3
@@ -55,3 +54,34 @@ seven:
   grassA: 3
   grassB: 1
 
+ 8:
+  id: 8
+  kind: 'c'
+  road: 0
+  city: 2
+  grassA: 0
+  grassB: 0
+
+ 9:
+  id: 9
+  kind: 'r'
+  road: 1
+  city: 0
+  grassA: 1
+  grassB: 1
+
+ 10:
+  id: 10
+  kind: 'r'
+  road: 3
+  city: 0
+  grassA: 3
+  grassB: 4
+
+ 11:
+  id: 11
+  kind: 'r'
+  road: 4
+  city: 0
+  grassA: 4
+  grassB: 1

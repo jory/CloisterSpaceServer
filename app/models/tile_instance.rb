@@ -152,9 +152,27 @@ class TileInstance < ActiveRecord::Base
     return edges
   end
 
+  ##########################################
+  # TODO: Figure out why the query needs to be RoadFeature.where,
+  # instead of the other form.
+  ##########################################
   def handleRoads
     @neighbours.each { |dir, tile|
-      next
+      edge = Edge.find(@tile[@edges[dir]])
+
+      if edge.kind == 'r'
+        
+        otherRow, otherCol = offset(self.x, self.y, dir)
+        otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[@@Opposite[dir]]])
+
+        RoadFeature.where(:game_id => @game).each do |road|
+          if road.has(otherRow, otherCol, otherEdge.road)
+            road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
+            break
+          end
+        end
+      end
+
     }
 
     @@Directions.each { |dir|
@@ -182,6 +200,14 @@ class TileInstance < ActiveRecord::Base
         end
       end
     }
+  end
+
+  def offset(x, y, dir)
+    if dir == :north    then return x - 1, y
+    elsif dir == :south then return x + 1, y
+    elsif dir == :east  then return x, y + 1
+    elsif dir == :west  then return x, y - 1
+    end
   end
   
 end

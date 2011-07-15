@@ -139,8 +139,9 @@ class TileInstanceTest < ActiveSupport::TestCase
     p = TileInstance.create(:tile => @startingTile, :game => @game)
     p.place(72, 72, 0)
 
-    assert RoadFeature.where(:game_id => @game).length == 1,
-    "Didn't create a singular road feature"
+    roads = RoadFeature.where(:game_id => @game)
+    
+    assert roads.length == 1, "Found #{roads.length} roads, expected 1."
   end
 
   test "starting tile's road should be of length 1, numEnds 0, finished false" do
@@ -166,5 +167,22 @@ class TileInstanceTest < ActiveSupport::TestCase
       assert road.numEnds == 1
       assert !road.finished
     end
+  end
+
+  test "a road can be finished" do
+    game = Game.create()
+    p = TileInstance.create(:tile => tiles(:cloisterr), :game => game)
+    q = TileInstance.create(:tile => tiles(:cloisterr), :game => game)
+
+    assert p.place(72, 73, 1)
+    assert q.place(72, 71, 3)
+
+    roads = game.roadFeatures
+    assert roads.length == 1, "Found #{roads.length} roads, expected 1"
+
+    road = roads.first
+    assert road.length == 3, "Road was length #{road.length}, expecting 3"
+    assert road.numEnds == 2, "Road had #{road.numEnds}, expected 2"
+    assert road.finished, "Road wasn't fnished"
   end
 end

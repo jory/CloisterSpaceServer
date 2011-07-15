@@ -116,5 +116,26 @@ class TileInstanceTest < ActiveSupport::TestCase
   #   assert !TileInstance.next(@game)
   # end
   ##########################################
-    
+
+  ##########################################
+  # I wonder, is this the right place for the following tests?
+  ##########################################
+  test "starting tile should create a road feature" do
+    assert @game.roadFeatures.empty?
+
+    p = TileInstance.create(:tile => @startingTile, :game => @game)
+    p.place(72, 72, 0)
+
+    assert !@game.roadFeatures.empty?, "RoadFeatures is still empty!"
+  end
+
+  test "starting tile should create a *single* road feature" do
+    assert @game.roadFeatures.empty?
+
+    p = TileInstance.create(:tile => @startingTile, :game => @game)
+    p.place(72, 72, 0)
+
+    assert @game.roadFeatures.length == 1, "Didn't create a single road feature"
+  end
+
 end

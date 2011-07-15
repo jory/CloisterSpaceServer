@@ -21,17 +21,31 @@ class TileInstance < ActiveRecord::Base
   @@Opposite[:south] = :north
   @@Opposite[:east]  = :west
   @@Opposite[:west]  = :east
-  
-  def place(x, y, rotation)
-    if not meets_place_preconditions? x, y, rotation
-      return false
-    end
 
-    if is_valid_placement? x, y, rotation
-      self.update_attributes(:x => x, :y => y, :rotation => rotation,
-                             :status => "placed")
-    else
-      return false
+  @@Directions = @@Opposite.keys
+  
+  def initialize(init)
+    super(init)
+    @neighbours = {}
+    @edges = {}    
+  end
+
+  def place(x, y, rotation)
+    if meets_place_preconditions? x, y, rotation
+
+      @neighbours = find_neighbours(x, y)
+      @edges = rotate(rotation)
+
+      if is_valid_placement?
+        ##########################################
+        # TODO: Figure out why this is a self call when the other ones
+        # aren't...
+        ##########################################
+        if self.update_attributes(:x => x, :y => y, :rotation => rotation,
+                                  :status => "placed")
+          handleRoads
+        end
+      end
     end
   end
 
@@ -72,34 +86,29 @@ class TileInstance < ActiveRecord::Base
     return true
   end
 
-  def is_valid_placement?(x, y, rotation)
-    valid = false
-    
+  def is_valid_placement?
+
     if @tile.isStart
-      valid = true
+      return true
+
+    elsif @neighbours.empty?
+      return false
+
     else
-      @neighbours = find_neighbours(x, y)
-      if not @neighbours.empty?
+      @neighbours.each do |dir, tile|
 
-        valid = true
-        edges = rotate(rotation)
+        otherEdges = rotate(tile.rotation)
         
-        @neighbours.each do |dir, tile|
+        this = Edge.find(@tile[@edges[dir].to_s + "Edge"])
+        other = Edge.find(tile.tile[otherEdges[@@Opposite[dir]].to_s + "Edge"])
 
-          otherEdges = rotate(tile.rotation)
-          
-          this = Edge.find(@tile[edges[dir].to_s + "Edge"])
-          other = Edge.find(tile.tile[otherEdges[@@Opposite[dir]].to_s + "Edge"])
-
-          if not this.kind == other.kind
-            valid = false
-            break
-          end
+        if not this.kind == other.kind
+          return false
         end
       end
     end
 
-    return valid
+    return true
   end    
   
   def find_neighbours(x, y)
@@ -141,6 +150,22 @@ class TileInstance < ActiveRecord::Base
     end
 
     return edges
+  end
+
+  def handleRoads
+    @neighbours.each { |dir, tile|
+      next
+    }
+
+    @@Directions.each { |dir|
+      if not @neighbours[dir]
+        edge = Edge.find(@tile[@edges[dir].to_s + "Edge"])
+        if edge.kind == 'r'
+          road = RoadFeature.create(:game => @game)
+          road.add(@x, @y, dir, edge.road, @tile.hasRoadEnd)
+        end
+      end
+    }
   end
   
 end

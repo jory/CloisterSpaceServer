@@ -7,4 +7,8 @@ class GameTest < ActiveSupport::TestCase
     assert !RoadFeature.where(:game_id => game).empty?
   end
 
+  test "can access RoadFeatures using .roadFeatures" do
+    game = Game.create()
+    assert !game.roadFeatures.empty?
+  end
 end

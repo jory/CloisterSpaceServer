@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110714174004) do
+ActiveRecord::Schema.define(:version => 20110715150746) do
 
   create_table "edges", :force => true do |t|
     t.string   "kind"

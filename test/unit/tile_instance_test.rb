@@ -143,4 +143,28 @@ class TileInstanceTest < ActiveSupport::TestCase
     "Didn't create a singular road feature"
   end
 
+  test "starting tile's road should be of length 1, numEnds 0, finished false" do
+    p = TileInstance.create(:tile => @startingTile, :game => @game)
+    p.place(72, 72, 0)
+    road = RoadFeature.where(:game_id => @game).first
+
+    assert road.length == 1
+    assert road.numEnds == 0
+    assert !road.finished
+  end
+
+  test "road3 has three roads, all with length 1 and 1 end" do
+    p = TileInstance.create(:tile => tiles(:sroad3), :game => @game)
+    p.place(72, 72, 0)
+
+    roads = RoadFeature.where(:game_id => @game)
+
+    assert roads.length == 3, "Found #{roads.length} roads, but was expecting 3."
+
+    roads.each do |road|
+      assert road.length == 1
+      assert road.numEnds == 1
+      assert !road.finished
+    end
+  end
 end

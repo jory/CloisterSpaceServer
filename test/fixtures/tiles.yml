@@ -9,8 +9,8 @@ start:
   isStart: true
   citysFields: 1
   north: 1
-  south: 2
-  east: 3
+  south: 3
+  east: 2
   west: 4
   
 city1rwe:
@@ -23,8 +23,8 @@ city1rwe:
   isStart: false
   citysFields: 1
   north: 1
-  south: 2
-  east: 3
+  south: 3
+  east: 2
   west: 4
 
 city4q:
@@ -40,3 +40,31 @@ city4q:
   south: 1
   east: 1
   west: 1
+
+road3:
+  image: 'road3.png'
+  count: 4
+  hasTwoCities: false
+  hasRoadEnd: true
+  hasPennant: false
+  isCloister: false
+  isStart: false
+  citysFields: 0
+  north: 5
+  south: 6
+  east: 2
+  west: 7
+
+sroad3:
+  image: 'road3.png'
+  count: 4
+  hasTwoCities: false
+  hasRoadEnd: true
+  hasPennant: false
+  isCloister: false
+  isStart: true
+  citysFields: 0
+  north: 5
+  south: 6
+  east: 2
+  west: 7

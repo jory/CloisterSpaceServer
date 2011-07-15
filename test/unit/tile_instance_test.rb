@@ -185,4 +185,24 @@ class TileInstanceTest < ActiveSupport::TestCase
     assert road.numEnds == 2, "Road had #{road.numEnds}, expected 2"
     assert road.finished, "Road wasn't fnished"
   end
+
+  test "roads can merge" do
+    game = Game.create()
+    p = TileInstance.create(:tile => tiles(:city1rsw), :game => game)
+    q = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+    r = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+
+    assert p.place(71, 72, 2)
+    assert q.place(72, 73, 1)
+    assert r.place(71, 73, 0)
+
+    roads = game.roadFeatures
+    assert roads.length == 1, "Found #{roads.length} roads, expected 1"
+
+    road = roads.first
+    assert road.length == 4, "Road was length #{road.length}, expecting 4"
+    assert road.numEnds == 0, "Road had #{road.numEnds}, expected 0"
+    assert !road.finished, "Road was finished, but shouldn't have been"
+  end
+
 end

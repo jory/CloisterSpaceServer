@@ -155,8 +155,13 @@ class TileInstance < ActiveRecord::Base
   ##########################################
   # TODO: Figure out why the query needs to be RoadFeature.where,
   # instead of the other form.
+  # 
+  # Also TODO: Refactor this method like crazy!
   ##########################################
   def handleRoads
+
+    seenRoads = []
+    
     @neighbours.each { |dir, tile|
       edge = Edge.find(@tile[@edges[dir]])
 
@@ -167,7 +172,14 @@ class TileInstance < ActiveRecord::Base
 
         RoadFeature.where(:game_id => @game).each do |road|
           if road.has(otherRow, otherCol, otherEdge.road)
-            road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
+            if seenRoads.length > 0 and not @tile.hasRoadEnd
+              seenRoads.first.merge(road)
+              road.delete
+            else
+              road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
+              seenRoads.push(road)
+            end
+            
             break
           end
         end

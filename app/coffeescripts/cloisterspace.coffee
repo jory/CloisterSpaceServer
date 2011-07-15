@@ -515,7 +515,8 @@ class World
               added = true
 
           if not added
-            @cities.push(new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant))
+            c = new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+            @cities.push(c)
 
 
   handleFarms: (row, col, tile, neighbours) ->

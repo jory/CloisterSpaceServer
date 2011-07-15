@@ -610,7 +610,7 @@
       return _results;
     };
     World.prototype.handleCities = function(row, col, tile, neighbours) {
-      var added, cities, city, dir, edge, otherCol, otherEdge, otherRow, _i, _j, _len, _len2, _ref, _ref2, _results;
+      var added, c, cities, city, dir, edge, otherCol, otherEdge, otherRow, _i, _j, _len, _len2, _ref, _ref2, _results;
       cities = [];
       for (_i = 0, _len = neighbours.length; _i < _len; _i++) {
         dir = neighbours[_i];
@@ -651,7 +651,8 @@
                 }
               }
               if (!added) {
-                return this.cities.push(new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant));
+                c = new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+                return this.cities.push(c);
               }
             }
           }

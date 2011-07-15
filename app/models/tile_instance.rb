@@ -159,11 +159,25 @@ class TileInstance < ActiveRecord::Base
 
     @@Directions.each { |dir|
       if not @neighbours[dir]
+
         edge = Edge.find(@tile[@edges[dir].to_s + "Edge"])
         if edge.kind == 'r'
-          road = RoadFeature.create(:game => @game)
-          if not road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
-            raise "Failed to add to the road."
+
+          added = false
+          
+          RoadFeature.where(:game_id => @game).each do |road|
+            if road.has(self.x, self.y, edge.road)
+              road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
+              added = true
+              break
+            end
+          end
+
+          if not added
+            road = RoadFeature.create(:game => @game)
+            if not road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
+              raise "Failed to add to the road."
+            end
           end
         end
       end

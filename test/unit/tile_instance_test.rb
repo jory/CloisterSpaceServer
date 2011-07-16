@@ -205,4 +205,38 @@ class TileInstanceTest < ActiveSupport::TestCase
     assert !road.finished, "Road was finished, but shouldn't have been"
   end
 
+  test "loops can close" do
+    p = TileInstance.create(:tile => tiles(:sroad2sw), :game => @game)
+    q = TileInstance.create(:tile => tiles(:road2sw), :game => @game)
+    r = TileInstance.create(:tile => tiles(:road2sw), :game => @game)
+    s = TileInstance.create(:tile => tiles(:road2sw), :game => @game)
+
+    roads = RoadFeature.where(:game_id => @game)
+    assert roads.length == 0, "Found #{roads.length} roads, expected 0 (no tiles)"
+
+    assert p.place(72, 72, 0)
+
+    roads = RoadFeature.where(:game_id => @game)
+    assert roads.length == 1, "Found #{roads.length} roads, expected 1 (one tile)"
+
+    assert q.place(73, 72, 1)
+
+    roads = RoadFeature.where(:game_id => @game)
+    assert roads.length == 1, "Found #{roads.length} roads, expected 1 (two tiles)"
+
+    assert r.place(73, 71, 2)
+
+    roads = RoadFeature.where(:game_id => @game)
+    assert roads.length == 1, "Found #{roads.length} roads, expected 1 (three tiles)"
+
+    assert s.place(72, 71, 3)
+
+    roads = RoadFeature.where(:game_id => @game)
+    assert roads.length == 1, "Found #{roads.length} roads, expected 1 (all tiles)"
+
+    road = roads.first
+    assert road.length == 4, "Road was length #{road.length}, expecting 4"
+    assert road.numEnds == 0, "Road had #{road.numEnds}, expected 0"
+    assert road.finished, "Road wasn't finished, but should have been"
+  end
 end

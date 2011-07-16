@@ -320,6 +320,20 @@ road2sw:
   east: 5
   west: 4
   
+sroad2sw:
+  image: 'road2sw.png'
+  count: 9
+  hasTwoCities: false
+  hasRoadEnd: false
+  hasPennant: false
+  isCloister: false
+  isStart: true
+  citysFields: 0
+  north: 5
+  south: 2
+  east: 5
+  west: 4
+  
 road3:
   image: 'road3.png'
   count: 4

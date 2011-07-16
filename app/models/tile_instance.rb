@@ -157,6 +157,7 @@ class TileInstance < ActiveRecord::Base
   # instead of the other form.
   # 
   # Also TODO: Refactor this method like crazy!
+  #            (Specifically the layout)
   ##########################################
   def handleRoads
 
@@ -173,14 +174,20 @@ class TileInstance < ActiveRecord::Base
         RoadFeature.where(:game_id => @game).each do |road|
           if road.has(otherRow, otherCol, otherEdge.road)
             if seenRoads.length > 0 and not @tile.hasRoadEnd
-              seenRoads.first.merge(road)
-              road.delete
+              if road == seenRoads.first
+                road.finished = true
+                road.save
+              else
+                seenRoads.first.merge(road)
+                road.delete
+              end
             else
               road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
               seenRoads.push(road)
             end
             
             break
+
           end
         end
       end

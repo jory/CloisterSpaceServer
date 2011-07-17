@@ -110,14 +110,13 @@
     return Tile;
   })();
   Road = (function() {
-    function Road(row, col, edge, num, hasEnd) {
+    function Road() {
       this.tiles = {};
       this.nums = {};
       this.edges = {};
       this.length = 0;
       this.numEnds = 0;
       this.finished = false;
-      this.add(row, col, edge, num, hasEnd);
     }
     Road.prototype.add = function(row, col, edge, num, hasEnd) {
       var address;
@@ -340,7 +339,7 @@
   })();
   World = (function() {
     function World() {
-      var getEdges, getTiles, haveEdges, haveTiles, i, setupBoard;
+      var getEdges, getFeatures, getTiles, haveEdges, haveRoads, haveTiles, i, setupBoard;
       this.center = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.origin = window.location.origin;
@@ -350,6 +349,7 @@
       haveEdges = false;
       this.tiles = {};
       haveTiles = false;
+      haveRoads = false;
       this.finished = false;
       this.minrow = this.maxrow = this.mincol = this.maxcol = this.center;
       this.board = (function() {
@@ -396,11 +396,31 @@
           }, this));
         }
       }, this);
+      getFeatures = __bind(function() {
+        return $.getJSON("" + this.origin + "/roadFeatures.json", "game=" + this.game_id, __bind(function(data) {
+          var obj, road, roadFeature, section, _i, _j, _len, _len2;
+          console.log("Got " + data.length + " roadFeatures");
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            roadFeature = data[_i];
+            road = new Road();
+            for (_j = 0, _len2 = roadFeature.length; _j < _len2; _j++) {
+              obj = roadFeature[_j];
+              section = obj.road_section;
+              road.add(section.x, section.y, section.edge, section.num, section.hasEnd);
+            }
+            this.roads.push(road);
+          }
+          return haveRoads = true;
+        }, this));
+      }, this);
       setupBoard = __bind(function() {
-        if (!haveTiles) {
+        var parameters, url;
+        if (!(haveTiles && haveRoads)) {
           return setTimeout(setupBoard, this.timeout);
         } else {
-          return $.getJSON("" + this.origin + "/tileInstances.json", "game=" + this.game_id + "&status=placed", __bind(function(data) {
+          url = "" + this.origin + "/tileInstances.json";
+          parameters = "game=" + this.game_id + "&status=placed";
+          return $.getJSON(url, parameters, __bind(function(data) {
             var instance, obj, tile, _i, _len;
             for (_i = 0, _len = data.length; _i < _len; _i++) {
               obj = data[_i];
@@ -416,6 +436,7 @@
       }, this);
       getEdges();
       getTiles();
+      getFeatures();
       setupBoard();
     }
     World.prototype.next = function() {
@@ -601,7 +622,9 @@
                 }
               }
               if (!added) {
-                return this.roads.push(new Road(row, col, dir, edge.road, tile.hasRoadEnd));
+                road = new Road();
+                road.add(row, col, dir, edge.road, tile.hasRoadEnd);
+                return this.roads.push(road);
               }
             }
           }

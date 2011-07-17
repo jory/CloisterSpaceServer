@@ -3,7 +3,8 @@ class TileInstancesController < ApplicationController
   respond_to :json
   
   def index
-    @tileInstances = TileInstance.where(:game_id => params[:game], :status => params[:status])
+    @tileInstances = TileInstance.where(:game_id => params[:game],
+                                        :status => params[:status])
     respond_with(@tileInstances)
   end
 

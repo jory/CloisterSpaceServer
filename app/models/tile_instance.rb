@@ -88,7 +88,7 @@ class TileInstance < ActiveRecord::Base
 
   def is_valid_placement?
 
-    if @tile.isStart
+    if self.tile.isStart
       return true
 
     elsif @neighbours.empty?
@@ -99,7 +99,7 @@ class TileInstance < ActiveRecord::Base
 
         otherEdges = rotate(tile.rotation)
         
-        this = Edge.find(@tile[@edges[dir]])
+        this = Edge.find(self.tile[@edges[dir]])
         other = Edge.find(tile.tile[otherEdges[@@Opposite[dir]]])
 
         if not this.kind == other.kind
@@ -114,22 +114,22 @@ class TileInstance < ActiveRecord::Base
   def find_neighbours(x, y)
     n = {}
 
-    north = TileInstance.where(:game_id => @game, :x => (x - 1), :y => y)
+    north = TileInstance.where(:game_id => self.game, :x => (x - 1), :y => y)
     if not north.empty?
       n[:north] = north.first
     end
 
-    south = TileInstance.where(:game_id => @game, :x => (x + 1), :y => y)
+    south = TileInstance.where(:game_id => self.game, :x => (x + 1), :y => y)
     if not south.empty?
       n[:south] = south.first
     end
 
-    west = TileInstance.where(:game_id => @game, :x => x, :y => (y - 1))
+    west = TileInstance.where(:game_id => self.game, :x => x, :y => (y - 1))
     if not west.empty?
       n[:west] = west.first
     end
 
-    east = TileInstance.where(:game_id => @game, :x => x, :y => (y + 1))
+    east = TileInstance.where(:game_id => self.game, :x => x, :y => (y + 1))
     if not east.empty?
       n[:east] = east.first
     end
@@ -164,16 +164,16 @@ class TileInstance < ActiveRecord::Base
     seenRoads = []
     
     @neighbours.each { |dir, tile|
-      edge = Edge.find(@tile[@edges[dir]])
+      edge = Edge.find(self.tile[@edges[dir]])
 
       if edge.kind == 'r'
         
         otherRow, otherCol = offset(self.x, self.y, dir)
         otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[@@Opposite[dir]]])
 
-        RoadFeature.where(:game_id => @game).each do |road|
+        RoadFeature.where(:game_id => self.game).each do |road|
           if road.has(otherRow, otherCol, otherEdge.road)
-            if seenRoads.length > 0 and not @tile.hasRoadEnd
+            if seenRoads.length > 0 and not self.tile.hasRoadEnd
               if road == seenRoads.first
                 road.finished = true
                 road.save
@@ -182,7 +182,7 @@ class TileInstance < ActiveRecord::Base
                 road.delete
               end
             else
-              road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
+              road.add(self.x, self.y, dir, edge.road, self.tile.hasRoadEnd)
               seenRoads.push(road)
             end
             
@@ -197,22 +197,22 @@ class TileInstance < ActiveRecord::Base
     @@Directions.each { |dir|
       if not @neighbours[dir]
 
-        edge = Edge.find(@tile[@edges[dir]])
+        edge = Edge.find(self.tile[@edges[dir]])
         if edge.kind == 'r'
 
           added = false
           
-          RoadFeature.where(:game_id => @game).each do |road|
+          RoadFeature.where(:game_id => self.game).each do |road|
             if road.has(self.x, self.y, edge.road)
-              road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
+              road.add(self.x, self.y, dir, edge.road, self.tile.hasRoadEnd)
               added = true
               break
             end
           end
 
           if not added
-            road = RoadFeature.create(:game => @game)
-            if not road.add(self.x, self.y, dir, edge.road, @tile.hasRoadEnd)
+            road = RoadFeature.create(:game => self.game)
+            if not road.add(self.x, self.y, dir, edge.road, self.tile.hasRoadEnd)
               raise "Failed to add to the road."
             end
           end

@@ -76,15 +76,13 @@ class Tile
 
 
 class Road
-  constructor: (row, col, edge, num, hasEnd) ->
+  constructor: () ->
     @tiles = {}
     @nums = {}
     @edges = {}
     @length = 0
     @numEnds = 0
     @finished = false
-
-    @add(row, col, edge, num, hasEnd)
 
   add: (row, col, edge, num, hasEnd) ->
     address = "#{row},#{col}"
@@ -277,6 +275,8 @@ class World
     @tiles = {}
     haveTiles = false
 
+    haveRoads = false
+
     @finished = false
 
     @minrow = @maxrow = @mincol = @maxcol = @center
@@ -313,11 +313,29 @@ class World
           haveTiles = true
         )
 
+    getFeatures = =>
+      $.getJSON("#{@origin}/roadFeatures.json", "game=#{@game_id}", (data) =>
+        console.log("Got #{data.length} roadFeatures")
+        for roadFeature in data
+          road = new Road()
+
+          for obj in roadFeature
+            section = obj.road_section
+            road.add(section.x, section.y, section.edge, section.num, section.hasEnd)
+
+          @roads.push(road)
+
+        haveRoads = true
+      )
+
+
     setupBoard = =>
-      if not haveTiles
+      if not (haveTiles and haveRoads)
         setTimeout(setupBoard, @timeout)
       else
-        $.getJSON("#{@origin}/tileInstances.json", "game=#{@game_id}&status=placed", (data) =>
+        url = "#{@origin}/tileInstances.json"
+        parameters = "game=#{@game_id}&status=placed"
+        $.getJSON(url, parameters, (data) =>
           for obj in data
             instance = obj.tile_instance
             tile = new Tile(@tiles[instance.tile_id], instance.id)
@@ -329,6 +347,7 @@ class World
 
     getEdges()
     getTiles()
+    getFeatures()
     setupBoard()
 
   next: ->
@@ -482,7 +501,9 @@ class World
               added = true
 
           if not added
-              @roads.push(new Road(row, col, dir, edge.road, tile.hasRoadEnd))
+              road = new Road()
+              road.add(row, col, dir, edge.road, tile.hasRoadEnd)
+              @roads.push(road)
 
   handleCities: (row, col, tile, neighbours) ->
     cities = []

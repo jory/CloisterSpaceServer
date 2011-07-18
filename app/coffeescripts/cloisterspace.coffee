@@ -77,12 +77,13 @@ class Tile
 
 class Road
   constructor: () ->
-    @tiles = {}
-    @nums = {}
-    @edges = {}
     @length = 0
     @numEnds = 0
     @finished = false
+
+    @tiles = {}
+    @nums = {}
+    @edges = {}
 
   add: (row, col, edge, num, hasEnd) ->
     address = "#{row},#{col}"
@@ -90,6 +91,11 @@ class Road
     if not @tiles[address]
       @length += 1
       @tiles[address] = true
+
+    if hasEnd
+      @numEnds += 1
+      if @numEnds is 2
+        @finished = true
 
     @nums[address + ",#{num}"] = true
 
@@ -100,17 +106,12 @@ class Road
       num: num
       hasEnd: hasEnd
 
-    if hasEnd
-      @numEnds += 1
-      if @numEnds is 2
-        @finished = true
-
-  has: (row, col, num) ->
-    @nums["#{row},#{col},#{num}"]
-
   merge: (other) ->
     for e, edge of other.edges
       @add(edge.row, edge.col, edge.edge, edge.num, edge.hasEnd)
+
+  has: (row, col, num) ->
+    @nums["#{row},#{col},#{num}"]
 
   toString: ->
     out = "Road: ("
@@ -463,38 +464,43 @@ class World
     [otherRow, otherCol, @getTile(otherRow,otherCol).edges[oppositeDirection[dir]]]
 
   handleRoads: (row, col, tile, neighbours) ->
-    roads = []
+
+    seenRoad = null
 
     for dir in neighbours
       edge = tile.edges[dir]
-      [otherRow, otherCol, otherEdge] = @getOtherEdge(dir, row, col)
-      added = false
 
       if edge.kind is 'r'
-          for road in @roads
-            if not added and road.has(otherRow, otherCol, otherEdge.road)
-              if not tile.hasRoadEnd and roads.length > 0
-                if roads[0] is road
-                  # Closing a loop
-                  road.finished = true
-                  added = true
-                else
-                  # Merging two roads
-                  roads[0].merge(road)
-                  @roads.remove(road)
-                  added = true
-              else
-                # Adding to a road
-                road.add(row, col, dir, edge.road, tile.hasRoadEnd)
-                roads.push(road)
+
+        [otherRow, otherCol, otherEdge] = @getOtherEdge(dir, row, col)
+        added = false
+
+        for road in @roads
+          if not added and road.has(otherRow, otherCol, otherEdge.road)
+            if seenRoad? and not tile.hasRoadEnd
+              if road is seenRoad
+                # Closing a loop
+                road.finished = true
                 added = true
+              else
+                # Merging two roads
+                seenRoad.merge(road)
+                @roads.remove(road)
+                added = true
+            else
+              # Adding to a road
+              road.add(row, col, dir, edge.road, tile.hasRoadEnd)
+              seenRoad = road
+              added = true
 
     for dir of adjacents
       if not (dir in neighbours)
         edge = tile.edges[dir]
-        added = false
 
         if edge.kind is 'r'
+
+          added = false
+
           for road in @roads
             if not added and road.has(row, col, edge.road)
               road.add(row, col, dir, edge.road, tile.hasRoadEnd)

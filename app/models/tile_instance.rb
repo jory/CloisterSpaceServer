@@ -161,7 +161,7 @@ class TileInstance < ActiveRecord::Base
   ##########################################
   def handleRoads
 
-    seenRoads = []
+    seenRoad = nil
     
     @neighbours.each { |dir, tile|
       edge = Edge.find(self.tile[@edges[dir]])
@@ -173,17 +173,17 @@ class TileInstance < ActiveRecord::Base
 
         RoadFeature.where(:game_id => self.game).each do |road|
           if road.has(otherRow, otherCol, otherEdge.road)
-            if seenRoads.length > 0 and not self.tile.hasRoadEnd
-              if road == seenRoads.first
+            if not seenRoad.nil? and not self.tile.hasRoadEnd
+              if road == seenRoad
                 road.finished = true
                 road.save
               else
-                seenRoads.first.merge(road)
+                seenRoad.merge(road)
                 road.delete
               end
             else
               road.add(self.x, self.y, dir, edge.road, self.tile.hasRoadEnd)
-              seenRoads.push(road)
+              seenRoad = road
             end
             
             break
@@ -191,7 +191,6 @@ class TileInstance < ActiveRecord::Base
           end
         end
       end
-
     }
 
     @@Directions.each { |dir|

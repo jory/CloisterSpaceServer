@@ -111,12 +111,12 @@
   })();
   Road = (function() {
     function Road() {
-      this.tiles = {};
-      this.nums = {};
-      this.edges = {};
       this.length = 0;
       this.numEnds = 0;
       this.finished = false;
+      this.tiles = {};
+      this.nums = {};
+      this.edges = {};
     }
     Road.prototype.add = function(row, col, edge, num, hasEnd) {
       var address;
@@ -125,23 +125,20 @@
         this.length += 1;
         this.tiles[address] = true;
       }
+      if (hasEnd) {
+        this.numEnds += 1;
+        if (this.numEnds === 2) {
+          this.finished = true;
+        }
+      }
       this.nums[address + ("," + num)] = true;
-      this.edges[address + ("," + edge)] = {
+      return this.edges[address + ("," + edge)] = {
         row: row,
         col: col,
         edge: edge,
         num: num,
         hasEnd: hasEnd
       };
-      if (hasEnd) {
-        this.numEnds += 1;
-        if (this.numEnds === 2) {
-          return this.finished = true;
-        }
-      }
-    };
-    Road.prototype.has = function(row, col, num) {
-      return this.nums["" + row + "," + col + "," + num];
     };
     Road.prototype.merge = function(other) {
       var e, edge, _ref, _results;
@@ -152,6 +149,9 @@
         _results.push(this.add(edge.row, edge.col, edge.edge, edge.num, edge.hasEnd));
       }
       return _results;
+    };
+    Road.prototype.has = function(row, col, num) {
+      return this.nums["" + row + "," + col + "," + num];
     };
     Road.prototype.toString = function() {
       var address, out;
@@ -575,30 +575,30 @@
       return [otherRow, otherCol, this.getTile(otherRow, otherCol).edges[oppositeDirection[dir]]];
     };
     World.prototype.handleRoads = function(row, col, tile, neighbours) {
-      var added, dir, edge, otherCol, otherEdge, otherRow, road, roads, _i, _j, _len, _len2, _ref, _ref2, _results;
-      roads = [];
+      var added, dir, edge, otherCol, otherEdge, otherRow, road, seenRoad, _i, _j, _len, _len2, _ref, _ref2, _results;
+      seenRoad = null;
       for (_i = 0, _len = neighbours.length; _i < _len; _i++) {
         dir = neighbours[_i];
         edge = tile.edges[dir];
-        _ref = this.getOtherEdge(dir, row, col), otherRow = _ref[0], otherCol = _ref[1], otherEdge = _ref[2];
-        added = false;
         if (edge.kind === 'r') {
+          _ref = this.getOtherEdge(dir, row, col), otherRow = _ref[0], otherCol = _ref[1], otherEdge = _ref[2];
+          added = false;
           _ref2 = this.roads;
           for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
             road = _ref2[_j];
             if (!added && road.has(otherRow, otherCol, otherEdge.road)) {
-              if (!tile.hasRoadEnd && roads.length > 0) {
-                if (roads[0] === road) {
+              if ((seenRoad != null) && !tile.hasRoadEnd) {
+                if (road === seenRoad) {
                   road.finished = true;
                   added = true;
                 } else {
-                  roads[0].merge(road);
+                  seenRoad.merge(road);
                   this.roads.remove(road);
                   added = true;
                 }
               } else {
                 road.add(row, col, dir, edge.road, tile.hasRoadEnd);
-                roads.push(road);
+                seenRoad = road;
                 added = true;
               }
             }
@@ -611,8 +611,8 @@
           var _k, _len3, _ref3;
           if (!(__indexOf.call(neighbours, dir) >= 0)) {
             edge = tile.edges[dir];
-            added = false;
             if (edge.kind === 'r') {
+              added = false;
               _ref3 = this.roads;
               for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
                 road = _ref3[_k];

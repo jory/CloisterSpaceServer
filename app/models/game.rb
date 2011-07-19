@@ -10,7 +10,7 @@ class Game < ActiveRecord::Base
         tileInstance = TileInstance.create(:tile => tile, :game => game)
       end
 
-      if tile.isStart?
+      if tile.isStart? and tile.image == 'city1rwe.png'
         tileInstance.place(72, 72, 0)
       end
     end

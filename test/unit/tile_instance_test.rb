@@ -171,8 +171,8 @@ class TileInstanceTest < ActiveSupport::TestCase
 
   test "a road can be finished" do
     game = Game.create()
-    p = TileInstance.create(:tile => tiles(:cloisterr), :game => game)
-    q = TileInstance.create(:tile => tiles(:cloisterr), :game => game)
+    p = TileInstance.create(:tile => tiles(:city3r), :game => game)
+    q = TileInstance.create(:tile => tiles(:city3r), :game => game)
 
     assert p.place(72, 73, 1)
     assert q.place(72, 71, 3)
@@ -239,4 +239,79 @@ class TileInstanceTest < ActiveSupport::TestCase
     assert road.numEnds == 0, "Road had #{road.numEnds}, expected 0"
     assert road.finished, "Road wasn't finished, but should have been"
   end
+
+  test "cloister tile should create a cloister" do
+    game = Game.create()
+    
+    p = TileInstance.create(:tile => tiles(:cloister), :game => game)
+
+    cloisters = Cloister.where(:game_id => game)
+    assert cloisters.length == 0, "Found #{cloisters.length} cloisters, expected 0"
+
+    assert p.place(73, 72, 0)
+
+    cloisters = Cloister.where(:game_id => game)
+    assert cloisters.length == 1, "Found #{cloisters.length} cloisters, expected 1"
+  end
+
+  test "cloister tile should see exisiting neighbours" do
+    game = Game.create()
+    
+    p = TileInstance.create(:tile => tiles(:cloister), :game => game)
+
+    assert p.place(73, 72, 0)
+
+    cloisters = Cloister.where(:game_id => game)
+    cloister = cloisters.first
+
+    assert cloister.size == 2, "Cloister's size was #{cloister.size}, expected 2"
+  end
+  
+  test "surrounded cloister is finished" do
+    game = Game.create()
+    
+    p = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+    q = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+    r = TileInstance.create(:tile => tiles(:road2ns), :game => game)
+    s = TileInstance.create(:tile => tiles(:road2ns), :game => game)
+    t = TileInstance.create(:tile => tiles(:road2ns), :game => game)
+    u = TileInstance.create(:tile => tiles(:road2ns), :game => game)
+    v = TileInstance.create(:tile => tiles(:city1), :game => game)
+
+    assert p.place(72, 71, 3)
+    assert q.place(72, 73, 0)
+    assert r.place(73, 71, 0)
+    assert s.place(73, 73, 0)
+    assert t.place(74, 71, 0)
+    assert u.place(74, 73, 0)
+    assert v.place(74, 72, 2)
+    
+    c = TileInstance.create(:tile => tiles(:cloister), :game => game)
+    assert c.place(73, 72, 0)
+
+    cloisters = Cloister.where(:game_id => game)
+    cloister = cloisters.first
+
+    assert cloister.size == 9, "Cloister's size was #{cloister.size}, expected 9"
+    assert cloister.finished, "Cloister wasn't finished"
+  end
+
+  test "cloister tile should see new neighbours" do
+    game = Game.create()
+    
+    p = TileInstance.create(:tile => tiles(:cloister), :game => game)
+
+    assert p.place(73, 72, 0)
+
+    q = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+
+    assert q.place(72, 73, 0)
+
+    cloisters = Cloister.where(:game_id => game)
+    assert cloisters.length == 1, "Found #{cloisters.length} Cloisters, but was expecting 1"
+
+    cloister = cloisters.first
+    assert cloister.size == 3, "Cloister's size was #{cloister.size}, expected 3"
+  end
+
 end

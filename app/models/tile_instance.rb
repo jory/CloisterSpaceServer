@@ -43,6 +43,7 @@ class TileInstance < ActiveRecord::Base
         ##########################################
         if self.update_attributes(:row => row, :col => col, :rotation => rotation,
                                   :status => "placed")
+          handleCloisters
           handleRoads
         end
       end
@@ -150,6 +151,33 @@ class TileInstance < ActiveRecord::Base
     end
 
     return edges
+  end
+
+  def handleCloisters
+    if self.tile.isCloister
+      cloister = Cloister.create(:row => self.row, :col => self.col, :game => self.game)
+      
+      (-1..1).each do |dX|
+        (-1..1).each do |dY|
+          if not (dX == 0 and dY == 0)
+
+            otherRow = self.row + dX
+            otherCol = self.col + dY
+
+            if TileInstance.where(:row => otherRow, :col => otherCol,
+                                  :game_id => self.game).first
+              cloister.add(otherRow, otherCol)
+            end
+          end
+        end
+      end
+    else
+      Cloister.where(:game_id => self.game).each do |cloister|
+        if cloister.neighbours(self.row, self.col)
+          cloister.add(self.row, self.col)
+        end
+      end
+    end
   end
 
   ##########################################

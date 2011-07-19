@@ -19,6 +19,7 @@ class Cloister < ActiveRecord::Base
     if neighbours(row, col)
       self.size += 1
       self.finished = true if self.size == 9
+      self.save
     end
   end
 

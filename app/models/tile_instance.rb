@@ -56,9 +56,9 @@ class TileInstance < ActiveRecord::Base
     if not current.empty?
       return current.first
     end
-    
-    tiles = TileInstance.where(:game_id => game_id, :status => nil)
 
+    tiles = TileInstance.where(:game_id => game_id, :status => nil)
+    
     if not tiles.empty?
       tile = tiles[rand(tiles.size)]
       tile.status = "current"
@@ -171,11 +171,11 @@ class TileInstance < ActiveRecord::Base
           end
         end
       end
-    else
-      Cloister.where(:game_id => self.game).each do |cloister|
-        if cloister.neighbours(self.row, self.col)
-          cloister.add(self.row, self.col)
-        end
+    end
+
+    Cloister.where(:game_id => self.game).each do |cloister|
+      if cloister.neighbours(self.row, self.col)
+        cloister.add(self.row, self.col)
       end
     end
   end

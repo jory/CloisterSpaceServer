@@ -339,7 +339,7 @@
   })();
   World = (function() {
     function World() {
-      var getEdges, getFeatures, getTiles, haveEdges, haveRoads, haveTiles, i, setupBoard;
+      var getEdges, getFeatures, getTiles, haveCloisters, haveEdges, haveFeatures, haveRoads, haveTiles, i, setupBoard;
       this.center = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.origin = window.location.origin;
@@ -350,6 +350,7 @@
       this.tiles = {};
       haveTiles = false;
       haveRoads = false;
+      haveCloisters = false;
       this.finished = false;
       this.minrow = this.maxrow = this.mincol = this.maxcol = this.center;
       this.board = (function() {
@@ -397,7 +398,7 @@
         }
       }, this);
       getFeatures = __bind(function() {
-        return $.getJSON("" + this.origin + "/roads.json", "game=" + this.game_id, __bind(function(data) {
+        $.getJSON("" + this.origin + "/roads.json", "game=" + this.game_id, __bind(function(data) {
           var obj, road, roadFeature, section, _i, _j, _len, _len2;
           console.log("Got " + data.length + " roads");
           for (_i = 0, _len = data.length; _i < _len; _i++) {
@@ -412,10 +413,34 @@
           }
           return haveRoads = true;
         }, this));
+        return $.getJSON("" + this.origin + "/cloisters.json", "game=" + this.game_id, __bind(function(data) {
+          var c, cloister, cs, obj, section, _i, _j, _len, _len2, _ref;
+          console.log("Got " + data.length + " cloisters");
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            obj = data[_i];
+            c = obj[0].cloister;
+            cloister = new Cloister(c.row, c.col);
+            _ref = obj[1];
+            for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
+              section = _ref[_j];
+              cs = section.cloister_section;
+              cloister.add(cs.row, cs.col);
+            }
+            this.cloisters.push(cloister);
+          }
+          return haveCloisters = true;
+        }, this));
+      }, this);
+      haveFeatures = __bind(function() {
+        if (haveRoads && haveCloisters) {
+          return true;
+        } else {
+          return false;
+        }
       }, this);
       setupBoard = __bind(function() {
         var parameters, url;
-        if (!(haveTiles && haveRoads)) {
+        if (!(haveTiles && haveFeatures())) {
           return setTimeout(setupBoard, this.timeout);
         } else {
           url = "" + this.origin + "/tileInstances.json";

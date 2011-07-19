@@ -308,10 +308,30 @@ class TileInstanceTest < ActiveSupport::TestCase
     assert q.place(72, 73, 0)
 
     cloisters = Cloister.where(:game_id => game)
-    assert cloisters.length == 1, "Found #{cloisters.length} Cloisters, but was expecting 1"
+    assert cloisters.length == 1, "Found #{cloisters.length} Cloisters, was expecting 1"
 
     cloister = cloisters.first
     assert cloister.size == 3, "Cloister's size was #{cloister.size}, expected 3"
   end
 
+  test "cloisters can be neighbours" do
+    game = Game.create()
+    
+    p = TileInstance.create(:tile => tiles(:cloister), :game => game)
+
+    assert p.place(73, 72, 0)
+
+    q = TileInstance.create(:tile => tiles(:cloister), :game => game)
+
+    assert q.place(73, 73, 0)
+
+    cloisters = Cloister.where(:game_id => game)
+    assert cloisters.length == 2, "Found #{cloisters.length} Cloisters, was expecting 2"
+
+    cloister = cloisters.first
+    assert cloister.size == 3, "Cloister's size was #{cloister.size}, expected 3"
+
+    second = cloisters[1]
+    assert second.size == 3, "Cloister's size was #{second.size}, expected 3"
+  end
 end

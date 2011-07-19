@@ -10,7 +10,15 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110719145809) do
+ActiveRecord::Schema.define(:version => 20110719181732) do
+
+  create_table "cloister_sections", :force => true do |t|
+    t.integer  "row"
+    t.integer  "col"
+    t.integer  "cloister_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "cloisters", :force => true do |t|
     t.integer  "row"

@@ -279,6 +279,7 @@ class World
     haveTiles = false
 
     haveRoads = false
+    haveCloisters = false
 
     @finished = false
 
@@ -332,9 +333,29 @@ class World
         haveRoads = true
       )
 
+      $.getJSON("#{@origin}/cloisters.json", "game=#{@game_id}", (data) =>
+        console.log("Got #{data.length} cloisters")
+        for obj in data
+          c = obj[0].cloister
+          cloister = new Cloister(c.row, c.col)
+
+          for section in obj[1]
+            cs = section.cloister_section
+            cloister.add(cs.row, cs.col)
+
+          @cloisters.push(cloister)
+
+        haveCloisters = true
+      )
+
+    haveFeatures = =>
+      if haveRoads and haveCloisters
+        return true
+      else
+        return false
 
     setupBoard = =>
-      if not (haveTiles and haveRoads)
+      if not (haveTiles and haveFeatures())
         setTimeout(setupBoard, @timeout)
       else
         url = "#{@origin}/tileInstances.json"

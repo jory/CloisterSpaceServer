@@ -4,11 +4,11 @@ class GameTest < ActiveSupport::TestCase
 
   test "an actually created game should place the starting tile automatically" do
     game = Game.create()
-    assert !RoadFeature.where(:game_id => game).empty?
+    assert !Road.where(:game_id => game).empty?
   end
 
-  test "can access RoadFeatures using .roadFeatures" do
+  test "can access Roads using .roads" do
     game = Game.create()
-    assert !game.roadFeatures.empty?
+    assert !game.roads.empty?
   end
 end

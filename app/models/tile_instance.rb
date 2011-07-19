@@ -153,7 +153,7 @@ class TileInstance < ActiveRecord::Base
   end
 
   ##########################################
-  # TODO: Figure out why the query needs to be RoadFeature.where,
+  # TODO: Figure out why the query needs to be Road.where,
   # instead of the other form.
   # 
   # Also TODO: Refactor this method like crazy!
@@ -171,7 +171,7 @@ class TileInstance < ActiveRecord::Base
         otherRow, otherCol = offset(self.x, self.y, dir)
         otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[@@Opposite[dir]]])
 
-        RoadFeature.where(:game_id => self.game).each do |road|
+        Road.where(:game_id => self.game).each do |road|
           if road.has(otherRow, otherCol, otherEdge.road)
             if not seenRoad.nil? and not self.tile.hasRoadEnd
               if road == seenRoad
@@ -201,7 +201,7 @@ class TileInstance < ActiveRecord::Base
 
           added = false
           
-          RoadFeature.where(:game_id => self.game).each do |road|
+          Road.where(:game_id => self.game).each do |road|
             if road.has(self.x, self.y, edge.road)
               road.add(self.x, self.y, dir, edge.road, self.tile.hasRoadEnd)
               added = true
@@ -210,7 +210,7 @@ class TileInstance < ActiveRecord::Base
           end
 
           if not added
-            road = RoadFeature.create(:game => self.game)
+            road = Road.create(:game => self.game)
             if not road.add(self.x, self.y, dir, edge.road, self.tile.hasRoadEnd)
               raise "Failed to add to the road."
             end

@@ -1,4 +1,4 @@
-class RoadFeature < ActiveRecord::Base
+class Road < ActiveRecord::Base
   # TODO: Figure out how to make these read only to the outside world.
   validates :length, :numericality => true
   validates :numEnds, :numericality => true
@@ -24,8 +24,8 @@ class RoadFeature < ActiveRecord::Base
     self.numEnds += 1 if hasEnd
     self.finished = true if numEnds == 2
     
-    RoadSection.create(:road_feature => self, :x => x, :y => y,
-                       :edge => edge.to_s, :num => num, :hasEnd => hasEnd)
+    RoadSection.create(:road => self, :x => x, :y => y, :edge => edge.to_s,
+                       :num => num, :hasEnd => hasEnd)
 
     self.save
   end

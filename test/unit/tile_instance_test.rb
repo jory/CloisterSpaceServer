@@ -119,27 +119,27 @@ class TileInstanceTest < ActiveSupport::TestCase
 
   ##########################################
   # Because @game is a fixture, it doesn't seem to support looking up
-  # the RoadFeatures via @game.roadFeatures
+  # the Roads via @game.roads
   #
   # TODO: Figure out how to get that style of lookup working.
   ##########################################
 
-  test "starting tile should create a road feature" do
-    assert RoadFeature.where(:game_id => @game).empty?
+  test "starting tile should create a road" do
+    assert Road.where(:game_id => @game).empty?
 
     p = TileInstance.create(:tile => @startingTile, :game => @game)
     p.place(72, 72, 0)
 
-    assert !RoadFeature.where(:game_id => @game).empty?, "RoadFeatures is still empty!"
+    assert !Road.where(:game_id => @game).empty?, "Roads is still empty!"
   end
 
-  test "starting tile should create a *single* road feature" do
-    assert RoadFeature.where(:game_id => @game).empty?
+  test "starting tile should create a *single* road" do
+    assert Road.where(:game_id => @game).empty?
 
     p = TileInstance.create(:tile => @startingTile, :game => @game)
     p.place(72, 72, 0)
 
-    roads = RoadFeature.where(:game_id => @game)
+    roads = Road.where(:game_id => @game)
     
     assert roads.length == 1, "Found #{roads.length} roads, expected 1."
   end
@@ -147,7 +147,7 @@ class TileInstanceTest < ActiveSupport::TestCase
   test "starting tile's road should be of length 1, numEnds 0, finished false" do
     p = TileInstance.create(:tile => @startingTile, :game => @game)
     p.place(72, 72, 0)
-    road = RoadFeature.where(:game_id => @game).first
+    road = Road.where(:game_id => @game).first
 
     assert road.length == 1
     assert road.numEnds == 0
@@ -158,7 +158,7 @@ class TileInstanceTest < ActiveSupport::TestCase
     p = TileInstance.create(:tile => tiles(:sroad3), :game => @game)
     p.place(72, 72, 0)
 
-    roads = RoadFeature.where(:game_id => @game)
+    roads = Road.where(:game_id => @game)
 
     assert roads.length == 3, "Found #{roads.length} roads, but was expecting 3."
 
@@ -177,7 +177,7 @@ class TileInstanceTest < ActiveSupport::TestCase
     assert p.place(72, 73, 1)
     assert q.place(72, 71, 3)
 
-    roads = game.roadFeatures
+    roads = game.roads
     assert roads.length == 1, "Found #{roads.length} roads, expected 1"
 
     road = roads.first
@@ -196,7 +196,7 @@ class TileInstanceTest < ActiveSupport::TestCase
     assert q.place(72, 73, 1)
     assert r.place(71, 73, 0)
 
-    roads = game.roadFeatures
+    roads = game.roads
     assert roads.length == 1, "Found #{roads.length} roads, expected 1"
 
     road = roads.first
@@ -211,27 +211,27 @@ class TileInstanceTest < ActiveSupport::TestCase
     r = TileInstance.create(:tile => tiles(:road2sw), :game => @game)
     s = TileInstance.create(:tile => tiles(:road2sw), :game => @game)
 
-    roads = RoadFeature.where(:game_id => @game)
+    roads = Road.where(:game_id => @game)
     assert roads.length == 0, "Found #{roads.length} roads, expected 0 (no tiles)"
 
     assert p.place(72, 72, 0)
 
-    roads = RoadFeature.where(:game_id => @game)
+    roads = Road.where(:game_id => @game)
     assert roads.length == 1, "Found #{roads.length} roads, expected 1 (one tile)"
 
     assert q.place(73, 72, 1)
 
-    roads = RoadFeature.where(:game_id => @game)
+    roads = Road.where(:game_id => @game)
     assert roads.length == 1, "Found #{roads.length} roads, expected 1 (two tiles)"
 
     assert r.place(73, 71, 2)
 
-    roads = RoadFeature.where(:game_id => @game)
+    roads = Road.where(:game_id => @game)
     assert roads.length == 1, "Found #{roads.length} roads, expected 1 (three tiles)"
 
     assert s.place(72, 71, 3)
 
-    roads = RoadFeature.where(:game_id => @game)
+    roads = Road.where(:game_id => @game)
     assert roads.length == 1, "Found #{roads.length} roads, expected 1 (all tiles)"
 
     road = roads.first

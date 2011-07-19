@@ -397,9 +397,9 @@
         }
       }, this);
       getFeatures = __bind(function() {
-        return $.getJSON("" + this.origin + "/roadFeatures.json", "game=" + this.game_id, __bind(function(data) {
+        return $.getJSON("" + this.origin + "/roads.json", "game=" + this.game_id, __bind(function(data) {
           var obj, road, roadFeature, section, _i, _j, _len, _len2;
-          console.log("Got " + data.length + " roadFeatures");
+          console.log("Got " + data.length + " roads");
           for (_i = 0, _len = data.length; _i < _len; _i++) {
             roadFeature = data[_i];
             road = new Road();

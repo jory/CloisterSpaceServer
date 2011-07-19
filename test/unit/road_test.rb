@@ -1,14 +1,14 @@
 require 'test_helper'
 
-class RoadFeatureTest < ActiveSupport::TestCase
+class RoadTest < ActiveSupport::TestCase
 
   def setup
     @game = Game.first
-    @rf = RoadFeature.create(:game => @game)
+    @rf = Road.create(:game => @game)
   end
 
   test "needs game" do
-    assert !RoadFeature.create().save
+    assert !Road.create().save
   end
 
   test "no nil arguments to add" do
@@ -51,12 +51,12 @@ class RoadFeatureTest < ActiveSupport::TestCase
   end
   
   test "only merge within game" do
-    other = RoadFeature.create(:game => Game.create())
+    other = Road.create(:game => Game.create())
     assert !@rf.merge(other)
   end
   
   test "merging to finish roads" do
-    other = RoadFeature.create(:game => @game)
+    other = Road.create(:game => @game)
 
     @rf.add(0, 0, :north, 0, true)
     other.add(1, 1, :south, 1, true)
@@ -75,12 +75,12 @@ class RoadFeatureTest < ActiveSupport::TestCase
     @rf.add(0, 1, :north, 0, true)
     assert @rf.finished
     
-    other = RoadFeature.create(:game => @game)
+    other = Road.create(:game => @game)
     assert !@rf.merge(other)
   end
 
   test "can't merge with a finished road" do
-    other = RoadFeature.create(:game => @game)
+    other = Road.create(:game => @game)
     other.add(0, 0, :north, 0, true)
     other.add(0, 1, :north, 0, true)
     assert other.finished
@@ -111,7 +111,7 @@ class RoadFeatureTest < ActiveSupport::TestCase
 
     assert @rf.length == 1
 
-    other = RoadFeature.create(:game => @game)
+    other = Road.create(:game => @game)
     other.add(0, 1, :north, 0, true)
     other.add(0, 2, :north, 0, false)
 

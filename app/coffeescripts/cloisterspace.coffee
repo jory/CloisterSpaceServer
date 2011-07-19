@@ -315,8 +315,8 @@ class World
         )
 
     getFeatures = =>
-      $.getJSON("#{@origin}/roadFeatures.json", "game=#{@game_id}", (data) =>
-        console.log("Got #{data.length} roadFeatures")
+      $.getJSON("#{@origin}/roads.json", "game=#{@game_id}", (data) =>
+        console.log("Got #{data.length} roads")
         for roadFeature in data
           road = new Road()
 

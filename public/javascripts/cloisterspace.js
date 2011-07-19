@@ -406,7 +406,7 @@
             for (_j = 0, _len2 = roadFeature.length; _j < _len2; _j++) {
               obj = roadFeature[_j];
               section = obj.road_section;
-              road.add(section.x, section.y, section.edge, section.num, section.hasEnd);
+              road.add(section.row, section.col, section.edge, section.num, section.hasEnd);
             }
             this.roads.push(road);
           }
@@ -427,7 +427,7 @@
               instance = obj.tile_instance;
               tile = new Tile(this.tiles[instance.tile_id], instance.id);
               tile.rotate(instance.rotation);
-              this.placeTileOnBoard(instance.x, instance.y, tile);
+              this.placeTileOnBoard(instance.row, instance.col, tile);
             }
             this.drawBoard();
             return this.next();

@@ -324,7 +324,8 @@ class World
 
           for obj in roadFeature
             section = obj.road_section
-            road.add(section.x, section.y, section.edge, section.num, section.hasEnd)
+            road.add(section.row, section.col, section.edge, section.num,
+                     section.hasEnd)
 
           @roads.push(road)
 
@@ -343,7 +344,7 @@ class World
             instance = obj.tile_instance
             tile = new Tile(@tiles[instance.tile_id], instance.id)
             tile.rotate(instance.rotation)
-            @placeTileOnBoard(instance.x, instance.y, tile)
+            @placeTileOnBoard(instance.row, instance.col, tile)
           @drawBoard()
           @next()
         )

@@ -12,19 +12,19 @@ class Road < ActiveRecord::Base
 
   has_many :roadSections
 
-  def add(x, y, edge, num, hasEnd, merging=false)
-    if not meets_add_preconditions? x, y, edge, num, hasEnd, merging
+  def add(row, col, edge, num, hasEnd, merging=false)
+    if not meets_add_preconditions? row, col, edge, num, hasEnd, merging
       return false
     end
 
-    if self.roadSections.where(:x => x, :y => y).empty?
+    if self.roadSections.where(:row => row, :col => col).empty?
       self.length += 1
     end
 
     self.numEnds += 1 if hasEnd
     self.finished = true if numEnds == 2
     
-    RoadSection.create(:road => self, :x => x, :y => y, :edge => edge.to_s,
+    RoadSection.create(:road => self, :row => row, :col => col, :edge => edge.to_s,
                        :num => num, :hasEnd => hasEnd)
 
     self.save
@@ -36,22 +36,22 @@ class Road < ActiveRecord::Base
     end
     
     for section in other.roadSections
-      add(section.x, section.y, section.edge, section.num, section.hasEnd, true)
+      add(section.row, section.col, section.edge, section.num, section.hasEnd, true)
     end
 
     return true
   end
 
-  def has(x, y, num)
-    if not self.roadSections.where(:x => x, :y => y, :num => num).empty?
+  def has(row, col, num)
+    if not self.roadSections.where(:row => row, :col => col, :num => num).empty?
       return true
     end
   end
   
   private
 
-  def meets_add_preconditions?(x, y, edge, num, hasEnd, merging)
-    if x.nil? or y.nil? or edge.nil? or num.nil? or hasEnd.nil?
+  def meets_add_preconditions?(row, col, edge, num, hasEnd, merging)
+    if row.nil? or col.nil? or edge.nil? or num.nil? or hasEnd.nil?
       return false
     end
 
@@ -59,7 +59,7 @@ class Road < ActiveRecord::Base
       return false
     end
 
-    if not self.roadSections.where(:x => x, :y => y, :edge => edge, :num => num,
+    if not self.roadSections.where(:row => row, :col => col, :edge => edge, :num => num,
                                    :hasEnd => hasEnd).empty?
       return false
     end

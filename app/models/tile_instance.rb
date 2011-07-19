@@ -3,10 +3,10 @@ class TileInstance < ActiveRecord::Base
   validates :status, :inclusion => { :in => %w(current placed discarded),
                                      :allow_nil => true }
 
-  validates :x, :numericality => { :greater_than => -1, :less_than => 145,
-                                   :allow_nil => true }
-  validates :y, :numericality => { :greater_than => -1, :less_than => 145,
-                                   :allow_nil => true }
+  validates :row, :numericality => { :greater_than => -1, :less_than => 145,
+                                     :allow_nil => true }
+  validates :col, :numericality => { :greater_than => -1, :less_than => 145,
+                                     :allow_nil => true }
 
   validates :rotation, :inclusion => { :in => 0..3, :allow_nil => true }
 
@@ -30,10 +30,10 @@ class TileInstance < ActiveRecord::Base
     @edges = {}    
   end
 
-  def place(x, y, rotation)
-    if meets_place_preconditions? x, y, rotation
+  def place(row, col, rotation)
+    if meets_place_preconditions? row, col, rotation
 
-      @neighbours = find_neighbours(x, y)
+      @neighbours = find_neighbours(row, col)
       @edges = rotate(rotation)
 
       if is_valid_placement?
@@ -41,7 +41,7 @@ class TileInstance < ActiveRecord::Base
         # TODO: Figure out why this is a self call when the other ones
         # aren't...
         ##########################################
-        if self.update_attributes(:x => x, :y => y, :rotation => rotation,
+        if self.update_attributes(:row => row, :col => col, :rotation => rotation,
                                   :status => "placed")
           handleRoads
         end
@@ -68,18 +68,18 @@ class TileInstance < ActiveRecord::Base
 
   private
 
-  def meets_place_preconditions?(x, y, rotation)
+  def meets_place_preconditions?(row, col, rotation)
     # TODO: Figure out why this only works when it's self.status,
     # rather than @status.
     if self.status == "placed"
       return false
     end
 
-    if x.nil? or y.nil? or rotation.nil?
+    if row.nil? or col.nil? or rotation.nil?
       return false
     end
 
-    if not TileInstance.where(:game_id => @game, :x => x, :y => y).empty?
+    if not TileInstance.where(:game_id => @game, :row => row, :col => col).empty?
       return false
     end
 
@@ -111,25 +111,25 @@ class TileInstance < ActiveRecord::Base
     return true
   end    
   
-  def find_neighbours(x, y)
+  def find_neighbours(row, col)
     n = {}
 
-    north = TileInstance.where(:game_id => self.game, :x => (x - 1), :y => y)
+    north = TileInstance.where(:game_id => self.game, :row => (row - 1), :col => col)
     if not north.empty?
       n[:north] = north.first
     end
 
-    south = TileInstance.where(:game_id => self.game, :x => (x + 1), :y => y)
+    south = TileInstance.where(:game_id => self.game, :row => (row + 1), :col => col)
     if not south.empty?
       n[:south] = south.first
     end
 
-    west = TileInstance.where(:game_id => self.game, :x => x, :y => (y - 1))
+    west = TileInstance.where(:game_id => self.game, :row => row, :col => (col - 1))
     if not west.empty?
       n[:west] = west.first
     end
 
-    east = TileInstance.where(:game_id => self.game, :x => x, :y => (y + 1))
+    east = TileInstance.where(:game_id => self.game, :row => row, :col => (col + 1))
     if not east.empty?
       n[:east] = east.first
     end
@@ -168,7 +168,7 @@ class TileInstance < ActiveRecord::Base
 
       if edge.kind == 'r'
         
-        otherRow, otherCol = offset(self.x, self.y, dir)
+        otherRow, otherCol = offset(self.row, self.col, dir)
         otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[@@Opposite[dir]]])
 
         Road.where(:game_id => self.game).each do |road|
@@ -182,7 +182,7 @@ class TileInstance < ActiveRecord::Base
                 road.delete
               end
             else
-              road.add(self.x, self.y, dir, edge.road, self.tile.hasRoadEnd)
+              road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)
               seenRoad = road
             end
             
@@ -202,8 +202,8 @@ class TileInstance < ActiveRecord::Base
           added = false
           
           Road.where(:game_id => self.game).each do |road|
-            if road.has(self.x, self.y, edge.road)
-              road.add(self.x, self.y, dir, edge.road, self.tile.hasRoadEnd)
+            if road.has(self.row, self.col, edge.road)
+              road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)
               added = true
               break
             end
@@ -211,7 +211,7 @@ class TileInstance < ActiveRecord::Base
 
           if not added
             road = Road.create(:game => self.game)
-            if not road.add(self.x, self.y, dir, edge.road, self.tile.hasRoadEnd)
+            if not road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)
               raise "Failed to add to the road."
             end
           end
@@ -220,11 +220,11 @@ class TileInstance < ActiveRecord::Base
     }
   end
 
-  def offset(x, y, dir)
-    if dir == :north    then return x - 1, y
-    elsif dir == :south then return x + 1, y
-    elsif dir == :east  then return x, y + 1
-    elsif dir == :west  then return x, y - 1
+  def offset(row, col, dir)
+    if dir == :north    then return row - 1, col
+    elsif dir == :south then return row + 1, col
+    elsif dir == :east  then return row, col + 1
+    elsif dir == :west  then return row, col - 1
     end
   end
   

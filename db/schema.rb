@@ -10,11 +10,11 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110719134543) do
+ActiveRecord::Schema.define(:version => 20110719145809) do
 
   create_table "cloisters", :force => true do |t|
-    t.integer  "x"
-    t.integer  "y"
+    t.integer  "row"
+    t.integer  "col"
     t.integer  "size",       :default => 1
     t.boolean  "finished",   :default => false
     t.integer  "game_id"
@@ -38,8 +38,8 @@ ActiveRecord::Schema.define(:version => 20110719134543) do
   end
 
   create_table "road_sections", :force => true do |t|
-    t.integer  "x"
-    t.integer  "y"
+    t.integer  "row"
+    t.integer  "col"
     t.string   "edge"
     t.integer  "num"
     t.boolean  "hasEnd"
@@ -59,8 +59,8 @@ ActiveRecord::Schema.define(:version => 20110719134543) do
 
   create_table "tile_instances", :force => true do |t|
     t.string   "status"
-    t.integer  "x"
-    t.integer  "y"
+    t.integer  "row"
+    t.integer  "col"
     t.integer  "rotation"
     t.integer  "tile_id"
     t.integer  "game_id"

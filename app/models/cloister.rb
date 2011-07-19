@@ -1,9 +1,9 @@
 class Cloister < ActiveRecord::Base
 
-  validates :x, :numericality => { :greater_than => -1, :less_than => 145},
-                :presence => true
-  validates :y, :numericality => { :greater_than => -1, :less_than => 145},
-                :presence => true
+  validates :row, :numericality => { :greater_than => -1, :less_than => 145},
+                  :presence => true
+  validates :col, :numericality => { :greater_than => -1, :less_than => 145},
+                  :presence => true
 
   validates :size, :numericality => true
 

@@ -10,7 +10,17 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110719085611) do
+ActiveRecord::Schema.define(:version => 20110719134543) do
+
+  create_table "cloisters", :force => true do |t|
+    t.integer  "x"
+    t.integer  "y"
+    t.integer  "size",       :default => 1
+    t.boolean  "finished",   :default => false
+    t.integer  "game_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "edges", :force => true do |t|
     t.string   "kind"

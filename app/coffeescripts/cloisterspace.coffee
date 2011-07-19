@@ -177,15 +177,17 @@ class City
     out = "City: ("
     for address of @tiles
       out += "#{address}; "
-    out.slice(0, -2) + "), size: #{@size}, finished: #{@finished}, numPennants: #{@numPennants}"
+    out.slice(0, -2) +
+        "), size: #{@size}, finished: #{@finished}, numPennants: #{@numPennants}"
 
 
 class Cloister
   constructor: (row, col) ->
-    @tiles = {}
-    @neighbours = {}
     @size = 0
     @finished = false
+
+    @tiles = {}
+    @neighbours = {}
 
     for rowOffset in [-1..1]
       for colOffset in [-1..1]

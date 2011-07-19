@@ -231,10 +231,10 @@
   Cloister = (function() {
     function Cloister(row, col) {
       var colOffset, otherCol, otherRow, rowOffset, _ref, _ref2;
-      this.tiles = {};
-      this.neighbours = {};
       this.size = 0;
       this.finished = false;
+      this.tiles = {};
+      this.neighbours = {};
       for (rowOffset = _ref = -1; _ref <= 1 ? rowOffset <= 1 : rowOffset >= 1; _ref <= 1 ? rowOffset++ : rowOffset--) {
         for (colOffset = _ref2 = -1; _ref2 <= 1 ? colOffset <= 1 : colOffset >= 1; _ref2 <= 1 ? colOffset++ : colOffset--) {
           if (!(rowOffset === 0 && colOffset === 0)) {

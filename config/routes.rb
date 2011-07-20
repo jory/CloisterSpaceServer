@@ -1,5 +1,5 @@
 CloisterSpaceServer::Application.routes.draw do
-  resources :games, :tiles, :edges, :roads, :cloisters
+  resources :games, :tiles, :edges, :roads, :cloisters, :cities
 
   match 'tileInstances/next' => 'tileInstances#next'
 

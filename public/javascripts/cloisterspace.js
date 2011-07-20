@@ -164,17 +164,16 @@
     return Road;
   })();
   City = (function() {
-    function City(row, col, edge, id, citysFields, hasPennant) {
-      this.tiles = {};
-      this.ids = {};
-      this.edges = {};
-      this.openEdges = [];
+    function City() {
       this.size = 0;
       this.numPennants = 0;
       this.finished = false;
-      this.add(row, col, edge, id, citysFields, hasPennant);
+      this.openEdges = [];
+      this.tiles = {};
+      this.nums = {};
+      this.edges = {};
     }
-    City.prototype.add = function(row, col, edge, id, citysFields, hasPennant) {
+    City.prototype.add = function(row, col, edge, num, citysFields, hasPennant) {
       var address, otherAddress, otherCol, otherRow, _ref;
       address = "" + row + "," + col;
       if (empty(this.tiles[address])) {
@@ -184,12 +183,12 @@
           this.numPennants += 1;
         }
       }
-      this.ids[address + ("," + id)] = true;
+      this.nums[address + ("," + num)] = true;
       this.edges[address + ("," + edge)] = {
         row: row,
         col: col,
         edge: edge,
-        id: id
+        num: num
       };
       _ref = offset(edge, row, col), otherRow = _ref[0], otherCol = _ref[1];
       otherAddress = "" + otherRow + "," + otherCol + "," + oppositeDirection[edge];
@@ -204,8 +203,8 @@
         return this.finished = false;
       }
     };
-    City.prototype.has = function(row, col, id) {
-      return this.ids["" + row + "," + col + "," + id];
+    City.prototype.has = function(row, col, num) {
+      return this.nums["" + row + "," + col + "," + num];
     };
     City.prototype.merge = function(other) {
       var col, e, edge, row, _ref;
@@ -214,7 +213,7 @@
         edge = _ref[e];
         row = edge.row;
         col = edge.col;
-        this.add(row, col, edge.edge, edge.id, other.tiles["" + row + "," + col], false);
+        this.add(row, col, edge.edge, edge.num, other.tiles["" + row + "," + col], false);
       }
       return this.numPennants += other.numPennants;
     };
@@ -339,7 +338,7 @@
   })();
   World = (function() {
     function World() {
-      var getEdges, getFeatures, getTiles, haveCloisters, haveEdges, haveFeatures, haveRoads, haveTiles, i, setupBoard;
+      var getEdges, getFeatures, getTiles, haveCities, haveCloisters, haveEdges, haveFeatures, haveRoads, haveTiles, i, setupBoard;
       this.center = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.origin = window.location.origin;
@@ -350,6 +349,7 @@
       this.tiles = {};
       haveTiles = false;
       haveRoads = false;
+      haveCities = false;
       haveCloisters = false;
       this.finished = false;
       this.minrow = this.maxrow = this.mincol = this.maxcol = this.center;
@@ -413,6 +413,21 @@
           }
           return haveRoads = true;
         }, this));
+        $.getJSON("" + this.origin + "/cities.json", "game=" + this.game_id, __bind(function(data) {
+          var city, cityFeature, obj, section, _i, _j, _len, _len2;
+          console.log("Got " + data.length + " cities");
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            cityFeature = data[_i];
+            city = new City();
+            for (_j = 0, _len2 = cityFeature.length; _j < _len2; _j++) {
+              obj = cityFeature[_j];
+              section = obj.city_section;
+              city.add(section.row, section.col, section.edge, section.num, section.citysFields, section.hasPennant);
+            }
+            this.cities.push(city);
+          }
+          return haveCities = true;
+        }, this));
         return $.getJSON("" + this.origin + "/cloisters.json", "game=" + this.game_id, __bind(function(data) {
           var c, cloister, cs, obj, section, _i, _j, _len, _len2, _ref;
           console.log("Got " + data.length + " cloisters");
@@ -432,7 +447,7 @@
         }, this));
       }, this);
       haveFeatures = __bind(function() {
-        if (haveRoads && haveCloisters) {
+        if (haveRoads && haveCities && haveCloisters) {
           return true;
         } else {
           return false;
@@ -699,7 +714,8 @@
                 }
               }
               if (!added) {
-                c = new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+                c = new City();
+                c.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
                 return this.cities.push(c);
               }
             }

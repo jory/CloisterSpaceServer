@@ -122,7 +122,7 @@ class Road
 
 
 class City
-  constructor: (row, col, edge, num, citysFields, hasPennant) ->
+  constructor: () ->
     @size = 0
     @numPennants = 0
     @finished = false
@@ -132,8 +132,6 @@ class City
     @tiles = {}
     @nums = {}
     @edges = {}
-
-    @add(row, col, edge, num, citysFields, hasPennant)
 
   add: (row, col, edge, num, citysFields, hasPennant) ->
     address = "#{row},#{col}"
@@ -281,6 +279,7 @@ class World
     haveTiles = false
 
     haveRoads = false
+    haveCities = false
     haveCloisters = false
 
     @finished = false
@@ -335,6 +334,21 @@ class World
         haveRoads = true
       )
 
+      $.getJSON("#{@origin}/cities.json", "game=#{@game_id}", (data) =>
+        console.log("Got #{data.length} cities")
+        for cityFeature in data
+          city = new City()
+
+          for obj in cityFeature
+            section = obj.city_section
+            city.add(section.row, section.col, section.edge, section.num,
+                     section.citysFields, section.hasPennant)
+
+          @cities.push(city)
+
+        haveCities = true
+      )
+
       $.getJSON("#{@origin}/cloisters.json", "game=#{@game_id}", (data) =>
         console.log("Got #{data.length} cloisters")
         for obj in data
@@ -351,7 +365,7 @@ class World
       )
 
     haveFeatures = =>
-      if haveRoads and haveCloisters
+      if haveRoads and haveCities and haveCloisters
         return true
       else
         return false
@@ -568,7 +582,8 @@ class World
               added = true
 
           if not added
-            c = new City(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+            c = new City()
+            c.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
             @cities.push(c)
 
 

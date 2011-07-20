@@ -12,34 +12,31 @@ class Road < ActiveRecord::Base
 
   has_many :roadSections
 
-  def add(row, col, edge, num, hasEnd, merging=false)
-    if not meets_add_preconditions? row, col, edge, num, hasEnd, merging
-      return false
+  def add(row, col, edge, num, hasEnd, merging = false)
+    if meets_add_preconditions? row, col, edge, num, hasEnd, merging
+
+      if self.roadSections.where(:row => row, :col => col).empty?
+        self.length += 1
+      end
+
+      self.numEnds += 1 if hasEnd
+      self.finished = true if numEnds == 2
+      
+      RoadSection.create(:road => self, :row => row, :col => col, :edge => edge.to_s,
+                         :num => num, :hasEnd => hasEnd)
+
+      self.save
     end
-
-    if self.roadSections.where(:row => row, :col => col).empty?
-      self.length += 1
-    end
-
-    self.numEnds += 1 if hasEnd
-    self.finished = true if numEnds == 2
-    
-    RoadSection.create(:road => self, :row => row, :col => col, :edge => edge.to_s,
-                       :num => num, :hasEnd => hasEnd)
-
-    self.save
   end
 
   def merge(other)
-    if not meets_merge_preconditions? other
-      return false
-    end
-    
-    for section in other.roadSections
-      add(section.row, section.col, section.edge, section.num, section.hasEnd, true)
-    end
+    if meets_merge_preconditions? other
+      for section in other.roadSections
+        add(section.row, section.col, section.edge, section.num, section.hasEnd, true)
+      end
 
-    return true
+      other.delete
+    end
   end
 
   def has(row, col, num)

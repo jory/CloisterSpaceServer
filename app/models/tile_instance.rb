@@ -199,7 +199,6 @@ class TileInstance < ActiveRecord::Base
                 road.save
               else
                 seenRoad.merge(road)
-                road.delete
               end
             else
               road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)

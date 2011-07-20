@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110720145453) do
+ActiveRecord::Schema.define(:version => 20110720174013) do
 
   create_table "cities", :force => true do |t|
     t.integer  "size",       :default => 0
@@ -62,6 +62,15 @@ ActiveRecord::Schema.define(:version => 20110720145453) do
   end
 
   create_table "games", :force => true do |t|
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "open_edges", :force => true do |t|
+    t.integer  "row"
+    t.integer  "col"
+    t.string   "edge"
+    t.integer  "city_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

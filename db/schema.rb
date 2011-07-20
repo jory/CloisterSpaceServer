@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110720174013) do
+ActiveRecord::Schema.define(:version => 20110720211010) do
 
   create_table "cities", :force => true do |t|
     t.integer  "size",       :default => 0
@@ -57,6 +57,24 @@ ActiveRecord::Schema.define(:version => 20110720174013) do
     t.integer  "city"
     t.integer  "grassA"
     t.integer  "grassB"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "farm_sections", :force => true do |t|
+    t.integer  "row"
+    t.integer  "col"
+    t.string   "edge"
+    t.integer  "num"
+    t.integer  "farm_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "farms", :force => true do |t|
+    t.integer  "size",       :default => 0
+    t.integer  "score",      :default => 0
+    t.integer  "game_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

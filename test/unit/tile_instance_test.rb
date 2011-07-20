@@ -463,5 +463,10 @@ class TileInstanceTest < ActiveSupport::TestCase
     assert city.size == 5, "City was size #{city.size}, expected 5"
     assert city.finished, "City wasn't finished, but should have been."
   end
-  
+
+  test "starting tile has two farms" do
+    game = Game.create()
+
+    assert game.farms.length == 2, "Found #{game.farms.length} farms, expected 2"
+  end
 end

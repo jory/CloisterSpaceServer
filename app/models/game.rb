@@ -3,6 +3,7 @@ class Game < ActiveRecord::Base
   has_many :roads
   has_many :cloisters
   has_many :cities
+  has_many :farms
 
   def self.new(attributes = nil)
     game = super

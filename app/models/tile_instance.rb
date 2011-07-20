@@ -38,6 +38,7 @@ class TileInstance < ActiveRecord::Base
           handleCloisters
           handleRoads
           handleCities
+          handleFarms
         end
       end
     end
@@ -291,6 +292,108 @@ class TileInstance < ActiveRecord::Base
             city = City.create(:game => self.game)
             city.add(self.row, self.col, dir, edge.city,
                      self.tile.citysFields, self.tile.hasPennant)
+          end
+        end
+      end
+    end
+  end
+
+  def handleFarms
+    seenFarms = []
+
+    @neighbours.each do |dir, tile|
+      edge = Edge.find(self.tile[@edges[dir]])
+      otherRow, otherCol = Tile.getAddress(self.row, self.col, dir)
+      otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[Tile::Opposite[dir]]])
+
+      if edge.grassA != 0
+        added = false
+        
+        Farm.where(:game_id => self.game).each do |farm|
+          if farm.has(otherRow, otherCol, otherEdge.grassB)
+            if seenFarms.length > 0
+              seenFarms.each do |otherFarm|
+                if otherFarm.has(self.row, self.col, edge.grassA)
+                  otherFarm.add(self.row, self.col, dir, edge.grassA)
+                  otherFarm.merge(farm)
+                  added = true
+                  break
+                end
+              end
+            end
+
+            if not added
+              farm.add(self.row, self.col, dir, edge.grassA)
+              seenFarms.push(farm)
+            end
+
+            break
+          end
+        end
+      end
+
+      if edge.grassB != 0
+        added = false
+        
+        Farm.where(:game_id => self.game).each do |farm|
+          if farm.has(otherRow, otherCol, otherEdge.grassA)
+            if seenFarms.length > 0
+              seenFarms.each do |otherFarm|
+                if otherFarm.has(self.row, self.col, edge.grassB)
+                  otherFarm.add(self.row, self.col, dir, edge.grassB)
+                  otherFarm.merge(farm)
+                  added = true
+                  break
+                end
+              end
+            end
+
+            if not added
+              farm.add(self.row, self.col, dir, edge.grassB)
+              seenFarms.push(farm)
+            end
+
+            break
+          end
+        end
+      end
+    end
+
+    Tile::Directions.each do |dir|
+      if not @neighbours[dir]
+        edge = Edge.find(self.tile[@edges[dir]])
+
+        if edge.grassA != 0
+          added = false
+          
+          Farm.where(:game_id => self.game).each do |farm|
+            if farm.has(self.row, self.col, edge.grassA)
+              farm.add(self.row, self.col, dir, edge.grassA)
+              added = true
+              break
+            end
+          end
+
+          if not added
+            farm = Farm.create(:game => self.game)
+            farm.add(self.row, self.col, dir, edge.grassA)
+          end
+        end
+
+        if edge.grassB != 0
+          added = false
+          
+          Farm.where(:game_id => self.game).each do |farm|
+            if farm.has(self.row, self.col, edge.grassB)
+              farm.add(self.row, self.col, dir, edge.grassB)
+              added = true
+              break
+            end
+          end
+
+          if not added
+            farm = Farm.create(:game => self.game)
+            farm.add(self.row, self.col, dir, edge.grassB)
           end
         end
       end

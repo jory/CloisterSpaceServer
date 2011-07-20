@@ -334,4 +334,134 @@ class TileInstanceTest < ActiveSupport::TestCase
     second = cloisters[1]
     assert second.size == 3, "Cloister's size was #{second.size}, expected 3"
   end
+
+  test "starting tile should create a city" do
+    game = Game.create()
+    assert !game.cities.empty?, "Starting tile didn't create a City."
+
+    city = game.cities.first
+
+    assert city.size == 1
+    assert city.pennants == 0
+  end
+
+  test "minimal finished city" do
+    game = Game.create()
+    p = TileInstance.create(:tile => tiles(:city1), :game => game)
+
+    assert p.place(71, 72, 2)
+
+    assert game.cities.count == 1, "Found #{game.cities.count} Cities, expected 1"
+
+    city = game.cities.first
+
+    assert city.size == 2, "City was size #{city.size}, expected 2"
+    assert city.pennants == 0, "City has #{city.pennants} pennants, expected 0"
+    assert city.finished, "City wasn't finished"
+  end
+
+  test "merge two minimals" do
+    game = Game.create()
+    p = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+    q = TileInstance.create(:tile => tiles(:city1), :game => game)
+    r = TileInstance.create(:tile => tiles(:city2nw), :game => game)
+
+    assert p.place(72, 71, 3)
+    assert q.place(71, 71, 1)
+
+    assert game.cities.count == 2
+
+    assert r.place(71, 72, 3)
+
+    assert game.cities.count == 1
+
+    city = game.cities.first
+
+    assert city.size == 3
+    assert city.finished, "City wasn't finished, but should have been."
+  end
+
+  test "merge three minimals" do
+    game = Game.create()
+    p = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+    q = TileInstance.create(:tile => tiles(:city1), :game => game)
+    r = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+    s = TileInstance.create(:tile => tiles(:city1), :game => game)
+    t = TileInstance.create(:tile => tiles(:city3), :game => game)
+
+    assert p.place(72, 71, 3)
+    assert q.place(71, 71, 1)
+
+    assert game.cities.count == 2
+
+    assert r.place(70, 71, 1)
+    assert s.place(70, 72, 2)
+
+    assert game.cities.count == 3
+
+    assert t.place(71, 72, 3)
+
+    assert game.cities.count == 1
+
+    city = game.cities.first
+
+    assert city.size == 4, "City was size #{city.size}, expected 4"
+    assert city.finished, "City wasn't finished, but should have been."
+  end    
+
+  test "merge four minimals" do
+    game = Game.create()
+    p = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+    q = TileInstance.create(:tile => tiles(:city1), :game => game)
+    r = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+    s = TileInstance.create(:tile => tiles(:city1), :game => game)
+    t = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+    u = TileInstance.create(:tile => tiles(:city1), :game => game)
+    v = TileInstance.create(:tile => tiles(:city4q), :game => game)
+
+    assert p.place(72, 71, 3)
+    assert q.place(71, 71, 1)
+
+    assert game.cities.count == 2
+
+    assert r.place(70, 71, 1)
+    assert s.place(70, 72, 2)
+
+    assert game.cities.count == 3
+
+    assert t.place(70, 73, 2)
+    assert u.place(71, 73, 3)
+
+    assert game.cities.count == 4
+
+    assert v.place(71, 72, 0)
+
+    assert game.cities.count == 1
+
+    city = game.cities.first
+
+    assert city.size == 5, "City was size #{city.size}, expected 5"
+    assert city.finished, "City wasn't finished, but should have been."
+  end
+  
+  test "two cities on one tile only add to size of a single city once" do
+    game = Game.create()
+    p = TileInstance.create(:tile => tiles(:city3), :game => game)
+    q = TileInstance.create(:tile => tiles(:city11ne), :game => game)
+    r = TileInstance.create(:tile => tiles(:city2nw), :game => game)
+    s = TileInstance.create(:tile => tiles(:city2nw), :game => game)
+
+    assert p.place(71, 72, 3)
+    assert q.place(71, 71, 0)
+    assert r.place(70, 72, 3)
+    assert s.place(70, 71, 2)
+
+    assert game.cities.count == 1
+
+    city = game.cities.first
+
+    assert city.size == 5, "City was size #{city.size}, expected 5"
+    assert city.finished, "City wasn't finished, but should have been."
+  end
+  
 end

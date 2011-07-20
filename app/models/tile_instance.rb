@@ -37,6 +37,7 @@ class TileInstance < ActiveRecord::Base
                                   :status => "placed")
           handleCloisters
           handleRoads
+          handleCities
         end
       end
     end
@@ -239,4 +240,61 @@ class TileInstance < ActiveRecord::Base
     }
   end
 
+  def handleCities
+    seenCity = nil
+
+    @neighbours.each do |dir, tile|
+      edge = Edge.find(self.tile[@edges[dir]])
+
+      if edge.kind == 'c'
+
+        otherRow, otherCol = Tile.getAddress(self.row, self.col, dir)
+        otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[Tile::Opposite[dir]]])
+
+        City.where(:game_id => self.game).each do |city|
+          if city.has(otherRow, otherCol, otherEdge.city)
+
+            city.add(row, col, dir, edge.city, self.tile.citysFields,
+                     self.tile.hasPennant)
+
+            if not seenCity.nil? and not self.tile.hasTwoCities
+              seenCity.merge(city)
+            else
+              seenCity = city
+            end
+
+            break
+          end
+        end
+      end
+    end
+
+    Tile::Directions.each do |dir|
+      if not @neighbours[dir]
+
+        edge = Edge.find(self.tile[@edges[dir]])
+
+        if edge.kind == 'c'
+
+          added = false
+          
+          City.where(:game_id => self.game).each do |city|
+            if city.has(self.row, self.col, edge.city)
+              city.add(self.row, self.col, dir, edge.city,
+                       self.tile.citysFields, self.tile.hasPennant)
+              added = true
+              break
+            end
+          end
+
+          if not added
+            city = City.create(:game => self.game)
+            city.add(self.row, self.col, dir, edge.city,
+                     self.tile.citysFields, self.tile.hasPennant)
+          end
+        end
+      end
+    end
+  end
+  
 end

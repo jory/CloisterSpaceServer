@@ -27,6 +27,7 @@ class Tile < ActiveRecord::Base
     elsif dir == :south then return row + 1, col
     elsif dir == :east  then return row, col + 1
     elsif dir == :west  then return row, col - 1
+    else raise "Unsupported direction: #{dir}"
     end
   end
   

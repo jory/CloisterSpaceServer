@@ -33,7 +33,7 @@ class City < ActiveRecord::Base
   def merge(other)
     if meets_merge_preconditions? other
       other.citySections.each do |section|
-        self.add(section.row, section.col, section.edge, section.num,
+        self.add(section.row, section.col, section.edge.to_sym, section.num,
                  section.citysFields, section.hasPennant)
       end
 
@@ -81,10 +81,11 @@ class City < ActiveRecord::Base
   end    
 
   def check_open_edges(row, col, edge)
-    otherRow, otherCol = Tile.getAddress(row, col, edge)
 
+    otherRow, otherCol = Tile.getAddress(row, col, edge)
     otherEdge = self.openEdges.where(:row => otherRow, :col => otherCol,
                                      :edge => Tile::Opposite[edge].to_s).first
+
     if otherEdge
       otherEdge.delete
     else

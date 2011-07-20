@@ -8,4 +8,8 @@ class FarmSection < ActiveRecord::Base
   validates :farm, :presence => true
   
   belongs_to :farm
+
+  def to_s
+    "(#{row},#{col}) - #{edge} - #{num}"
+  end
 end

@@ -37,6 +37,10 @@ class Farm < ActiveRecord::Base
       return true
     end
   end
+
+  def to_s
+    "Farm: [" + self.farmSections.join(", ") + "] #{size}, #{score}"
+  end
   
   private
 

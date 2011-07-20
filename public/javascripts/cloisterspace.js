@@ -266,31 +266,30 @@
     return Cloister;
   })();
   Farm = (function() {
-    function Farm(row, col, edge, id) {
-      this.tiles = {};
-      this.ids = {};
-      this.edges = {};
+    function Farm() {
       this.size = 0;
       this.score = 0;
-      this.add(row, col, edge, id);
+      this.tiles = {};
+      this.nums = {};
+      this.edges = {};
     }
-    Farm.prototype.add = function(row, col, edge, id) {
+    Farm.prototype.add = function(row, col, edge, num) {
       var address;
       address = "" + row + "," + col;
       if (!this.tiles[address]) {
-        this.tiles[address] = id;
+        this.tiles[address] = num;
         this.size += 1;
       }
-      this.ids[address + ("," + id)] = true;
+      this.nums[address + ("," + num)] = true;
       return this.edges[address + ("," + edge)] = {
         row: row,
         col: col,
         edge: edge,
-        id: id
+        num: num
       };
     };
-    Farm.prototype.has = function(row, col, id) {
-      return this.ids["" + row + "," + col + "," + id];
+    Farm.prototype.has = function(row, col, num) {
+      return this.nums["" + row + "," + col + "," + num];
     };
     Farm.prototype.merge = function(other) {
       var e, edge, _ref, _results;
@@ -298,7 +297,7 @@
       _results = [];
       for (e in _ref) {
         edge = _ref[e];
-        _results.push(this.add(edge.row, edge.col, edge.edge, edge.id));
+        _results.push(this.add(edge.row, edge.col, edge.edge, edge.num));
       }
       return _results;
     };
@@ -725,7 +724,7 @@
       return _results;
     };
     World.prototype.handleFarms = function(row, col, tile, neighbours) {
-      var added, dir, edge, farm, farms, otherCol, otherEdge, otherFarm, otherRow, _i, _j, _k, _l, _len, _len2, _len3, _len4, _len5, _m, _ref, _ref2, _ref3, _results;
+      var added, dir, edge, f, farm, farms, otherCol, otherEdge, otherFarm, otherRow, _i, _j, _k, _l, _len, _len2, _len3, _len4, _len5, _m, _ref, _ref2, _ref3, _results;
       farms = [];
       for (_i = 0, _len = neighbours.length; _i < _len; _i++) {
         dir = neighbours[_i];
@@ -803,7 +802,9 @@
                 }
               }
               if (!added) {
-                this.farms.push(new Farm(row, col, dir, edge.grassA));
+                f = new Farm();
+                f.add(row, col, dir, edge.grassA);
+                this.farms.push(f);
               }
             }
             added = false;
@@ -817,7 +818,9 @@
                 }
               }
               if (!added) {
-                return this.farms.push(new Farm(row, col, dir, edge.grassB));
+                f = new Farm();
+                f.add(row, col, dir, edge.grassB);
+                return this.farms.push(f);
               }
             }
           }

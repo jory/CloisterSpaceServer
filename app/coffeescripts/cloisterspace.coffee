@@ -215,36 +215,35 @@ class Cloister
 
 
 class Farm
-  constructor: (row, col, edge, id) ->
-    @tiles = {}
-    @ids = {}
-    @edges = {}
+  constructor: () ->
     @size = 0
     @score = 0
 
-    @add(row, col, edge, id)
+    @tiles = {}
+    @nums = {}
+    @edges = {}
 
-  add: (row, col, edge, id) ->
+  add: (row, col, edge, num) ->
     address = "#{row},#{col}"
 
     if not @tiles[address]
-      @tiles[address] = id
+      @tiles[address] = num
       @size += 1
 
-    @ids[address + ",#{id}"] = true
+    @nums[address + ",#{num}"] = true
 
     @edges[address + ",#{edge}"] =
       row: row
       col: col
       edge: edge
-      id: id
+      num: num
 
-  has: (row, col, id) ->
-    @ids["#{row},#{col},#{id}"]
+  has: (row, col, num) ->
+    @nums["#{row},#{col},#{num}"]
 
   merge: (other) ->
     for e, edge of other.edges
-      @add(edge.row, edge.col, edge.edge, edge.id)
+      @add(edge.row, edge.col, edge.edge, edge.num)
 
   calculateScore: (cities) ->
     if @score > 0
@@ -645,7 +644,9 @@ class World
               added = true
 
           if not added
-            @farms.push(new Farm(row, col, dir, edge.grassA))
+            f = new Farm()
+            f.add(row, col, dir, edge.grassA)
+            @farms.push(f)
 
         added = false
 
@@ -656,7 +657,9 @@ class World
               added = true
 
           if not added
-            @farms.push(new Farm(row, col, dir, edge.grassB))
+            f = new Farm()
+            f.add(row, col, dir, edge.grassB)
+            @farms.push(f)
 
   drawCandidates: (tile = @currentTile, candidates = @candidates) ->
     img = $('#candidate > img').attr('src', "/images/#{tile.image}")

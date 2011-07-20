@@ -122,18 +122,20 @@ class Road
 
 
 class City
-  constructor: (row, col, edge, id, citysFields, hasPennant) ->
-    @tiles = {}
-    @ids = {}
-    @edges = {}
-    @openEdges = []
+  constructor: (row, col, edge, num, citysFields, hasPennant) ->
     @size = 0
     @numPennants = 0
     @finished = false
 
-    @add(row, col, edge, id, citysFields, hasPennant)
+    @openEdges = []
 
-  add: (row, col, edge, id, citysFields, hasPennant) ->
+    @tiles = {}
+    @nums = {}
+    @edges = {}
+
+    @add(row, col, edge, num, citysFields, hasPennant)
+
+  add: (row, col, edge, num, citysFields, hasPennant) ->
     address = "#{row},#{col}"
 
     if empty(@tiles[address])
@@ -142,13 +144,13 @@ class City
       if hasPennant
         @numPennants += 1
 
-    @ids[address + ",#{id}"] = true
+    @nums[address + ",#{num}"] = true
 
     @edges[address + ",#{edge}"] =
       row: row
       col: col
       edge: edge
-      id: id
+      num: num
 
     [otherRow, otherCol] = offset(edge, row, col)
     otherAddress = "#{otherRow},#{otherCol},#{oppositeDirection[edge]}"
@@ -163,14 +165,14 @@ class City
     else
       @finished = false
 
-  has: (row, col, id) ->
-    @ids["#{row},#{col},#{id}"]
+  has: (row, col, num) ->
+    @nums["#{row},#{col},#{num}"]
 
   merge: (other) ->
     for e, edge of other.edges
       row = edge.row
       col = edge.col
-      @add(row, col, edge.edge, edge.id, other.tiles["#{row},#{col}"], false)
+      @add(row, col, edge.edge, edge.num, other.tiles["#{row},#{col}"], false)
     @numPennants += other.numPennants
 
   toString: ->

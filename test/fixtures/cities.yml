@@ -1,0 +1,13 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  size: 1
+  pennants: 1
+  finished: false
+  game: 
+
+two:
+  size: 1
+  pennants: 1
+  finished: false
+  game: 

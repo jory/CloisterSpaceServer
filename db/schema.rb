@@ -10,7 +10,28 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110719181732) do
+ActiveRecord::Schema.define(:version => 20110720145453) do
+
+  create_table "cities", :force => true do |t|
+    t.integer  "size",       :default => 0
+    t.integer  "pennants",   :default => 0
+    t.boolean  "finished",   :default => false
+    t.integer  "game_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "city_sections", :force => true do |t|
+    t.integer  "row"
+    t.integer  "col"
+    t.string   "edge"
+    t.integer  "num"
+    t.integer  "citysFields"
+    t.boolean  "hasPennant"
+    t.integer  "city_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "cloister_sections", :force => true do |t|
     t.integer  "row"

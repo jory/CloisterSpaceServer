@@ -469,4 +469,16 @@ class TileInstanceTest < ActiveSupport::TestCase
 
     assert game.farms.length == 2, "Found #{game.farms.length} farms, expected 2"
   end
+
+  test "weird bug I saw in the browser?" do
+    game = Game.create()
+    p = TileInstance.create(:tile => tiles(:city4q), :game => game)
+    p.place(71, 72, 0)
+
+    assert game.farms.length == 2, "Found #{game.farms.length} farms, expected 2"
+
+    game.farms.each do |farm|
+      assert farm.size == 1
+    end
+  end
 end

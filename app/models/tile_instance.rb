@@ -16,14 +16,6 @@ class TileInstance < ActiveRecord::Base
   belongs_to :tile
   belongs_to :game
 
-  @@Opposite = {}
-  @@Opposite[:north] = :south
-  @@Opposite[:south] = :north
-  @@Opposite[:east]  = :west
-  @@Opposite[:west]  = :east
-
-  @@Directions = @@Opposite.keys
-  
   def initialize(init)
     super(init)
     @neighbours = {}
@@ -101,7 +93,7 @@ class TileInstance < ActiveRecord::Base
         otherEdges = rotate(tile.rotation)
         
         this = Edge.find(self.tile[@edges[dir]])
-        other = Edge.find(tile.tile[otherEdges[@@Opposite[dir]]])
+        other = Edge.find(tile.tile[otherEdges[Tile::Opposite[dir]]])
 
         if not this.kind == other.kind
           return false
@@ -196,8 +188,8 @@ class TileInstance < ActiveRecord::Base
 
       if edge.kind == 'r'
         
-        otherRow, otherCol = offset(self.row, self.col, dir)
-        otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[@@Opposite[dir]]])
+        otherRow, otherCol = Tile.getAddress(self.row, self.col, dir)
+        otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[Tile::Opposite[dir]]])
 
         Road.where(:game_id => self.game).each do |road|
           if road.has(otherRow, otherCol, otherEdge.road)
@@ -221,7 +213,7 @@ class TileInstance < ActiveRecord::Base
       end
     }
 
-    @@Directions.each { |dir|
+    Tile::Directions.each { |dir|
       if not @neighbours[dir]
 
         edge = Edge.find(self.tile[@edges[dir]])
@@ -248,12 +240,4 @@ class TileInstance < ActiveRecord::Base
     }
   end
 
-  def offset(row, col, dir)
-    if dir == :north    then return row - 1, col
-    elsif dir == :south then return row + 1, col
-    elsif dir == :east  then return row, col + 1
-    elsif dir == :west  then return row, col - 1
-    end
-  end
-  
 end

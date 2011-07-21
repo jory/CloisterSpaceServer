@@ -279,6 +279,7 @@ class World
 
     haveRoads = false
     haveCities = false
+    haveFarms = false
     haveCloisters = false
 
     @finished = false
@@ -348,6 +349,20 @@ class World
         haveCities = true
       )
 
+      $.getJSON("#{@origin}/farms.json", "game=#{@game_id}", (data) =>
+        console.log("Got #{data.length} farms")
+        for farmFeature in data
+          farm = new Farm()
+
+          for obj in farmFeature
+            section = obj.farm_section
+            farm.add(section.row, section.col, section.edge, section.num)
+
+          @farms.push(farm)
+
+        haveFarms = true
+      )
+
       $.getJSON("#{@origin}/cloisters.json", "game=#{@game_id}", (data) =>
         console.log("Got #{data.length} cloisters")
         for obj in data
@@ -364,7 +379,7 @@ class World
       )
 
     haveFeatures = =>
-      if haveRoads and haveCities and haveCloisters
+      if haveRoads and haveCities and haveFarms and haveCloisters
         return true
       else
         return false
@@ -561,7 +576,7 @@ class World
       if edge.kind is 'c'
           for city in @cities
             if not added and city.has(otherRow, otherCol, otherEdge.city)
-              city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+              city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant)
               added = true
               if not tile.hasTwoCities and cities.length > 0 and cities[0] isnt city
                 cities[0].merge(city)
@@ -577,12 +592,12 @@ class World
         if edge.kind is 'c'
           for city in @cities
             if not added and city.has(row, col, edge.city)
-              city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+              city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant)
               added = true
 
           if not added
             c = new City()
-            c.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant)
+            c.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant)
             @cities.push(c)
 
 
@@ -594,7 +609,7 @@ class World
       [otherRow, otherCol, otherEdge] = @getOtherEdge(dir, row, col)
       added = false
 
-      if edge.grassA isnt '-'
+      if edge.grassA isnt 0
         for farm in @farms
           if not added and farm.has(otherRow, otherCol, otherEdge.grassB)
 
@@ -614,7 +629,7 @@ class World
 
       added = false
 
-      if edge.grassB isnt '-'
+      if edge.grassB isnt 0
         for farm in @farms
           if not added and farm.has(otherRow, otherCol, otherEdge.grassA)
 
@@ -637,7 +652,7 @@ class World
         edge = tile.edges[dir]
         added = false
 
-        if edge.grassA isnt '-'
+        if edge.grassA isnt 0
           for farm in @farms
             if not added and farm.has(row, col, edge.grassA)
               farm.add(row, col, dir, edge.grassA)
@@ -650,7 +665,7 @@ class World
 
         added = false
 
-        if edge.grassB isnt '-'
+        if edge.grassB isnt 0
           for farm in @farms
             if not added and farm.has(row, col, edge.grassB)
               farm.add(row, col, dir, edge.grassB)

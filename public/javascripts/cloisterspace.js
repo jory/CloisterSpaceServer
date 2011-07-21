@@ -337,7 +337,7 @@
   })();
   World = (function() {
     function World() {
-      var getEdges, getFeatures, getTiles, haveCities, haveCloisters, haveEdges, haveFeatures, haveRoads, haveTiles, i, setupBoard;
+      var getEdges, getFeatures, getTiles, haveCities, haveCloisters, haveEdges, haveFarms, haveFeatures, haveRoads, haveTiles, i, setupBoard;
       this.center = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.origin = window.location.origin;
@@ -349,6 +349,7 @@
       haveTiles = false;
       haveRoads = false;
       haveCities = false;
+      haveFarms = false;
       haveCloisters = false;
       this.finished = false;
       this.minrow = this.maxrow = this.mincol = this.maxcol = this.center;
@@ -427,6 +428,21 @@
           }
           return haveCities = true;
         }, this));
+        $.getJSON("" + this.origin + "/farms.json", "game=" + this.game_id, __bind(function(data) {
+          var farm, farmFeature, obj, section, _i, _j, _len, _len2;
+          console.log("Got " + data.length + " farms");
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            farmFeature = data[_i];
+            farm = new Farm();
+            for (_j = 0, _len2 = farmFeature.length; _j < _len2; _j++) {
+              obj = farmFeature[_j];
+              section = obj.farm_section;
+              farm.add(section.row, section.col, section.edge, section.num);
+            }
+            this.farms.push(farm);
+          }
+          return haveFarms = true;
+        }, this));
         return $.getJSON("" + this.origin + "/cloisters.json", "game=" + this.game_id, __bind(function(data) {
           var c, cloister, cs, obj, section, _i, _j, _len, _len2, _ref;
           console.log("Got " + data.length + " cloisters");
@@ -446,7 +462,7 @@
         }, this));
       }, this);
       haveFeatures = __bind(function() {
-        if (haveRoads && haveCities && haveCloisters) {
+        if (haveRoads && haveCities && haveFarms && haveCloisters) {
           return true;
         } else {
           return false;
@@ -684,7 +700,7 @@
           for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
             city = _ref2[_j];
             if (!added && city.has(otherRow, otherCol, otherEdge.city)) {
-              city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+              city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
               added = true;
               if (!tile.hasTwoCities && cities.length > 0 && cities[0] !== city) {
                 cities[0].merge(city);
@@ -708,13 +724,13 @@
               for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
                 city = _ref3[_k];
                 if (!added && city.has(row, col, edge.city)) {
-                  city.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+                  city.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
                   added = true;
                 }
               }
               if (!added) {
                 c = new City();
-                c.add(row, col, dir, edge.city, tile.cityFields, tile.hasPennant);
+                c.add(row, col, dir, edge.city, tile.citysFields, tile.hasPennant);
                 return this.cities.push(c);
               }
             }
@@ -731,7 +747,7 @@
         edge = tile.edges[dir];
         _ref = this.getOtherEdge(dir, row, col), otherRow = _ref[0], otherCol = _ref[1], otherEdge = _ref[2];
         added = false;
-        if (edge.grassA !== '-') {
+        if (edge.grassA !== 0) {
           _ref2 = this.farms;
           for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
             farm = _ref2[_j];
@@ -758,7 +774,7 @@
           }
         }
         added = false;
-        if (edge.grassB !== '-') {
+        if (edge.grassB !== 0) {
           _ref3 = this.farms;
           for (_l = 0, _len4 = _ref3.length; _l < _len4; _l++) {
             farm = _ref3[_l];
@@ -792,7 +808,7 @@
           if (!(__indexOf.call(neighbours, dir) >= 0)) {
             edge = tile.edges[dir];
             added = false;
-            if (edge.grassA !== '-') {
+            if (edge.grassA !== 0) {
               _ref4 = this.farms;
               for (_n = 0, _len6 = _ref4.length; _n < _len6; _n++) {
                 farm = _ref4[_n];
@@ -808,7 +824,7 @@
               }
             }
             added = false;
-            if (edge.grassB !== '-') {
+            if (edge.grassB !== 0) {
               _ref5 = this.farms;
               for (_o = 0, _len7 = _ref5.length; _o < _len7; _o++) {
                 farm = _ref5[_o];

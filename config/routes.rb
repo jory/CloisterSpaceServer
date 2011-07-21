@@ -13,5 +13,6 @@ CloisterSpaceServer::Application.routes.draw do
     match 'tileInstances/place/:id' => 'tileInstances#update'
     match 'tileInstances/:status' => 'tileInstances#index'
   end
-  
+
+  root :to => 'games#index'
 end

@@ -3,7 +3,7 @@ class RoadsController < ApplicationController
   respond_to :json
 
   def index
-    roads = Road.where(:game_id => params[:game])
+    roads = Road.where(:game_id => params[:game_id])
 
     sections = roads.collect do |road|
       RoadSection.where(:road_id => road)

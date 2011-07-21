@@ -319,7 +319,7 @@ class World
         )
 
     getFeatures = =>
-      $.getJSON("#{@origin}/roads.json", "game=#{@game_id}", (data) =>
+      $.getJSON("#{@origin}/games/#{@game_id}/roads.json", (data) =>
         console.log("Got #{data.length} roads")
         for roadFeature in data
           road = new Road()
@@ -334,7 +334,7 @@ class World
         haveRoads = true
       )
 
-      $.getJSON("#{@origin}/cities.json", "game=#{@game_id}", (data) =>
+      $.getJSON("#{@origin}/games/#{@game_id}/cities.json", (data) =>
         console.log("Got #{data.length} cities")
         for cityFeature in data
           city = new City()
@@ -349,7 +349,7 @@ class World
         haveCities = true
       )
 
-      $.getJSON("#{@origin}/farms.json", "game=#{@game_id}", (data) =>
+      $.getJSON("#{@origin}/games/#{@game_id}/farms.json", (data) =>
         console.log("Got #{data.length} farms")
         for farmFeature in data
           farm = new Farm()
@@ -363,7 +363,7 @@ class World
         haveFarms = true
       )
 
-      $.getJSON("#{@origin}/cloisters.json", "game=#{@game_id}", (data) =>
+      $.getJSON("#{@origin}/games/#{@game_id}/cloisters.json", (data) =>
         console.log("Got #{data.length} cloisters")
         for obj in data
           c = obj[0].cloister

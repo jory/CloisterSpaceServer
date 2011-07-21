@@ -3,7 +3,7 @@ class FarmsController < ApplicationController
   respond_to :json
 
   def index
-    farms = Farm.where(:game_id => params[:game])
+    farms = Farm.where(:game_id => params[:game_id])
 
     sections = farms.collect do |farm|
       FarmSection.where(:farm_id => farm)

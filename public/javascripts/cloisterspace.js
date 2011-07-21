@@ -340,7 +340,7 @@
       var getEdges, getFeatures, getTiles, haveCities, haveCloisters, haveEdges, haveFarms, haveFeatures, haveRoads, haveTiles, i, setupBoard;
       this.center = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
-      this.origin = window.location.origin;
+      this.origin = window.location.protocol + "//" + window.location.host;
       this.game_id = $('#game_id').html();
       this.timeout = 1;
       this.edges = {};

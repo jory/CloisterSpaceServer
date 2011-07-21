@@ -268,7 +268,7 @@ class World
   constructor: ->
     @center = parseInt($('#num_tiles').html())
     @maxSize = @center * 2
-    @origin = window.location.origin
+    @origin = window.location.protocol + "//" + window.location.host
     @game_id = $('#game_id').html()
     @timeout = 1
 

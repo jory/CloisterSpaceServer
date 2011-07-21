@@ -8,12 +8,4 @@ class TilesController < ApplicationController
     end
   end
   
-  def show
-    @tile = Tile.find(params[:id])
-
-    respond_to do |format|
-      format.json { render :json => @tile }
-    end
-  end
-  
 end

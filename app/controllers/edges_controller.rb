@@ -7,9 +7,4 @@ class EdgesController < ApplicationController
     respond_with(@edges)
   end
 
-  def show
-    @edge = Edge.find(params[:id])
-    respond_with(@edge)
-  end
-
 end

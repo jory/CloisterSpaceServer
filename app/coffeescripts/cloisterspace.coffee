@@ -269,7 +269,7 @@ class World
     @center = parseInt($('#num_tiles').html())
     @maxSize = @center * 2
     @origin = window.location.protocol + "//" + window.location.host
-    @href = window.location.href
+    @href = window.location.href + "/"
     @timeout = 1
 
     @edges = {}

@@ -341,7 +341,7 @@
       this.center = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.origin = window.location.protocol + "//" + window.location.host;
-      this.href = window.location.href;
+      this.href = window.location.href + "/";
       this.timeout = 1;
       this.edges = {};
       haveEdges = false;

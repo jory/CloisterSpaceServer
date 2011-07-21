@@ -341,7 +341,7 @@
       this.center = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.origin = window.location.protocol + "//" + window.location.host;
-      this.game_id = $('#game_id').html();
+      this.href = window.location.href;
       this.timeout = 1;
       this.edges = {};
       haveEdges = false;
@@ -398,7 +398,7 @@
         }
       }, this);
       getFeatures = __bind(function() {
-        $.getJSON("" + this.origin + "/games/" + this.game_id + "/roads.json", __bind(function(data) {
+        $.getJSON(this.href + "roads.json", __bind(function(data) {
           var obj, road, roadFeature, section, _i, _j, _len, _len2;
           console.log("Got " + data.length + " roads");
           for (_i = 0, _len = data.length; _i < _len; _i++) {
@@ -413,7 +413,7 @@
           }
           return haveRoads = true;
         }, this));
-        $.getJSON("" + this.origin + "/games/" + this.game_id + "/cities.json", __bind(function(data) {
+        $.getJSON(this.href + "cities.json", __bind(function(data) {
           var city, cityFeature, obj, section, _i, _j, _len, _len2;
           console.log("Got " + data.length + " cities");
           for (_i = 0, _len = data.length; _i < _len; _i++) {
@@ -428,7 +428,7 @@
           }
           return haveCities = true;
         }, this));
-        $.getJSON("" + this.origin + "/games/" + this.game_id + "/farms.json", __bind(function(data) {
+        $.getJSON(this.href + "farms.json", __bind(function(data) {
           var farm, farmFeature, obj, section, _i, _j, _len, _len2;
           console.log("Got " + data.length + " farms");
           for (_i = 0, _len = data.length; _i < _len; _i++) {
@@ -443,7 +443,7 @@
           }
           return haveFarms = true;
         }, this));
-        return $.getJSON("" + this.origin + "/games/" + this.game_id + "/cloisters.json", __bind(function(data) {
+        return $.getJSON(this.href + "cloisters.json", __bind(function(data) {
           var c, cloister, cs, obj, section, _i, _j, _len, _len2, _ref;
           console.log("Got " + data.length + " cloisters");
           for (_i = 0, _len = data.length; _i < _len; _i++) {
@@ -469,13 +469,10 @@
         }
       }, this);
       setupBoard = __bind(function() {
-        var parameters, url;
         if (!(haveTiles && haveFeatures())) {
           return setTimeout(setupBoard, this.timeout);
         } else {
-          url = "" + this.origin + "/tileInstances.json";
-          parameters = "game=" + this.game_id + "&status=placed";
-          return $.getJSON(url, parameters, __bind(function(data) {
+          return $.getJSON(this.href + "tileInstances/placed.json", __bind(function(data) {
             var instance, obj, tile, _i, _len;
             for (_i = 0, _len = data.length; _i < _len; _i++) {
               obj = data[_i];
@@ -496,7 +493,7 @@
     }
     World.prototype.next = function() {
       if (!this.finished) {
-        return $.getJSON("" + this.origin + "/tileInstances/next.json", "game=" + this.game_id, __bind(function(obj) {
+        return $.getJSON(this.href + "tileInstances/next.json", __bind(function(obj) {
           var farm, instance, _i, _len, _ref;
           if (obj != null) {
             instance = obj.tile_instance;
@@ -586,7 +583,7 @@
       this.handleRoads(row, col, tile, neighbours);
       this.handleCities(row, col, tile, neighbours);
       return $.ajax({
-        url: "" + this.origin + "/tileInstances/" + tile.id,
+        url: this.href + ("tileInstances/place/" + tile.id),
         data: "x=" + row + "&y=" + col + "&rotation=" + tile.rotation,
         type: "PUT",
         success: __bind(function() {

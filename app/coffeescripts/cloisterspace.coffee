@@ -269,7 +269,7 @@ class World
     @center = parseInt($('#num_tiles').html())
     @maxSize = @center * 2
     @origin = window.location.protocol + "//" + window.location.host
-    @game_id = $('#game_id').html()
+    @href = window.location.href
     @timeout = 1
 
     @edges = {}
@@ -319,7 +319,7 @@ class World
         )
 
     getFeatures = =>
-      $.getJSON("#{@origin}/games/#{@game_id}/roads.json", (data) =>
+      $.getJSON(@href + "roads.json", (data) =>
         console.log("Got #{data.length} roads")
         for roadFeature in data
           road = new Road()
@@ -334,7 +334,7 @@ class World
         haveRoads = true
       )
 
-      $.getJSON("#{@origin}/games/#{@game_id}/cities.json", (data) =>
+      $.getJSON(@href + "cities.json", (data) =>
         console.log("Got #{data.length} cities")
         for cityFeature in data
           city = new City()
@@ -349,7 +349,7 @@ class World
         haveCities = true
       )
 
-      $.getJSON("#{@origin}/games/#{@game_id}/farms.json", (data) =>
+      $.getJSON(@href + "farms.json", (data) =>
         console.log("Got #{data.length} farms")
         for farmFeature in data
           farm = new Farm()
@@ -363,7 +363,7 @@ class World
         haveFarms = true
       )
 
-      $.getJSON("#{@origin}/games/#{@game_id}/cloisters.json", (data) =>
+      $.getJSON(@href + "cloisters.json", (data) =>
         console.log("Got #{data.length} cloisters")
         for obj in data
           c = obj[0].cloister
@@ -388,9 +388,7 @@ class World
       if not (haveTiles and haveFeatures())
         setTimeout(setupBoard, @timeout)
       else
-        url = "#{@origin}/tileInstances.json"
-        parameters = "game=#{@game_id}&status=placed"
-        $.getJSON(url, parameters, (data) =>
+        $.getJSON(@href + "tileInstances/placed.json", (data) =>
           for obj in data
             instance = obj.tile_instance
             tile = new Tile(@tiles[instance.tile_id], instance.id)
@@ -407,7 +405,7 @@ class World
 
   next: ->
     if not @finished
-      $.getJSON("#{@origin}/tileInstances/next.json", "game=#{@game_id}", (obj) =>
+      $.getJSON(@href + "tileInstances/next.json", (obj) =>
         if obj?
           instance = obj.tile_instance
           @currentTile = new Tile(@tiles[instance.tile_id], instance.id)
@@ -481,7 +479,7 @@ class World
     @handleCities(row, col, tile, neighbours)
 
     $.ajax(
-      url: "#{@origin}/tileInstances/#{tile.id}"
+      url: @href + "tileInstances/place/#{tile.id}"
       data: "x=#{row}&y=#{col}&rotation=#{tile.rotation}"
       type: "PUT"
       success: =>

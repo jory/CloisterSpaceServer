@@ -991,13 +991,15 @@
           console.log(road.toString());
         }
       }
-      _ref4 = world.farms;
-      _results = [];
-      for (_l = 0, _len4 = _ref4.length; _l < _len4; _l++) {
-        farm = _ref4[_l];
-        _results.push(console.log(farm.toString()));
+      if (all) {
+        _ref4 = world.farms;
+        _results = [];
+        for (_l = 0, _len4 = _ref4.length; _l < _len4; _l++) {
+          farm = _ref4[_l];
+          _results.push(console.log(farm.toString()));
+        }
+        return _results;
       }
-      return _results;
     };
     $('#features_all').click(function() {
       return print_features(true);

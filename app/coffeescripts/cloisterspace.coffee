@@ -793,8 +793,9 @@ $ ->
       if all or road.finished
         console.log(road.toString())
 
-    for farm in world.farms
-      console.log(farm.toString())
+    if all
+      for farm in world.farms
+        console.log(farm.toString())
 
   $('#features_all').click(->
     print_features(true)

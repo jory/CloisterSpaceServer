@@ -25,7 +25,12 @@
 }
 
 #game .candidate {
-    background: #002b36;
+    background: #eaeaea;
+    border-color: #002b36;
+    border-style: dashed;
+    border-width: 1px;
+    height: 88px;
+    width: 88px;
 }
 
 #game #board {
@@ -40,7 +45,7 @@
     float: left;
     height: 90px;
     width: 90px;
-    background: #002b36;
+    background: #eaeaea;
 }
 
 #game #controls {

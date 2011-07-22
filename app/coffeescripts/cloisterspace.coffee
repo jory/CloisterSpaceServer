@@ -282,6 +282,8 @@ class World
     haveFarms = false
     haveCloisters = false
 
+    boardSetup = false
+
     @finished = false
 
     @minrow = @maxrow = @mincol = @maxcol = @center
@@ -297,9 +299,12 @@ class World
 
     getEdges = =>
       $.getJSON("#{@origin}/edges.json", (data) =>
+        console.log("Got #{data.length} edges.")
+
         for obj in data
           edge = obj.edge
           @edges[edge.id] = edge
+
         haveEdges = true
       )
 
@@ -308,6 +313,8 @@ class World
         setTimeout(getTiles, @timeout)
       else
         $.getJSON("#{@origin}/tiles.json", (data) =>
+          console.log("Got #{data.length} tiles.")
+
           for obj in data
             tile = obj.tile
             tile.north = @edges[tile.north]
@@ -315,68 +322,94 @@ class World
             tile.west  = @edges[tile.west]
             tile.east  = @edges[tile.east]
             @tiles[tile.id] = tile
+
           haveTiles = true
         )
 
+    setupBoard = =>
+      if not haveTiles
+        setTimeout(setupBoard, @timeout)
+      else
+        $.getJSON(@href + "tileInstances/placed.json", (data) =>
+          console.log("Got #{data.length} placed tiles")
+
+          for obj in data
+            instance = obj.tile_instance
+            tile = new Tile(@tiles[instance.tile_id], instance.id)
+            tile.rotate(instance.rotation)
+            @placeTileOnBoard(instance.row, instance.col, tile)
+
+          @drawBoard()
+
+          boardSetup = true
+        )
+
     getFeatures = =>
-      $.getJSON(@href + "roads.json", (data) =>
-        console.log("Got #{data.length} roads")
-        for roadFeature in data
-          road = new Road()
+      if not boardSetup
+        setTimeout(getFeatures, @timeout)
+      else
+        $.getJSON(@href + "roads.json", (data) =>
+          console.log("Got #{data.length} roads.")
 
-          for obj in roadFeature
-            section = obj.road_section
-            road.add(section.row, section.col, section.edge, section.num,
-                     section.hasEnd)
+          for roadFeature in data
+            road = new Road()
 
-          @roads.push(road)
+            for obj in roadFeature
+              section = obj.road_section
+              road.add(section.row, section.col, section.edge, section.num,
+                       section.hasEnd)
 
-        haveRoads = true
-      )
+            @roads.push(road)
 
-      $.getJSON(@href + "cities.json", (data) =>
-        console.log("Got #{data.length} cities")
-        for cityFeature in data
-          city = new City()
+          haveRoads = true
+        )
 
-          for obj in cityFeature
-            section = obj.city_section
-            city.add(section.row, section.col, section.edge, section.num,
-                     section.citysFields, section.hasPennant)
+        $.getJSON(@href + "cities.json", (data) =>
+          console.log("Got #{data.length} cities.")
 
-          @cities.push(city)
+          for cityFeature in data
+            city = new City()
 
-        haveCities = true
-      )
+            for obj in cityFeature
+              section = obj.city_section
+              city.add(section.row, section.col, section.edge, section.num,
+                       section.citysFields, section.hasPennant)
 
-      $.getJSON(@href + "farms.json", (data) =>
-        console.log("Got #{data.length} farms")
-        for farmFeature in data
-          farm = new Farm()
+            @cities.push(city)
 
-          for obj in farmFeature
-            section = obj.farm_section
-            farm.add(section.row, section.col, section.edge, section.num)
+          haveCities = true
+        )
 
-          @farms.push(farm)
+        $.getJSON(@href + "farms.json", (data) =>
+          console.log("Got #{data.length} farms.")
 
-        haveFarms = true
-      )
+          for farmFeature in data
+            farm = new Farm()
 
-      $.getJSON(@href + "cloisters.json", (data) =>
-        console.log("Got #{data.length} cloisters")
-        for obj in data
-          c = obj[0].cloister
-          cloister = new Cloister(c.row, c.col)
+            for obj in farmFeature
+              section = obj.farm_section
+              farm.add(section.row, section.col, section.edge, section.num)
 
-          for section in obj[1]
-            cs = section.cloister_section
-            cloister.add(cs.row, cs.col)
+            @farms.push(farm)
 
-          @cloisters.push(cloister)
+          haveFarms = true
+        )
 
-        haveCloisters = true
-      )
+        $.getJSON(@href + "cloisters.json", (data) =>
+          console.log("Got #{data.length} cloisters.")
+
+          for obj in data
+            c = obj[0].cloister
+            cloister = new Cloister(c.row, c.col)
+
+            for section in obj[1]
+              cs = section.cloister_section
+              cloister.add(cs.row, cs.col)
+
+            @cloisters.push(cloister)
+
+          haveCloisters = true
+        )
 
     haveFeatures = =>
       if haveRoads and haveCities and haveFarms and haveCloisters
@@ -384,24 +417,18 @@ class World
       else
         return false
 
-    setupBoard = =>
-      if not (haveTiles and haveFeatures())
-        setTimeout(setupBoard, @timeout)
+    play = =>
+      if not haveFeatures()
+        setTimeout(play, @timeout)
       else
-        $.getJSON(@href + "tileInstances/placed.json", (data) =>
-          for obj in data
-            instance = obj.tile_instance
-            tile = new Tile(@tiles[instance.tile_id], instance.id)
-            tile.rotate(instance.rotation)
-            @placeTileOnBoard(instance.row, instance.col, tile)
-          @drawBoard()
-          @next()
-        )
+        console.log("Play ball!")
+        @next()
 
     getEdges()
     getTiles()
-    getFeatures()
     setupBoard()
+    getFeatures()
+    play()
 
   next: ->
     if not @finished

@@ -1,3 +1,11 @@
+#user_nav {
+    float: right;
+}
+
+#game {
+    clear: both;
+}
+
 #game .r1 {
     transform: rotate(90deg);
     -webkit-transform: rotate(90deg);

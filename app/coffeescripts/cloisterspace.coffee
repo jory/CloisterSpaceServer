@@ -680,7 +680,7 @@ class World
 
     disableAll = ->
       for item in actives
-        item.prop('class', '').unbind()
+        item.removeClass('candidate').unbind()
 
       $('#left').unbind().prop('disabled', 'disabled')
       $('#right').unbind().prop('disabled', 'disabled')
@@ -694,11 +694,11 @@ class World
         # Add clicking here!
         # <map...>
 
-      ).prop('class', 'candidate')
+      ).addClass('candidate')
 
     actives = for candidate in candidates[tile.rotation]
       [row, col, turns, neighbours] = candidate
-      attach($("td[row=#{row}][col=#{col}]"), row, col, neighbours)
+      attach($("div[row=#{row}][col=#{col}]"), row, col, neighbours)
 
     $('#left').unbind().click(=>
       disableAll()
@@ -733,21 +733,19 @@ class World
       @placeTile(row, col, tile, neighbours)
 
   drawBoard: ->
-    table = $("<table><tbody></tbody></table>")
-    tbody = table.find("tbody")
+    div = $("#board").empty()
 
     for row in [@minrow - 1..@maxrow + 1]
-      tr = $("<tr row='#{row}'></tr>")
+      tr = $("<div class='row' row='#{row}'></div>")
       for col in [@mincol - 1..@maxcol + 1]
         if 0 <= row < @maxSize and 0 <= col < @maxSize
-          td = $("<td row='#{row}' col='#{col}'></td>")
+          td = $("<div class='col' row='#{row}' col='#{col}'></div>")
           tile = @board[row][col]
           if tile?
-            td = $("<td row='#{row}' col='#{col}'>" +
-                   "<img src='/images/#{tile.image}' class='#{tile.rotationClass}'/></td>")
+            td.append("<img src='/images/#{tile.image}'" +
+                           "class='#{tile.rotationClass}'/>")
           tr.append(td)
-      tbody.append(tr)
-    $("#board").empty().append(table)
+      div.append(tr)
 
 
 $ ->
@@ -787,7 +785,7 @@ $ ->
   )
 
   $('#step').click(->
-    $('.candidate').unbind().prop('class', '')
+    $('.candidate').removeClass('candidate').unbind()
 
     world.randomlyPlaceTile()
     world.drawBoard()

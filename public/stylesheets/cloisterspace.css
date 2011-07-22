@@ -14,13 +14,14 @@
     -moz-transform: rotate(270deg);
 }
 
-#game tr {
+#game .row {
     height: 90px;
 }
 
-#game td {
+#game .col {
     height: 90px;
     width: 90px;
+    display: inline-block;
 }
 
 #game .candidate {
@@ -49,12 +50,4 @@
 #game #play {
     float: left;
     height: 90px;
-}
-
-#game #features {
-
-}
-
-#game .debug {
-    background: red;
 }

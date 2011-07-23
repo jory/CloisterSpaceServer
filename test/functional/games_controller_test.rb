@@ -2,7 +2,7 @@ require 'test_helper'
 
 class GamesControllerTest < ActionController::TestCase
   setup do
-    session[:user_id] = users(:one).id
+    @user_id = users(:one).id
     @game = games(:one)
   end
 
@@ -12,10 +12,11 @@ class GamesControllerTest < ActionController::TestCase
     assert_not_nil assigns(:games)
   end
 
-  # test "should get new" do
-  #   get :new
-  #   assert_response :success
-  # end
+  test "should get new" do
+    get :new, nil, {'user_id' => @user_id}
+
+    assert_redirected_to game_path(assigns(:game))
+  end
 
   test "should create game" do
     assert_difference('Game.count') do

@@ -3,7 +3,7 @@ require 'test_helper'
 class CloisterTest < ActiveSupport::TestCase
 
   def setup
-    @game = Game.first
+    @game = Game.create(:user => users(:one))
     @cloister = Cloister.create(:game => @game, :row => 72, :col => 72)
   end
   

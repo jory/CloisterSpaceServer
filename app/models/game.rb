@@ -12,11 +12,11 @@ class Game < ActiveRecord::Base
 
   def self.new(attributes = nil)
     game = super(attributes)
-
+    
     if game.save
       Tile.all.each do |tile|
         for i in 1..tile.count
-          tileInstance = TileInstance.create(:tile => tile, :game => game)
+          tileInstance = game.tileInstances.create(:tile => tile)
         end
 
         if tile.isStart? and tile.image == 'city1rwe.png'
@@ -26,6 +26,23 @@ class Game < ActiveRecord::Base
     end
 
     return game
+  end
+
+  def next()
+    current = self.tileInstances.where(:status => "current") 
+
+    if not current.empty?
+      return current.first
+    end
+
+    tiles = self.tileInstances.where(:status => nil)
+    
+    if not tiles.empty?
+      tile = tiles[rand(tiles.size)]
+      tile.status = "current"
+      tile.save
+      return tile
+    end
   end
 
 end

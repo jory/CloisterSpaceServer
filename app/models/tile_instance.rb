@@ -44,23 +44,6 @@ class TileInstance < ActiveRecord::Base
     end
   end
 
-  def TileInstance.next(game_id)
-    current = TileInstance.where(:game_id => game_id, :status => "current") 
-
-    if not current.empty?
-      return current.first
-    end
-
-    tiles = TileInstance.where(:game_id => game_id, :status => nil)
-    
-    if not tiles.empty?
-      tile = tiles[rand(tiles.size)]
-      tile.status = "current"
-      tile.save
-      return tile
-    end
-  end
-
   private
 
   def meets_place_preconditions?(row, col, rotation)

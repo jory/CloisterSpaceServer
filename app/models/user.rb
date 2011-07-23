@@ -4,6 +4,8 @@ class User < ActiveRecord::Base
   validates_presence_of :email
   validates_uniqueness_of :email
 
+  has_many :games
+  
   def self.authenticate(email)
     user = find_by_email(email)
     if user

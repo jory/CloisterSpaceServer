@@ -3,7 +3,7 @@ require 'test_helper'
 class GameTest < ActiveSupport::TestCase
 
   def setup
-    @user = User.create(:email => "foo@bar.com")
+    @user = users(:foobar)
     @game = Game.create(:user => @user)
   end
 

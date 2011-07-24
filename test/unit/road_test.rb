@@ -3,7 +3,7 @@ require 'test_helper'
 class RoadTest < ActiveSupport::TestCase
 
   def setup
-    @game = Game.create(:user => users(:one))
+    @game = Game.create(:user => users(:foobar))
     @rf = Road.create(:game => @game)
   end
 

@@ -2,7 +2,7 @@ require 'test_helper'
 
 class GamesControllerTest < ActionController::TestCase
   setup do
-    @user_id = users(:one).id
+    @user_id = users(:foobar).id
     @game = games(:one)
   end
 
@@ -41,11 +41,11 @@ class GamesControllerTest < ActionController::TestCase
   #   assert_redirected_to game_path(assigns(:game))
   # end
 
-  test "should destroy game" do
-    assert_difference('Game.count', -1) do
-      delete :destroy, :id => @game.to_param
-    end
+  # test "should destroy game" do
+  #   assert_difference('Game.count', -1) do
+  #     delete :destroy, :id => @game.to_param
+  #   end
 
-    assert_redirected_to games_path
-  end
+  #   assert_redirected_to games_path
+  # end
 end

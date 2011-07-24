@@ -3,7 +3,7 @@ require 'test_helper'
 class FarmTest < ActiveSupport::TestCase
 
   def setup
-    @game = Game.create
+    @game = Game.create(:user => users(:foobar))
     @farm = Farm.create(:game => @game)
   end
   

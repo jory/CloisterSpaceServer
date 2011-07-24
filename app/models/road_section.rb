@@ -1,12 +1,10 @@
 class RoadSection < ActiveRecord::Base
 
-  validates :row, :numericality => { :greater_than => -1, :less_than => 145}
-  validates :col, :numericality => { :greater_than => -1, :less_than => 145}
+  validates :row, :numericality => { :greater_than => -1, :less_than => 145, :only_integer => true }
+  validates :col, :numericality => { :greater_than => -1, :less_than => 145, :only_integer => true }
   validates :edge, :inclusion => { :in => %w( north south east west ) }
-  validates :num, :numericality => true
-
-  # TODO: Figure out validator for boolean-ness
-  # validates :hasEnd, :presence => true
+  validates :num, :numericality => { :greater_than => -1, :only_integer => true }
+  validates :hasEnd, :inclusion => { :in => [true, false] }
 
   validates :road, :presence => true
   

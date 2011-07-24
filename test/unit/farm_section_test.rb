@@ -3,31 +3,43 @@ require 'test_helper'
 class FarmSectionTest < ActiveSupport::TestCase
 
   def setup
-    @farm = Farm.create(:game => Game.create)
+    @farm = Farm.create(:game => games(:one))
   end
 
-  test "need farm" do
-    assert !FarmSection.create(:row => 0, :col => 0,
-                               :edge => "north", :num => 0).save
-  end
-  
-  test "need row" do
-    assert !FarmSection.create(:farm => @farm, :col => 0,
-                               :edge => "north", :num => 0).save
+  test "invalid row" do
+    assert !FarmSection.create(:col => 0, :edge => "north", :num => 0, :farm => @farm).valid?    
+
+    assert !FarmSection.create(:row =>  -1, :col => 0, :edge => "north", :num => 0, :farm => @farm).valid?    
+    assert !FarmSection.create(:row => 145, :col => 0, :edge => "north", :num => 0, :farm => @farm).valid?    
+    assert !FarmSection.create(:row => "n", :col => 0, :edge => "north", :num => 0, :farm => @farm).valid?    
   end
 
-  test "need col" do
-    assert !FarmSection.create(:farm => @farm, :row => 0,
-                               :edge => "north", :num => 0).save
+  test "invalid col" do
+    assert !FarmSection.create(:row => 0, :edge => "north", :num => 0, :farm => @farm).valid?    
+
+    assert !FarmSection.create(:col =>  -1, :row => 0, :edge => "north", :num => 0, :farm => @farm).valid?    
+    assert !FarmSection.create(:col => 145, :row => 0, :edge => "north", :num => 0, :farm => @farm).valid?    
+    assert !FarmSection.create(:col => "n", :row => 0, :edge => "north", :num => 0, :farm => @farm).valid?    
   end
 
-  test "need edge" do
-    assert !FarmSection.create(:farm => @farm, :row => 0, :col => 0,
-                               :num => 0).save
+  test "invalid edge" do
+    assert !FarmSection.create(:col =>  0, :row => 0, :num => 0, :farm => @farm).valid?    
+    
+    assert !FarmSection.create(:col =>  0, :row => 0, :edge => "n", :num => 0, :farm => @farm).valid?    
+    assert !FarmSection.create(:col =>  0, :row => 0, :edge => 1, :num => 0, :farm => @farm).valid?    
   end
 
-  test "need num" do
-    assert !FarmSection.create(:farm => @farm, :row => 0, :col => 0,
-                               :edge => "north").save
+  test "invalid num" do
+    assert !FarmSection.create(:row =>  0, :col => 0, :edge => "north", :farm => @farm).valid?    
+    
+    assert !FarmSection.create(:row =>  0, :col => 0, :edge => "north", :num => "n", :farm => @farm).valid?    
+  end
+
+  test "needs farm" do
+    assert !FarmSection.create(:row => 0, :col => 0, :edge => "north", :num => 0).valid?
+  end
+
+  test "valid FarmSection" do
+    assert FarmSection.create(:row => 0, :col => 0, :edge => "north", :num => 0, :farm => @farm).valid?
   end
 end

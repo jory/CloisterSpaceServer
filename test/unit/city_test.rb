@@ -15,6 +15,8 @@ class CityTest < ActiveSupport::TestCase
     assert !@city.finished, "Finished should be false."
     assert_equal @city.size,  0, "Size should be 0."
     assert_equal @city.pennants, 0, "Should have 0 pennants."
+    assert @city.citySections.empty?
+    assert @city.openEdges.empty?
   end
 
   test "no nil arguments to add" do

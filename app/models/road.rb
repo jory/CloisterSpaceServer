@@ -1,10 +1,12 @@
 class Road < ActiveRecord::Base
-  # TODO: Figure out how to make these read only to the outside world.
-  validates :length, :numericality => true
-  validates :numEnds, :numericality => true
 
-  # TODO: Figure out validator for boolean, with default value.
-  # validates :finished, :presence => true
+  validates :length, :numericality => { :greater_than => -1,
+                                        :only_integer => true }
+
+  validates :numEnds, :numericality => { :greater_than => -1,
+                                         :only_integer => true }
+
+  validates :finished, :inclusion => { :in => [true, false] }
 
   validates :game, :presence => true
 
@@ -22,8 +24,8 @@ class Road < ActiveRecord::Base
       self.numEnds += 1 if hasEnd
       self.finished = true if numEnds == 2
       
-      RoadSection.create(:road => self, :row => row, :col => col, :edge => edge.to_s,
-                         :num => num, :hasEnd => hasEnd)
+      self.roadSections.create(:row => row, :col => col, :edge => edge.to_s,
+                               :num => num, :hasEnd => hasEnd)
 
       self.save
     end
@@ -31,6 +33,7 @@ class Road < ActiveRecord::Base
 
   def merge(other)
     if meets_merge_preconditions? other
+
       for section in other.roadSections
         add(section.row, section.col, section.edge, section.num, section.hasEnd, true)
       end
@@ -40,7 +43,7 @@ class Road < ActiveRecord::Base
   end
 
   def has(row, col, num)
-    if not self.roadSections.where(:row => row, :col => col, :num => num).empty?
+    if self.roadSections.where(:row => row, :col => col, :num => num).any?
       return true
     end
   end
@@ -56,8 +59,8 @@ class Road < ActiveRecord::Base
       return false
     end
 
-    if not self.roadSections.where(:row => row, :col => col, :edge => edge, :num => num,
-                                   :hasEnd => hasEnd).empty?
+    if self.roadSections.where(:row => row, :col => col, :edge => edge,
+                               :num => num, :hasEnd => hasEnd).any?
       return false
     end
 

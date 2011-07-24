@@ -1,8 +1,8 @@
 class FarmSection < ActiveRecord::Base
-  validates :row, :numericality => { :greater_than => -1, :less_than => 145}
-  validates :col, :numericality => { :greater_than => -1, :less_than => 145}
+  validates :row, :numericality => { :greater_than => -1, :less_than => 145, :only_integer => true }
+  validates :col, :numericality => { :greater_than => -1, :less_than => 145, :only_integer => true }
   validates :edge, :inclusion => { :in => %w( north south east west ) }
-  validates :num, :numericality => true
+  validates :num, :numericality => { :greater_than => -1, :only_integer => true }
 
   validates :farm, :presence => true
   

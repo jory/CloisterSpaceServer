@@ -1,6 +1,6 @@
 class Farm < ActiveRecord::Base
-  validates :size, :numericality => true
-  validates :score, :numericality => true
+  validates :size,  :numericality => { :greater_than => -1, :only_integer => true }
+  validates :score, :numericality => { :greater_than => -1, :only_integer => true }
 
   validates :game, :presence => true
 
@@ -49,8 +49,8 @@ class Farm < ActiveRecord::Base
       return false
     end
 
-    if not self.farmSections.where(:row => row, :col => col, :edge => edge,
-                                   :num => num).empty?
+    if self.farmSections.where(:row => row, :col => col, :edge => edge,
+                               :num => num).any?
       return false
     end
 

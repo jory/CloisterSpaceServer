@@ -8,18 +8,12 @@ class FarmTest < ActiveSupport::TestCase
   end
   
   test "need game" do
-    assert !Farm.create().save
+    assert !Farm.create().valid?
   end
 
-  test "size defaults to 0" do
-    assert @farm.size == 0
-  end
-
-  test "score defaults to 0" do
-    assert @farm.score == 0
-  end
-
-  test "farmSections starts empty" do
+  test "sensible defaults" do
+    assert_equal @farm.size, 0
+    assert_equal @farm.score, 0
     assert @farm.farmSections.empty?
   end
 
@@ -33,7 +27,7 @@ class FarmTest < ActiveSupport::TestCase
 
   test "single add increases size" do
     @farm.add(0, 0, :north, 0)
-    assert @farm.size == 1
+    assert_equal @farm.size, 1
   end
 
   test "don't add the same one twice" do
@@ -59,7 +53,7 @@ class FarmTest < ActiveSupport::TestCase
   end
 
   test "don't merge between games" do
-    f = Farm.create(:game => Game.create())
+    f = Farm.create(:game => Game.create(:user => users(:foobar)))
     assert !@farm.merge(f)
   end
   
@@ -69,7 +63,7 @@ class FarmTest < ActiveSupport::TestCase
 
     @farm.merge(f)
 
-    assert @farm.size == 1
+    assert_equal @farm.size, 1
   end
   
 end

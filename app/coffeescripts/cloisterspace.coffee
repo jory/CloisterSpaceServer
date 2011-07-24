@@ -432,7 +432,7 @@ class World
 
   next: ->
     if not @finished
-      $.getJSON(@href + "tileInstances/next.json", (obj) =>
+      $.getJSON(@href + "next.json", (obj) =>
         if obj?
           instance = obj.tile_instance
           @currentTile = new Tile(@tiles[instance.tile_id], instance.id)

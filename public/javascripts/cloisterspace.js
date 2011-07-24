@@ -510,7 +510,7 @@
     }
     World.prototype.next = function() {
       if (!this.finished) {
-        return $.getJSON(this.href + "tileInstances/next.json", __bind(function(obj) {
+        return $.getJSON(this.href + "next.json", __bind(function(obj) {
           var farm, instance, _i, _len, _ref;
           if (obj != null) {
             instance = obj.tile_instance;

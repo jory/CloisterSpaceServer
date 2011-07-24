@@ -1,4 +1,7 @@
 class GamesController < ApplicationController
+
+  respond_to :json
+  
   def index
     @games = Game.where(:user_id => session[:user_id])
   end
@@ -30,4 +33,11 @@ class GamesController < ApplicationController
     @game.destroy
     redirect_to(games_url)
   end
+
+  def next
+    @game = Game.where(:id => params[:game_id], :user_id => session[:user_id]).first
+    @tileInstance = @game.next()
+    respond_with(@tileInstance)
+  end
+  
 end

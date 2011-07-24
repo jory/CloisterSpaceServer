@@ -16,9 +16,10 @@ CloisterSpaceServer::Application.routes.draw do
     match 'cities' => 'cities#index'
     match 'farms' => 'farms#index'
 
-    match 'tileInstances/next' => 'tileInstances#next'
     match 'tileInstances/place/:id' => 'tileInstances#update'
     match 'tileInstances/:status' => 'tileInstances#index'
+
+    match 'next' => 'games#next'
   end
 
   root :to => 'games#index'

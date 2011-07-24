@@ -31,13 +31,13 @@ class Game < ActiveRecord::Base
   def next()
     current = self.tileInstances.where(:status => "current") 
 
-    if not current.empty?
+    if current.any?
       return current.first
     end
 
     tiles = self.tileInstances.where(:status => nil)
     
-    if not tiles.empty?
+    if tiles.any?
       tile = tiles[rand(tiles.size)]
       tile.status = "current"
       tile.save

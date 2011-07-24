@@ -7,19 +7,25 @@ class GameTest < ActiveSupport::TestCase
     @game = Game.create(:user => @user)
   end
 
-  test "game requires user" do
-    assert !Game.create().save
+  test "need User" do
+    assert !Game.create().valid?
   end
 
-  test "valid game saves" do
-    assert Game.create(:user => @user).save
+  test "valid Game" do
+    assert Game.create(:user => @user).valid?
   end
 
-  test "an actually created game should place the starting tile automatically" do
-    assert Road.where(:game_id => @game).any?
-  end
-
-  test "can access Roads using .roads" do
+  test "starting tile is placed automatically" do
+    assert @game.tileInstances.where(:status => 'placed').any?
     assert @game.roads.any?
+    assert @game.cities.any?
+    assert @game.farms.any?
+    assert @game.cloisters.empty?
   end
+
+  test "next returns current" do
+    assert_not_nil @game.next()
+    assert_equal @game.tileInstances.where(:status => "current").first, @game.next()
+  end
+
 end

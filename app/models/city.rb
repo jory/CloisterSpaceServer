@@ -1,7 +1,8 @@
 class City < ActiveRecord::Base
 
-  validates :size, :numericality => true
-  validates :pennants, :numericality => true
+  validates :size, :numericality => { :greater_than => -1, :only_integer => true }
+  validates :pennants, :numericality => { :greater_than => -1, :only_integer => true }
+  validates :finished, :inclusion => { :in => [true, false] }
 
   validates :game, :presence => true
 
@@ -42,7 +43,7 @@ class City < ActiveRecord::Base
   end
   
   def has(row, col, num)
-    if not self.citySections.where(:row => row, :col => col, :num => num).empty?
+    if self.citySections.where(:row => row, :col => col, :num => num).any?
       return true
     end
   end
@@ -55,9 +56,9 @@ class City < ActiveRecord::Base
       return false
     end
 
-    if not self.citySections.where(:row => row, :col => col, :edge => edge,
-                                   :num => num, :citysFields => citysFields,
-                                   :hasPennant => hasPennant).empty?
+    if self.citySections.where(:row => row, :col => col, :edge => edge,
+                               :num => num, :citysFields => citysFields,
+                               :hasPennant => hasPennant).any?
       return false
     end
 

@@ -1,26 +1,27 @@
 class Cloister < ActiveRecord::Base
 
-  validates :row, :numericality => { :greater_than => -1, :less_than => 145},
-                  :presence => true
-  validates :col, :numericality => { :greater_than => -1, :less_than => 145},
-                  :presence => true
+  validates :row, :numericality => { :greater_than => -1, :less_than => 145,
+                                     :only_integer => true }
+  validates :col, :numericality => { :greater_than => -1, :less_than => 145,
+                                     :only_integer => true }
 
-  validates :size, :numericality => true
+  validates :size, :numericality => { :greater_than => -1, :less_than => 10,
+                                      :only_integer => true }
 
-  # TODO: Figure out validator for boolean, with default value.
-  # validates :finished, :presence => true
+  validates :finished, :inclusion => { :in => [true, false] }
 
   validates :game, :presence => true
 
   belongs_to :game
 
+  has_many :cloisterSections
 
   def add(row, col)
     if neighbours(row, col)
       self.size += 1
       self.finished = true if self.size == 9
 
-      CloisterSection.create(:cloister => self, :row => row, :col => col)
+      self.cloisterSections.create(:row => row, :col => col)
       
       self.save
     end

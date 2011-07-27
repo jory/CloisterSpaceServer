@@ -4,7 +4,7 @@ class GameTest < ActiveSupport::TestCase
 
   def setup
     @user = users(:foobar)
-    @game = Game.create(:user => @user)
+    @game = Game.create(:creator => @user)
   end
 
   test "need User" do
@@ -12,7 +12,7 @@ class GameTest < ActiveSupport::TestCase
   end
 
   test "valid Game" do
-    assert Game.create(:user => @user).valid?
+    assert Game.create(:creator => @user).valid?
   end
 
   test "starting tile is placed automatically" do

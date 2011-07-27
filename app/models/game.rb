@@ -1,8 +1,8 @@
 class Game < ActiveRecord::Base
 
-  validates :user, :presence => true
+  validates :creator, :presence => true
 
-  belongs_to :user
+  belongs_to :creator, :class_name => "User"
 
   has_many :tileInstances
   has_many :roads

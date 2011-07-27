@@ -32,6 +32,7 @@ class GameTest < ActiveSupport::TestCase
 
   test "creator is populated" do
     assert !@game.creator.nil?
+    assert_equal @game.creator, @creator
   end
   
   test "starting tile is placed automatically" do
@@ -45,6 +46,18 @@ class GameTest < ActiveSupport::TestCase
   test "next returns current" do
     assert_not_nil @game.next()
     assert_equal @game.tileInstances.where(:status => "current").first, @game.next()
+  end
+
+  test "destroying game destroys all created objects" do
+    id = @game.id
+
+    assert @game.destroy
+
+    assert TileInstance.where(:game_id => id).empty?
+    assert Road.where(:game_id => id).empty?
+    assert City.where(:game_id => id).empty?
+    assert Cloister.where(:game_id => id).empty?
+    assert Farm.where(:game_id => id).empty?
   end
 
 end

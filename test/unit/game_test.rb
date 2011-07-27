@@ -29,6 +29,10 @@ class GameTest < ActiveSupport::TestCase
     assert_equal(@users.count, @game.players.count)
     assert_equal(1, @game.players.count)
   end
+
+  test "creator is populated" do
+    assert !@game.creator.nil?
+  end
   
   test "starting tile is placed automatically" do
     assert @game.tileInstances.where(:status => 'placed').any?

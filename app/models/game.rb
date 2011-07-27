@@ -1,34 +1,17 @@
 class Game < ActiveRecord::Base
 
-  validates :creator, :presence => true
+  after_create :create_tile_instances
 
+  validates  :creator, :presence => true
   belongs_to :creator, :class_name => "User"
 
-  has_many :tileInstances
-  has_many :roads
-  has_many :cloisters
-  has_many :cities
-  has_many :farms
+  has_many :tileInstances, :dependent => :destroy
+  has_many :roads,         :dependent => :destroy
+  has_many :cloisters,     :dependent => :destroy
+  has_many :cities,        :dependent => :destroy
+  has_many :farms,         :dependent => :destroy
 
-  def self.new(attributes = nil)
-    game = super(attributes)
-    
-    if game.save
-      Tile.all.each do |tile|
-        for i in 1..tile.count
-          tileInstance = game.tileInstances.create(:tile => tile)
-        end
-
-        if tile.isStart? and tile.image == 'city1rwe.png'
-          tileInstance.place(72, 72, 0)
-        end
-      end
-    end
-
-    return game
-  end
-
-  def next()
+  def next
     current = self.tileInstances.where(:status => "current") 
 
     if current.any?
@@ -45,4 +28,17 @@ class Game < ActiveRecord::Base
     end
   end
 
+  private
+
+  def create_tile_instances
+    Tile.all.each do |tile|
+      for i in 1..tile.count
+        tileInstance = self.tileInstances.create(:tile => tile)
+      end
+
+      if tile.isStart? and tile.image == 'city1rwe.png'
+        tileInstance.place(72, 72, 0)
+      end
+    end
+  end
 end

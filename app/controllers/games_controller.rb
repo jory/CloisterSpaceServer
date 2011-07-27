@@ -12,11 +12,6 @@ class GamesController < ApplicationController
 
   def new
     @game = Game.new(:user_id => session[:user_id])
-    if @game.save
-      redirect_to(@game, :notice => 'Game was successfully created.')
-    else
-      render :action => "new"
-    end
   end
 
   def create

@@ -38,7 +38,8 @@ class Game < ActiveRecord::Base
   
   def create_players
     users.each_with_index do |user, index|
-      self.players.build(:user => User.find_by_email(user[:email]), :turn => (index + 1))
+      self.players.build(:user => User.find_by_email(user[:email]),
+                         :turn => (index + 1))
     end
   end
 

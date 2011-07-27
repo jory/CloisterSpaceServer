@@ -1,10 +1,16 @@
 class Game < ActiveRecord::Base
 
-  after_create :create_tile_instances
+  attr_accessor :users
+
+  before_create :create_players
+  after_create  :create_tile_instances
 
   validates  :creator, :presence => true
   belongs_to :creator, :class_name => "User"
 
+  validates :users, :presence => true, :on => :create
+  
+  has_many :players,       :dependent => :destroy
   has_many :tileInstances, :dependent => :destroy
   has_many :roads,         :dependent => :destroy
   has_many :cloisters,     :dependent => :destroy
@@ -29,6 +35,12 @@ class Game < ActiveRecord::Base
   end
 
   private
+  
+  def create_players
+    users.each_with_index do |user, index|
+      self.players.build(:user => User.find_by_email(user[:email]), :turn => (index + 1))
+    end
+  end
 
   def create_tile_instances
     Tile.all.each do |tile|

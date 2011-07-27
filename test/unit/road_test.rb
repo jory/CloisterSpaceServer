@@ -3,7 +3,10 @@ require 'test_helper'
 class RoadTest < ActiveSupport::TestCase
 
   def setup
-    @game = Game.create(:user => users(:foobar))
+    creator = users(:foobar)
+    users = [:email => creator.email]
+    @game = Game.create(:creator => creator, :users => users)
+    @otherGame = Game.create(:creator => creator, :users => users)
     @road = Road.create(:game => @game)
   end
 
@@ -68,7 +71,7 @@ class RoadTest < ActiveSupport::TestCase
   end
   
   test "only merge within game" do
-    other = Road.create(:game => Game.create(:user => users(:foobar)))
+    other = Road.create(:game => @otherGame)
     assert !@road.merge(other)
   end
   

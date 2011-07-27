@@ -3,18 +3,33 @@ require 'test_helper'
 class GameTest < ActiveSupport::TestCase
 
   def setup
-    @user = users(:foobar)
-    @game = Game.create(:creator => @user)
+    @creator = users(:foobar)
+    @users = []
+    @users << {:email => @creator.email}
+    @game = Game.create(:creator => @creator, :users => @users)
   end
 
-  test "need User" do
+  test "needs something" do
     assert !Game.create().valid?
   end
 
-  test "valid Game" do
-    assert Game.create(:creator => @user).valid?
+  test "needs Creator" do
+    assert !Game.create(:users => @users).valid?
   end
 
+  test "needs Users" do
+    assert !Game.create(:creator => @creator).valid?
+  end
+  
+  test "valid Game" do
+    assert Game.create(:creator => @creator, :users => @users).valid?
+  end
+
+  test "players is populated" do
+    assert_equal(@users.count, @game.players.count)
+    assert_equal(1, @game.players.count)
+  end
+  
   test "starting tile is placed automatically" do
     assert @game.tileInstances.where(:status => 'placed').any?
     assert @game.roads.any?

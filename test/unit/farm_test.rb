@@ -3,7 +3,10 @@ require 'test_helper'
 class FarmTest < ActiveSupport::TestCase
 
   def setup
-    @game = Game.create(:user => users(:foobar))
+    creator = users(:foobar)
+    users = [:email => creator.email]
+    @game = Game.create(:creator => creator, :users => users)
+    @otherGame = Game.create(:creator => creator, :users => users)
     @farm = Farm.create(:game => @game)
   end
   
@@ -53,7 +56,7 @@ class FarmTest < ActiveSupport::TestCase
   end
 
   test "don't merge between games" do
-    f = Farm.create(:game => Game.create(:user => users(:foobar)))
+    f = Farm.create(:game => @otherGame)
     assert !@farm.merge(f)
   end
   

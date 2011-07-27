@@ -3,7 +3,10 @@ require 'test_helper'
 class CityTest < ActiveSupport::TestCase
 
   def setup
-    @game = Game.create(:user => users(:foobar))
+    creator = users(:foobar)
+    users = [:email => creator.email]
+    @game = Game.create(:creator => creator, :users => users)
+    @otherGame = Game.create(:creator => creator, :users => users)
     @city = City.create(:game => @game)
   end
 
@@ -69,7 +72,7 @@ class CityTest < ActiveSupport::TestCase
   end
   
   test "only merge within game" do
-    other = City.create(:game => Game.create(:user => users(:foobar)))
+    other = City.create(:game => @otherGame)
     assert !@city.merge(other)
   end
   

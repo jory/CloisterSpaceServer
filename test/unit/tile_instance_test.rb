@@ -4,7 +4,10 @@ class TileInstanceTest < ActiveSupport::TestCase
 
   def setup
     @fakeGame = games(:one)
-    @realGame = Game.create(:user => users(:foobar))
+
+    creator = users(:foobar)
+    users = [:email => creator.email]
+    @realGame = Game.create(:creator => creator, :users => users)
 
     @startingTile = tiles(:start)
     @otherTile = tiles(:city1rwe)

@@ -4,7 +4,8 @@ class PlayerTest < ActiveSupport::TestCase
 
   def setup
     @user = users(:foobar)
-    @game = Game.create(:user => @user)
+    users = [:email => @user.email]
+    @game = Game.create(:creator => @user, :users => users)
   end
 
   test "invalid User" do

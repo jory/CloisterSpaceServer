@@ -2,11 +2,10 @@ class Farm < ActiveRecord::Base
   validates :size,  :numericality => { :greater_than => -1, :only_integer => true }
   validates :score, :numericality => { :greater_than => -1, :only_integer => true }
 
-  validates :game, :presence => true
-
+  validates  :game, :presence => true
   belongs_to :game
 
-  has_many :farmSections
+  has_many :farmSections, :dependent => :destroy
 
   def add(row, col, edge, num)
     if meets_add_preconditions? row, col, edge, num

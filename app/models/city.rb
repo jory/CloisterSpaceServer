@@ -1,15 +1,14 @@
 class City < ActiveRecord::Base
 
-  validates :size, :numericality => { :greater_than => -1, :only_integer => true }
+  validates :size,     :numericality => { :greater_than => -1, :only_integer => true }
   validates :pennants, :numericality => { :greater_than => -1, :only_integer => true }
   validates :finished, :inclusion => { :in => [true, false] }
 
-  validates :game, :presence => true
-
+  validates  :game, :presence => true
   belongs_to :game
 
-  has_many :citySections
-  has_many :openEdges
+  has_many :citySections, :dependent => :destroy
+  has_many :openEdges,    :dependent => :destroy
   
   def add(row, col, edge, num, citysFields, hasPennant)
     if meets_add_preconditions? row, col, edge, num, citysFields, hasPennant

@@ -1,8 +1,8 @@
 class Cloister < ActiveRecord::Base
 
-  validates :row, :numericality => { :greater_than => -1, :less_than => 145,
+  validates :row,  :numericality => { :greater_than => -1, :less_than => 145,
                                      :only_integer => true }
-  validates :col, :numericality => { :greater_than => -1, :less_than => 145,
+  validates :col,  :numericality => { :greater_than => -1, :less_than => 145,
                                      :only_integer => true }
 
   validates :size, :numericality => { :greater_than => -1, :less_than => 10,
@@ -10,11 +10,10 @@ class Cloister < ActiveRecord::Base
 
   validates :finished, :inclusion => { :in => [true, false] }
 
-  validates :game, :presence => true
-
+  validates  :game, :presence => true
   belongs_to :game
 
-  has_many :cloisterSections
+  has_many :cloisterSections, :dependent => :destroy
 
   def add(row, col)
     if neighbours(row, col)

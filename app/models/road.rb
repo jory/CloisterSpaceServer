@@ -1,18 +1,17 @@
 class Road < ActiveRecord::Base
 
-  validates :length, :numericality => { :greater_than => -1,
-                                        :only_integer => true }
+  validates :length, :numericality =>
+    { :greater_than => -1, :only_integer => true }
 
-  validates :numEnds, :numericality => { :greater_than => -1,
-                                         :only_integer => true }
+  validates :numEnds, :numericality =>
+    { :greater_than => -1, :only_integer => true }
 
   validates :finished, :inclusion => { :in => [true, false] }
 
-  validates :game, :presence => true
-
+  validates  :game, :presence => true
   belongs_to :game
 
-  has_many :roadSections
+  has_many :roadSections, :dependent => :destroy
 
   def add(row, col, edge, num, hasEnd, merging = false)
     if meets_add_preconditions? row, col, edge, num, hasEnd, merging

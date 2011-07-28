@@ -6,7 +6,7 @@ class Game < ActiveRecord::Base
   after_create  :create_tile_instances
 
   validates  :creator, :presence => true
-  belongs_to :creator, :class_name => "User"
+  belongs_to :creator, :class_name => "User", :foreign_key => "user_id"
 
   validates :users, :presence => true, :on => :create
   

@@ -25,8 +25,8 @@ class GameTest < ActiveSupport::TestCase
   end
 
   test "players is populated" do
-    assert_equal(@users.count, @game.players.count)
-    assert_equal(1, @game.players.count)
+    assert_equal(@users.size, @game.players.size)
+    assert_equal(1, @game.players.size)
   end
 
   test "creator is populated" do

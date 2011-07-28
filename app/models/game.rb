@@ -11,8 +11,10 @@ class Game < ActiveRecord::Base
 
   validates :users, :presence => true, :on => :create
 
-  after_create  :create_players
-  after_create  :create_tile_instances
+  validates :current_player, :inclusion => {:in => 1..5}
+
+  before_create  :create_players
+  after_create   :create_tile_instances
 
   has_many :players,       :dependent => :destroy
   has_many :tileInstances, :dependent => :destroy

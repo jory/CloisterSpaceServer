@@ -3,6 +3,7 @@ require 'test_helper'
 class GamesControllerTest < ActionController::TestCase
   setup do
     @creator = users(:foobar)
+    @other = users(:baz)
     @users = [{:email => @creator.email}]
     @game = games(:one)
   end
@@ -34,6 +35,12 @@ class GamesControllerTest < ActionController::TestCase
     get :show, {:id => @game.to_param}, {:user_id => @creator.id}
     assert_response :success
     assert_not_nil assigns(:game)
+  end
+
+  test "should not show game" do
+    get :show, {:id => @game.to_param}, {:user_id => @other.id}
+    assert_redirected_to games_path
+    assert_equal "Naughty!", flash[:error]
   end
 
   test "should destroy game" do

@@ -1,3 +1,7 @@
 foobar:
   id: 1
   email: foo@bar.com
+
+baz:
+  id: 2
+  email: baz@bar.com

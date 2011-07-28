@@ -2,7 +2,8 @@ require 'test_helper'
 
 class GamesControllerTest < ActionController::TestCase
   setup do
-    @user_id = users(:foobar).id
+    @creator = users(:foobar)
+    @users = [{:email => @creator.email}]
     @game = games(:one)
   end
 
@@ -13,39 +14,33 @@ class GamesControllerTest < ActionController::TestCase
   end
 
   test "should get new" do
-    get :new, nil, {'user_id' => @user_id}
-
-    assert_redirected_to game_path(assigns(:game))
+    get :new, nil, {:user_id => @creator.id}
+    assert_response :success
+    assert_not_nil assigns(:game)
   end
 
   test "should create game" do
     assert_difference('Game.count') do
-      post :create, :game => @game.attributes
+      attrs = @game.attributes
+      attrs[:users] = @users
+
+      post :create, {:game => attrs}, {:user_id => @creator.id}
     end
 
     assert_redirected_to game_path(assigns(:game))
   end
 
   test "should show game" do
-    get :show, :id => @game.to_param
+    get :show, {:id => @game.to_param}, {:user_id => @creator.id}
     assert_response :success
+    assert_not_nil assigns(:game)
   end
 
-  # test "should get edit" do
-  #   get :edit, :id => @game.to_param
-  #   assert_response :success
-  # end
+  test "should destroy game" do
+    assert_difference('Game.count', -1) do
+      delete :destroy, {:id => @game.to_param}, {:user_id => @creator.id}
+    end
 
-  # test "should update game" do
-  #   put :update, :id => @game.to_param, :game => @game.attributes
-  #   assert_redirected_to game_path(assigns(:game))
-  # end
-
-  # test "should destroy game" do
-  #   assert_difference('Game.count', -1) do
-  #     delete :destroy, :id => @game.to_param
-  #   end
-
-  #   assert_redirected_to games_path
-  # end
+    assert_redirected_to games_path
+  end
 end

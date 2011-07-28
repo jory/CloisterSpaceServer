@@ -9,6 +9,7 @@ class GamesController < ApplicationController
 
   def show
     @game = Game.find(params[:id])
+
     if @game.players.where(:user_id => session[:user_id]).empty?
       flash[:error] = "Naughty!"
       redirect_to games_url
@@ -31,7 +32,7 @@ class GamesController < ApplicationController
 
   def destroy
     @game = Game.find(params[:id])
-    if @game and @game.creator == session[:user_id]
+    if @game and @game.creator.id == session[:user_id]
       @game.destroy
     end
     redirect_to(games_url)

@@ -5,9 +5,6 @@ class User < ActiveRecord::Base
   has_many :games
   
   def self.authenticate(email)
-    user = find_by_email(email)
-    if user
-      user
-    end
+    find_by_email(email)
   end
 end

@@ -4,7 +4,7 @@ class PlayerTest < ActiveSupport::TestCase
 
   def setup
     @user = users(:foobar)
-    users = [:email => @user.email]
+    users = [@user.email]
     @game = Game.create(:creator => @user, :users => users)
   end
 

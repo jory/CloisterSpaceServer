@@ -4,7 +4,7 @@ class FarmTest < ActiveSupport::TestCase
 
   def setup
     creator = users(:foobar)
-    users = [:email => creator.email]
+    users = [creator.email]
     @game = Game.create(:creator => creator, :users => users)
     @otherGame = Game.create(:creator => creator, :users => users)
     @farm = Farm.create(:game => @game)

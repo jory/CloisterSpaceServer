@@ -2,14 +2,18 @@ class Game < ActiveRecord::Base
 
   attr_accessor :users
 
-  before_create :create_players
-  after_create  :create_tile_instances
+  before_validation :sanitize_users
+
+  validate :creator_in_users, :users_exist
 
   validates  :creator, :presence => true
   belongs_to :creator, :class_name => "User", :foreign_key => "user_id"
 
   validates :users, :presence => true, :on => :create
-  
+
+  after_create  :create_players
+  after_create  :create_tile_instances
+
   has_many :players,       :dependent => :destroy
   has_many :tileInstances, :dependent => :destroy
   has_many :roads,         :dependent => :destroy
@@ -36,9 +40,33 @@ class Game < ActiveRecord::Base
 
   private
   
+  def sanitize_users
+    if users
+      users.delete("")
+    end
+  end
+
+  def creator_in_users
+    if users and creator
+      errors[:base] << "Creator has to be included among players." unless
+        users.index(creator.email)
+    end
+  end
+
+  def users_exist
+    if users
+      users.each do |email|
+        if User.find_by_email(email).nil?
+          errors[:base] << "All players must already been signed up."
+          break
+        end
+      end
+    end
+  end
+
   def create_players
-    users.each_with_index do |user, index|
-      self.players.build(:user => User.find_by_email(user[:email]),
+    users.each_with_index do |email, index|
+      self.players.build(:user => User.find_by_email(email),
                          :turn => (index + 1))
     end
   end

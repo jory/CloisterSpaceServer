@@ -4,8 +4,7 @@ class GameTest < ActiveSupport::TestCase
 
   def setup
     @creator = users(:foobar)
-    @users = []
-    @users << {:email => @creator.email}
+    @users = [@creator.email]
     @game = Game.create(:creator => @creator, :users => @users)
   end
 
@@ -60,4 +59,27 @@ class GameTest < ActiveSupport::TestCase
     assert Farm.where(:game_id => id).empty?
   end
 
+  test "have to include creator as player" do
+    other = users(:baz)
+    game = Game.create(:creator => @creator, :users => [other.email])
+    assert !game.valid?
+  end
+
+  test "no empty players" do
+    game = Game.create(:creator => @creator, :users => [@creator.email, "", "",
+                                                        users(:baz).email])
+    assert game.valid?
+
+    assert_equal game.players.size, 2
+
+    assert game.players.find_by_turn(1)
+    assert game.players.find_by_turn(2)
+    assert !game.players.find_by_turn(3)
+    assert !game.players.find_by_turn(4)
+  end
+
+  test "users exist" do
+    game = Game.create(:creator => @creator, :users => [@creator.email, "bonk!"])
+    assert !game.valid?
+  end
 end

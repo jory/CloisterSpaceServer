@@ -13,7 +13,13 @@ class GamesController < ApplicationController
     if @game.players.where(:user_id => session[:user_id]).empty?
       flash[:error] = "Naughty!"
       redirect_to games_url
+      # Does the previous redirect end the action, or do I have to
+      # explicitly return?
     end
+
+    @edges = Edge.all
+    @tiles = Tile.all
+    @placed = @game.tileInstances.where(:status => "placed")
   end
 
   def new

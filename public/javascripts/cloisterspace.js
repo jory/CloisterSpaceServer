@@ -337,21 +337,14 @@
   })();
   World = (function() {
     function World() {
-      var boardSetup, getEdges, getFeatures, getTiles, haveCities, haveCloisters, haveEdges, haveFarms, haveFeatures, haveRoads, haveTiles, i, play, setupBoard;
+      var i, parseCities, parseCloisters, parseEdges, parseFarms, parseRoads, parseTiles, setupBoard;
       this.center = parseInt($('#num_tiles').html());
       this.maxSize = this.center * 2;
       this.origin = window.location.protocol + "//" + window.location.host;
       this.href = window.location.href + "/";
       this.timeout = 1;
       this.edges = {};
-      haveEdges = false;
       this.tiles = {};
-      haveTiles = false;
-      haveRoads = false;
-      haveCities = false;
-      haveFarms = false;
-      haveCloisters = false;
-      boardSetup = false;
       this.finished = false;
       this.minrow = this.maxrow = this.mincol = this.maxcol = this.center;
       this.board = (function() {
@@ -368,145 +361,126 @@
       this.farms = [];
       this.currentTile = null;
       this.candidates = [];
-      getEdges = __bind(function() {
-        return $.getJSON("" + this.origin + "/edges.json", __bind(function(data) {
-          var edge, obj, _i, _len;
-          console.log("Got " + data.length + " edges.");
-          for (_i = 0, _len = data.length; _i < _len; _i++) {
-            obj = data[_i];
-            edge = obj.edge;
-            this.edges[edge.id] = edge;
-          }
-          return haveEdges = true;
-        }, this));
-      }, this);
-      getTiles = __bind(function() {
-        if (!haveEdges) {
-          return setTimeout(getTiles, this.timeout);
-        } else {
-          return $.getJSON("" + this.origin + "/tiles.json", __bind(function(data) {
-            var obj, tile, _i, _len;
-            console.log("Got " + data.length + " tiles.");
-            for (_i = 0, _len = data.length; _i < _len; _i++) {
-              obj = data[_i];
-              tile = obj.tile;
-              tile.north = this.edges[tile.north];
-              tile.south = this.edges[tile.south];
-              tile.west = this.edges[tile.west];
-              tile.east = this.edges[tile.east];
-              this.tiles[tile.id] = tile;
-            }
-            return haveTiles = true;
-          }, this));
+      parseEdges = __bind(function() {
+        var data, edge, obj, _i, _len, _results;
+        data = $.parseJSON($('#json_edges').text());
+        console.log("Found " + data.length + " edges.");
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          obj = data[_i];
+          edge = obj.edge;
+          _results.push(this.edges[edge.id] = edge);
         }
+        return _results;
+      }, this);
+      parseTiles = __bind(function() {
+        var data, obj, tile, _i, _len, _results;
+        data = $.parseJSON($('#json_tiles').text());
+        console.log("Found " + data.length + " tiles.");
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          obj = data[_i];
+          tile = obj.tile;
+          tile.north = this.edges[tile.north];
+          tile.south = this.edges[tile.south];
+          tile.west = this.edges[tile.west];
+          tile.east = this.edges[tile.east];
+          _results.push(this.tiles[tile.id] = tile);
+        }
+        return _results;
       }, this);
       setupBoard = __bind(function() {
-        if (!haveTiles) {
-          return setTimeout(setupBoard, this.timeout);
-        } else {
-          return $.getJSON(this.href + "tileInstances/placed.json", __bind(function(data) {
-            var instance, obj, tile, _i, _len;
-            console.log("Got " + data.length + " placed tiles");
-            for (_i = 0, _len = data.length; _i < _len; _i++) {
-              obj = data[_i];
-              instance = obj.tile_instance;
-              tile = new Tile(this.tiles[instance.tile_id], instance.id);
-              tile.rotate(instance.rotation);
-              this.placeTileOnBoard(instance.row, instance.col, tile);
-            }
-            this.drawBoard();
-            return boardSetup = true;
-          }, this));
+        var data, instance, obj, tile, _i, _len;
+        data = $.parseJSON($('#json_placed_tiles').text());
+        console.log("Found " + data.length + " placed tiles");
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          obj = data[_i];
+          instance = obj.tile_instance;
+          tile = new Tile(this.tiles[instance.tile_id], instance.id);
+          tile.rotate(instance.rotation);
+          this.placeTileOnBoard(instance.row, instance.col, tile);
         }
+        return this.drawBoard();
       }, this);
-      getFeatures = __bind(function() {
-        if (!boardSetup) {
-          return setTimeout(getFeatures, this.timeout);
-        } else {
-          $.getJSON(this.href + "roads.json", __bind(function(data) {
-            var obj, road, roadFeature, section, _i, _j, _len, _len2;
-            console.log("Got " + data.length + " roads.");
-            for (_i = 0, _len = data.length; _i < _len; _i++) {
-              roadFeature = data[_i];
-              road = new Road();
-              for (_j = 0, _len2 = roadFeature.length; _j < _len2; _j++) {
-                obj = roadFeature[_j];
-                section = obj.road_section;
-                road.add(section.row, section.col, section.edge, section.num, section.hasEnd);
-              }
-              this.roads.push(road);
-            }
-            return haveRoads = true;
-          }, this));
-          $.getJSON(this.href + "cities.json", __bind(function(data) {
-            var city, cityFeature, obj, section, _i, _j, _len, _len2;
-            console.log("Got " + data.length + " cities.");
-            for (_i = 0, _len = data.length; _i < _len; _i++) {
-              cityFeature = data[_i];
-              city = new City();
-              for (_j = 0, _len2 = cityFeature.length; _j < _len2; _j++) {
-                obj = cityFeature[_j];
-                section = obj.city_section;
-                city.add(section.row, section.col, section.edge, section.num, section.citysFields, section.hasPennant);
-              }
-              this.cities.push(city);
-            }
-            return haveCities = true;
-          }, this));
-          $.getJSON(this.href + "farms.json", __bind(function(data) {
-            var farm, farmFeature, obj, section, _i, _j, _len, _len2;
-            console.log("Got " + data.length + " farms.");
-            for (_i = 0, _len = data.length; _i < _len; _i++) {
-              farmFeature = data[_i];
-              farm = new Farm();
-              for (_j = 0, _len2 = farmFeature.length; _j < _len2; _j++) {
-                obj = farmFeature[_j];
-                section = obj.farm_section;
-                farm.add(section.row, section.col, section.edge, section.num);
-              }
-              this.farms.push(farm);
-            }
-            return haveFarms = true;
-          }, this));
-          return $.getJSON(this.href + "cloisters.json", __bind(function(data) {
-            var c, cloister, cs, obj, section, _i, _j, _len, _len2, _ref;
-            console.log("Got " + data.length + " cloisters.");
-            for (_i = 0, _len = data.length; _i < _len; _i++) {
-              obj = data[_i];
-              c = obj[0].cloister;
-              cloister = new Cloister(c.row, c.col);
-              _ref = obj[1];
-              for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
-                section = _ref[_j];
-                cs = section.cloister_section;
-                cloister.add(cs.row, cs.col);
-              }
-              this.cloisters.push(cloister);
-            }
-            return haveCloisters = true;
-          }, this));
+      parseRoads = __bind(function() {
+        var data, obj, road, roadFeature, section, _i, _j, _len, _len2, _results;
+        data = $.parseJSON($('#json_roads').text());
+        console.log("Found " + data.length + " roads.");
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          roadFeature = data[_i];
+          road = new Road();
+          for (_j = 0, _len2 = roadFeature.length; _j < _len2; _j++) {
+            obj = roadFeature[_j];
+            section = obj.road_section;
+            road.add(section.row, section.col, section.edge, section.num, section.hasEnd);
+          }
+          _results.push(this.roads.push(road));
         }
+        return _results;
       }, this);
-      haveFeatures = __bind(function() {
-        if (haveRoads && haveCities && haveFarms && haveCloisters) {
-          return true;
-        } else {
-          return false;
+      parseCities = __bind(function() {
+        var city, cityFeature, data, obj, section, _i, _j, _len, _len2, _results;
+        data = $.parseJSON($('#json_cities').text());
+        console.log("Found " + data.length + " cities.");
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          cityFeature = data[_i];
+          city = new City();
+          for (_j = 0, _len2 = cityFeature.length; _j < _len2; _j++) {
+            obj = cityFeature[_j];
+            section = obj.city_section;
+            city.add(section.row, section.col, section.edge, section.num, section.citysFields, section.hasPennant);
+          }
+          _results.push(this.cities.push(city));
         }
+        return _results;
       }, this);
-      play = __bind(function() {
-        if (!haveFeatures()) {
-          return setTimeout(play, this.timeout);
-        } else {
-          console.log("Play ball!");
-          return this.next();
+      parseFarms = __bind(function() {
+        var data, farm, farmFeature, obj, section, _i, _j, _len, _len2, _results;
+        data = $.parseJSON($('#json_farms').text());
+        console.log("Found " + data.length + " farms.");
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          farmFeature = data[_i];
+          farm = new Farm();
+          for (_j = 0, _len2 = farmFeature.length; _j < _len2; _j++) {
+            obj = farmFeature[_j];
+            section = obj.farm_section;
+            farm.add(section.row, section.col, section.edge, section.num);
+          }
+          _results.push(this.farms.push(farm));
         }
+        return _results;
       }, this);
-      getEdges();
-      getTiles();
+      parseCloisters = __bind(function() {
+        var c, cloister, cs, data, obj, section, _i, _j, _len, _len2, _ref, _results;
+        data = $.parseJSON($('#json_cloisters').text());
+        console.log("Found " + data.length + " cloisters.");
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          obj = data[_i];
+          c = obj[0].cloister;
+          cloister = new Cloister(c.row, c.col);
+          _ref = obj[1];
+          for (_j = 0, _len2 = _ref.length; _j < _len2; _j++) {
+            section = _ref[_j];
+            cs = section.cloister_section;
+            cloister.add(cs.row, cs.col);
+          }
+          _results.push(this.cloisters.push(cloister));
+        }
+        return _results;
+      }, this);
+      parseEdges();
+      parseTiles();
       setupBoard();
-      getFeatures();
-      play();
+      parseRoads();
+      parseCities();
+      parseFarms();
+      parseCloisters();
+      console.log("Play ball!");
+      this.next();
     }
     World.prototype.next = function() {
       if (!this.finished) {

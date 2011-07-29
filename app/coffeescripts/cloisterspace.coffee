@@ -273,16 +273,7 @@ class World
     @timeout = 1
 
     @edges = {}
-    haveEdges = false
     @tiles = {}
-    haveTiles = false
-
-    haveRoads = false
-    haveCities = false
-    haveFarms = false
-    haveCloisters = false
-
-    boardSetup = false
 
     @finished = false
 
@@ -297,138 +288,106 @@ class World
     @currentTile = null
     @candidates = []
 
-    getEdges = =>
-      $.getJSON("#{@origin}/edges.json", (data) =>
-        console.log("Got #{data.length} edges.")
+    parseEdges = =>
+      data = $.parseJSON($('#json_edges').text())
+      console.log("Found #{data.length} edges.")
 
-        for obj in data
-          edge = obj.edge
-          @edges[edge.id] = edge
+      for obj in data
+        edge = obj.edge
+        @edges[edge.id] = edge
 
-        haveEdges = true
-      )
+    parseTiles = =>
+      data = $.parseJSON($('#json_tiles').text())
+      console.log("Found #{data.length} tiles.")
 
-    getTiles = =>
-      if not haveEdges
-        setTimeout(getTiles, @timeout)
-      else
-        $.getJSON("#{@origin}/tiles.json", (data) =>
-          console.log("Got #{data.length} tiles.")
-
-          for obj in data
-            tile = obj.tile
-            tile.north = @edges[tile.north]
-            tile.south = @edges[tile.south]
-            tile.west  = @edges[tile.west]
-            tile.east  = @edges[tile.east]
-            @tiles[tile.id] = tile
-
-          haveTiles = true
-        )
+      for obj in data
+        tile = obj.tile
+        tile.north = @edges[tile.north]
+        tile.south = @edges[tile.south]
+        tile.west  = @edges[tile.west]
+        tile.east  = @edges[tile.east]
+        @tiles[tile.id] = tile
 
     setupBoard = =>
-      if not haveTiles
-        setTimeout(setupBoard, @timeout)
-      else
-        $.getJSON(@href + "tileInstances/placed.json", (data) =>
-          console.log("Got #{data.length} placed tiles")
+      data = $.parseJSON($('#json_placed_tiles').text())
+      console.log("Found #{data.length} placed tiles")
 
-          for obj in data
-            instance = obj.tile_instance
-            tile = new Tile(@tiles[instance.tile_id], instance.id)
-            tile.rotate(instance.rotation)
-            @placeTileOnBoard(instance.row, instance.col, tile)
+      for obj in data
+        instance = obj.tile_instance
+        tile = new Tile(@tiles[instance.tile_id], instance.id)
+        tile.rotate(instance.rotation)
+        @placeTileOnBoard(instance.row, instance.col, tile)
 
-          @drawBoard()
+      @drawBoard()
 
-          boardSetup = true
-        )
+    parseRoads = =>
+      data = $.parseJSON($('#json_roads').text())
+      console.log("Found #{data.length} roads.")
 
-    getFeatures = =>
-      if not boardSetup
-        setTimeout(getFeatures, @timeout)
-      else
-        $.getJSON(@href + "roads.json", (data) =>
-          console.log("Got #{data.length} roads.")
+      for roadFeature in data
+        road = new Road()
 
-          for roadFeature in data
-            road = new Road()
+        for obj in roadFeature
+          section = obj.road_section
+          road.add(section.row, section.col, section.edge, section.num,
+                   section.hasEnd)
 
-            for obj in roadFeature
-              section = obj.road_section
-              road.add(section.row, section.col, section.edge, section.num,
-                       section.hasEnd)
+        @roads.push(road)
 
-            @roads.push(road)
+    parseCities = =>
+      data = $.parseJSON($('#json_cities').text())
+      console.log("Found #{data.length} cities.")
 
-          haveRoads = true
-        )
+      for cityFeature in data
+        city = new City()
 
-        $.getJSON(@href + "cities.json", (data) =>
-          console.log("Got #{data.length} cities.")
+        for obj in cityFeature
+          section = obj.city_section
+          city.add(section.row, section.col, section.edge, section.num,
+                   section.citysFields, section.hasPennant)
 
-          for cityFeature in data
-            city = new City()
+        @cities.push(city)
 
-            for obj in cityFeature
-              section = obj.city_section
-              city.add(section.row, section.col, section.edge, section.num,
-                       section.citysFields, section.hasPennant)
+    parseFarms = =>
+      data = $.parseJSON($('#json_farms').text())
+      console.log("Found #{data.length} farms.")
 
-            @cities.push(city)
+      for farmFeature in data
+        farm = new Farm()
 
-          haveCities = true
-        )
+        for obj in farmFeature
+          section = obj.farm_section
+          farm.add(section.row, section.col, section.edge, section.num)
 
-        $.getJSON(@href + "farms.json", (data) =>
-          console.log("Got #{data.length} farms.")
+        @farms.push(farm)
 
-          for farmFeature in data
-            farm = new Farm()
+    parseCloisters = =>
+      data = $.parseJSON($('#json_cloisters').text())
+      console.log("Found #{data.length} cloisters.")
 
-            for obj in farmFeature
-              section = obj.farm_section
-              farm.add(section.row, section.col, section.edge, section.num)
+      for obj in data
+        c = obj[0].cloister
+        cloister = new Cloister(c.row, c.col)
 
-            @farms.push(farm)
+        for section in obj[1]
+          cs = section.cloister_section
+          cloister.add(cs.row, cs.col)
 
-          haveFarms = true
-        )
+        @cloisters.push(cloister)
 
-        $.getJSON(@href + "cloisters.json", (data) =>
-          console.log("Got #{data.length} cloisters.")
 
-          for obj in data
-            c = obj[0].cloister
-            cloister = new Cloister(c.row, c.col)
+    parseEdges()
+    parseTiles()
 
-            for section in obj[1]
-              cs = section.cloister_section
-              cloister.add(cs.row, cs.col)
-
-            @cloisters.push(cloister)
-
-          haveCloisters = true
-        )
-
-    haveFeatures = =>
-      if haveRoads and haveCities and haveFarms and haveCloisters
-        return true
-      else
-        return false
-
-    play = =>
-      if not haveFeatures()
-        setTimeout(play, @timeout)
-      else
-        console.log("Play ball!")
-        @next()
-
-    getEdges()
-    getTiles()
     setupBoard()
-    getFeatures()
-    play()
+
+    parseRoads()
+    parseCities()
+    parseFarms()
+    parseCloisters()
+
+    console.log("Play ball!")
+    @next()
 
   next: ->
     if not @finished

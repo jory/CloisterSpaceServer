@@ -393,7 +393,7 @@ class World
     if not @finished
       $.getJSON(@href + "next.json", (obj) =>
         if obj?
-          instance = obj.tile_instance
+          instance = obj[1].tile_instance
           @currentTile = new Tile(@tiles[instance.tile_id], instance.id)
           @candidates = @findValidPositions()
           @drawCandidates()

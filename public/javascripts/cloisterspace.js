@@ -487,7 +487,7 @@
         return $.getJSON(this.href + "next.json", __bind(function(obj) {
           var farm, instance, _i, _len, _ref;
           if (obj != null) {
-            instance = obj.tile_instance;
+            instance = obj[1].tile_instance;
             this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);
             this.candidates = this.findValidPositions();
             return this.drawCandidates();

@@ -49,7 +49,7 @@ class GamesController < ApplicationController
   def next
     @game = Game.where(:id => params[:game_id]).first
     @tileInstance = @game.next()
-    respond_with(@tileInstance)
+    respond_with([@game.current_player, @tileInstance])
   end
   
 end

@@ -674,6 +674,7 @@ class World
     attach = (cell, row, col, neighbours) =>
       cell.unbind().click(=>
         disableAll()
+        img.attr('style', 'visibility: hidden')
         @placeTile(row, col, tile, neighbours)
         @drawBoard()
 

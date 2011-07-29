@@ -854,6 +854,7 @@
       attach = __bind(function(cell, row, col, neighbours) {
         return cell.unbind().click(__bind(function() {
           disableAll();
+          img.attr('style', 'visibility: hidden');
           this.placeTile(row, col, tile, neighbours);
           return this.drawBoard();
         }, this)).addClass('candidate');

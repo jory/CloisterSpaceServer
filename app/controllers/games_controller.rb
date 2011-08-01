@@ -66,9 +66,15 @@ class GamesController < ApplicationController
   end
 
   def next
-    @game = Game.where(:id => params[:game_id]).first
+    @game = Game.find(params[:game_id])
     @tileInstance = @game.next()
     respond_with([@game.current_player, @tileInstance])
+  end
+
+  def move
+    game = Game.find(params[:game_id])
+    move = game.tileInstances.find_by_move_number_and_status(params[:num], 'placed')
+    respond_with(move)
   end
   
 end

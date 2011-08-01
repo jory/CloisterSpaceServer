@@ -83,16 +83,16 @@ class TileInstanceTest < ActiveSupport::TestCase
   end
 
   test "next returns current" do
-    p = TileInstance.create(:tile => @startingTile, :game => @realGame)
+    p = TileInstance.create(:tile => @startingTile, :game => @fakeGame)
     p.place(72, 72, 0)
 
-    q = TileInstance.create(:tile => @otherTile, :game => @realGame)
+    q = TileInstance.create(:tile => @otherTile, :game => @fakeGame)
     q.status = "current"
     q.save
 
-    r = TileInstance.create(:tile => tiles(:city4q), :game => @realGame)
+    r = TileInstance.create(:tile => tiles(:city4q), :game => @fakeGame)
     
-    assert q === @realGame.next()
+    assert q === @fakeGame.next()
   end
   
   test "next returns a tile" do
@@ -201,8 +201,6 @@ class TileInstanceTest < ActiveSupport::TestCase
 
     p = TileInstance.create(:tile => tiles(:sroad2sw), :game => game)
     q = TileInstance.create(:tile => tiles(:road2sw), :game => game)
-    r = TileInstance.create(:tile => tiles(:road2sw), :game => game)
-    s = TileInstance.create(:tile => tiles(:road2sw), :game => game)
 
     roads = Road.where(:game_id => game)
     assert roads.length == 0, "Found #{roads.length} roads, expected 0 (no tiles)"
@@ -212,10 +210,14 @@ class TileInstanceTest < ActiveSupport::TestCase
     roads = Road.where(:game_id => game)
     assert roads.length == 1, "Found #{roads.length} roads, expected 1 (one tile)"
 
+    r = TileInstance.create(:tile => tiles(:road2sw), :game => game)
+
     assert q.place(73, 72, 1)
 
     roads = Road.where(:game_id => game)
     assert roads.length == 1, "Found #{roads.length} roads, expected 1 (two tiles)"
+
+    s = TileInstance.create(:tile => tiles(:road2sw), :game => game)
 
     assert r.place(73, 71, 2)
 

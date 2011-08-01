@@ -12,6 +12,7 @@ CloisterSpaceServer::Application.routes.draw do
     match 'tileInstances/:status' => 'tileInstances#index'
 
     match 'next' => 'games#next'
+    match 'move/:num' => 'games#move'
   end
 
   root :to => 'games#index'

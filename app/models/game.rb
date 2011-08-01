@@ -28,31 +28,8 @@ class Game < ActiveRecord::Base
 
   def next
     current = self.tileInstances.where(:status => "current") 
-
     if current.any?
       return current.first
-    end
-
-    tiles = self.tileInstances.where(:status => nil)
-    
-    if tiles.any?
-      self.move_number += 1
-
-      if self.current_player == self.players.size
-        self.current_player = 1
-      else
-        self.current_player += 1
-      end
-      
-      self.save
-
-      tile = tiles[rand(tiles.size)]
-      tile.status = "current"
-      tile.move_number = self.move_number
-
-      tile.save
-
-      return tile
     end
   end
 
@@ -94,11 +71,12 @@ class Game < ActiveRecord::Base
       for i in 1..tile.count
         tileInstance = self.tileInstances.create(:tile => tile)
       end
-
-      if tile.isStart? and tile.image == 'city1rwe.png'
-        tileInstance.move_number = 1
-        tileInstance.place(72, 72, 0)
-      end
     end
+
+    tile = Tile.where(:isStart => true, :image => 'city1rwe.png')
+    tileInstance = self.tileInstances.where(:tile_id => tile).first
+
+    tileInstance.move_number = 1
+    tileInstance.place(72, 72, 0)
   end
 end

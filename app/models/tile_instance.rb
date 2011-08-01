@@ -42,6 +42,29 @@ class TileInstance < ActiveRecord::Base
           handleRoads
           handleCities
           handleFarms
+
+          game = self.game
+
+          game.move_number += 1
+
+          if game.current_player >= game.players.size
+            game.current_player = 1
+          else
+            game.current_player += 1
+          end
+          
+          game.save
+
+          tiles = game.tileInstances.where(:status => nil)
+          
+          if tiles.any?
+            tile = tiles[rand(tiles.size)]
+            tile.status = "current"
+            tile.move_number = game.move_number
+            tile.save
+          end
+
+          return true
         end
       end
     end

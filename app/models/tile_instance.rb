@@ -10,6 +10,9 @@ class TileInstance < ActiveRecord::Base
 
   validates :rotation, :inclusion => { :in => 0..3, :allow_nil => true }
 
+  validates :move_number, :numericality =>
+    {:allow_nil => true, :only_integer => true, :greater_than => 0}
+
   validates :tile, :presence => true
   validates :game, :presence => true
 
@@ -65,7 +68,6 @@ class TileInstance < ActiveRecord::Base
   end
 
   def is_valid_placement?
-
     if self.tile.isStart
       return true
 

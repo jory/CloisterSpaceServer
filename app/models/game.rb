@@ -13,6 +13,9 @@ class Game < ActiveRecord::Base
 
   validates :current_player, :inclusion => {:in => 1..5}
 
+  validates :move_number, :numericality =>
+    {:only_integer => true, :greater_than => 0}
+
   before_create  :create_players
   after_create   :create_tile_instances
 
@@ -33,8 +36,12 @@ class Game < ActiveRecord::Base
     tiles = self.tileInstances.where(:status => nil)
     
     if tiles.any?
+      self.move_number += 1
+      self.save
+
       tile = tiles[rand(tiles.size)]
       tile.status = "current"
+      tile.move_number = self.move_number
       tile.save
       return tile
     end
@@ -80,6 +87,7 @@ class Game < ActiveRecord::Base
       end
 
       if tile.isStart? and tile.image == 'city1rwe.png'
+        tileInstance.move_number = 1
         tileInstance.place(72, 72, 0)
       end
     end

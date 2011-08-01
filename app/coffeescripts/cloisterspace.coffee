@@ -287,7 +287,9 @@ class World
     @farms = []
 
     @currentPlayer = -1
+    @currentMoveNumber = -1
     @currentTile = null
+
     @candidates = []
 
     parseEdges = =>
@@ -313,6 +315,8 @@ class World
     setupBoard = =>
       data = $.parseJSON($('#json_placed_tiles').text())
       console.log("Found #{data.length} placed tiles")
+
+      @currentMoveNumber = data.length
 
       for obj in data
         instance = obj.tile_instance
@@ -395,9 +399,12 @@ class World
     if not @finished
       $.getJSON(@href + "next.json", (obj) =>
         if obj?
-          @currentPlayer = obj[0]
           instance = obj[1].tile_instance
+
+          @currentPlayer = obj[0]
+          @currentMoveNumber += 1
           @currentTile = new Tile(@tiles[instance.tile_id], instance.id)
+
           @candidates = @findValidPositions()
           @drawCandidates()
 

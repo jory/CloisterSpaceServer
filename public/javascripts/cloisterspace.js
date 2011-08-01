@@ -360,6 +360,7 @@
       this.roads = [];
       this.farms = [];
       this.currentPlayer = -1;
+      this.currentMoveNumber = -1;
       this.currentTile = null;
       this.candidates = [];
       parseEdges = __bind(function() {
@@ -394,6 +395,7 @@
         var data, instance, obj, tile, _i, _len;
         data = $.parseJSON($('#json_placed_tiles').text());
         console.log("Found " + data.length + " placed tiles");
+        this.currentMoveNumber = data.length;
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           obj = data[_i];
           instance = obj.tile_instance;
@@ -488,8 +490,9 @@
         return $.getJSON(this.href + "next.json", __bind(function(obj) {
           var farm, instance, _i, _len, _ref;
           if (obj != null) {
-            this.currentPlayer = obj[0];
             instance = obj[1].tile_instance;
+            this.currentPlayer = obj[0];
+            this.currentMoveNumber += 1;
             this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);
             this.candidates = this.findValidPositions();
             return this.drawCandidates();

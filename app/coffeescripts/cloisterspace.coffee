@@ -266,17 +266,18 @@ class Farm
 
 class World
   constructor: ->
-    @center = parseInt($('#num_tiles').html())
-    @maxSize = @center * 2
+    @players_turn = parseInt($('#players_turn').text())
+
     @origin = window.location.protocol + "//" + window.location.host
     @href = window.location.href + "/"
-    @timeout = 1
+
+    @finished = false
 
     @edges = {}
     @tiles = {}
 
-    @finished = false
-
+    @center = parseInt($('#num_tiles').text())
+    @maxSize = @center * 2
     @minrow = @maxrow = @mincol = @maxcol = @center
     @board = (new Array(@maxSize) for i in [1..@maxSize])
 
@@ -285,6 +286,7 @@ class World
     @roads = []
     @farms = []
 
+    @currentPlayer = -1
     @currentTile = null
     @candidates = []
 
@@ -393,6 +395,7 @@ class World
     if not @finished
       $.getJSON(@href + "next.json", (obj) =>
         if obj?
+          @currentPlayer = obj[0]
           instance = obj[1].tile_instance
           @currentTile = new Tile(@tiles[instance.tile_id], instance.id)
           @candidates = @findValidPositions()
@@ -666,7 +669,7 @@ class World
 
     disableAll = ->
       for item in actives
-        item.removeClass('candidate').unbind()
+        item.removeClass('candidate-active').removeClass('candidate-inactive').unbind()
 
       $('#left').unbind().prop('disabled', 'disabled')
       $('#right').unbind().prop('disabled', 'disabled')
@@ -681,22 +684,28 @@ class World
         # Add clicking here!
         # <map...>
 
-      ).addClass('candidate')
+      )
 
     actives = for candidate in candidates[tile.rotation]
       [row, col, turns, neighbours] = candidate
-      attach($("div[row=#{row}][col=#{col}]"), row, col, neighbours)
+      cell = $("div[row=#{row}][col=#{col}]")
+
+      if @currentPlayer == @players_turn
+        cell.addClass('candidate-active')
+        attach(cell, row, col, neighbours)
+      else
+        cell.addClass('candidate-inactive')
 
     $('#left').unbind().click(=>
       disableAll()
       tile.rotate(-1)
-      @drawCandidates(tile, candidates)
+      @drawCandidates()
     ).prop('disabled', '')
 
     $('#right').unbind().click(=>
       disableAll()
       tile.rotate(1)
-      @drawCandidates(tile, candidates)
+      @drawCandidates()
     ).prop('disabled', '')
 
   randomlyPlaceTile: (tile = @currentTile, candidates = @candidates) ->

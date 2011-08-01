@@ -25,14 +25,14 @@
   </div>
   <div style="display:none">
     <div id="num_tiles">72</div>
-    <div id="current_player"><%= @game.current_player %></div>
+    <div id="players_turn"><%= @player.turn %></div>
     <div id="json_edges"><%= @edges.to_json %></div>
     <div id="json_tiles"><%= @tiles.to_json %></div>
     <div id="json_placed_tiles"><%= @placed.to_json %></div>
-    <div id="json_roads"><%= @game.roads.to_json %></div>
-    <div id="json_cities"><%= @game.cities.to_json %></div>
-    <div id="json_farms"><%= @game.farms.to_json %></div>
-    <div id="json_cloisters"><%= @game.cloisters.to_json %></div>
+    <div id="json_roads"><%= @roads.to_json %></div>
+    <div id="json_cities"><%= @cities.to_json %></div>
+    <div id="json_farms"><%= @farms.to_json %></div>
+    <div id="json_cloisters"><%= @cloisters.to_json %></div>
   </div>
 </div>
 <%= link_to 'Back', games_path %>

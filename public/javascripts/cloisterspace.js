@@ -338,14 +338,14 @@
   World = (function() {
     function World() {
       var i, parseCities, parseCloisters, parseEdges, parseFarms, parseRoads, parseTiles, setupBoard;
-      this.center = parseInt($('#num_tiles').html());
-      this.maxSize = this.center * 2;
+      this.players_turn = parseInt($('#players_turn').text());
       this.origin = window.location.protocol + "//" + window.location.host;
       this.href = window.location.href + "/";
-      this.timeout = 1;
+      this.finished = false;
       this.edges = {};
       this.tiles = {};
-      this.finished = false;
+      this.center = parseInt($('#num_tiles').text());
+      this.maxSize = this.center * 2;
       this.minrow = this.maxrow = this.mincol = this.maxcol = this.center;
       this.board = (function() {
         var _ref, _results;
@@ -359,6 +359,7 @@
       this.cities = [];
       this.roads = [];
       this.farms = [];
+      this.currentPlayer = -1;
       this.currentTile = null;
       this.candidates = [];
       parseEdges = __bind(function() {
@@ -487,6 +488,7 @@
         return $.getJSON(this.href + "next.json", __bind(function(obj) {
           var farm, instance, _i, _len, _ref;
           if (obj != null) {
+            this.currentPlayer = obj[0];
             instance = obj[1].tile_instance;
             this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);
             this.candidates = this.findValidPositions();
@@ -833,7 +835,7 @@
       return _results;
     };
     World.prototype.drawCandidates = function(tile, candidates) {
-      var actives, attach, candidate, col, disableAll, img, neighbours, row, turns;
+      var actives, attach, candidate, cell, col, disableAll, img, neighbours, row, turns;
       if (tile == null) {
         tile = this.currentTile;
       }
@@ -846,7 +848,7 @@
         var item, _i, _len;
         for (_i = 0, _len = actives.length; _i < _len; _i++) {
           item = actives[_i];
-          item.removeClass('candidate').unbind();
+          item.removeClass('candidate-active').removeClass('candidate-inactive').unbind();
         }
         $('#left').unbind().prop('disabled', 'disabled');
         return $('#right').unbind().prop('disabled', 'disabled');
@@ -857,7 +859,7 @@
           img.attr('style', 'visibility: hidden');
           this.placeTile(row, col, tile, neighbours);
           return this.drawBoard();
-        }, this)).addClass('candidate');
+        }, this));
       }, this);
       actives = (function() {
         var _i, _len, _ref, _results;
@@ -866,19 +868,20 @@
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           candidate = _ref[_i];
           row = candidate[0], col = candidate[1], turns = candidate[2], neighbours = candidate[3];
-          _results.push(attach($("div[row=" + row + "][col=" + col + "]"), row, col, neighbours));
+          cell = $("div[row=" + row + "][col=" + col + "]");
+          _results.push(this.currentPlayer === this.players_turn ? (cell.addClass('candidate-active'), attach(cell, row, col, neighbours)) : cell.addClass('candidate-inactive'));
         }
         return _results;
-      })();
+      }).call(this);
       $('#left').unbind().click(__bind(function() {
         disableAll();
         tile.rotate(-1);
-        return this.drawCandidates(tile, candidates);
+        return this.drawCandidates();
       }, this)).prop('disabled', '');
       return $('#right').unbind().click(__bind(function() {
         disableAll();
         tile.rotate(1);
-        return this.drawCandidates(tile, candidates);
+        return this.drawCandidates();
       }, this)).prop('disabled', '');
     };
     World.prototype.randomlyPlaceTile = function(tile, candidates) {

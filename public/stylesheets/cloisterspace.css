@@ -32,8 +32,17 @@
     display: inline-block;
 }
 
-#game .candidate {
+#game .candidate-active {
     background: #eaeaea;
+    border-color: #002b36;
+    border-style: dashed;
+    border-width: 1px;
+    height: 88px;
+    width: 88px;
+}
+
+#game .candidate-inactive {
+    background: #aeaeae;
     border-color: #002b36;
     border-style: dashed;
     border-width: 1px;

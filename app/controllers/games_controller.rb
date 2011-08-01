@@ -17,9 +17,28 @@ class GamesController < ApplicationController
       # explicitly return?
     end
 
+    @player = @game.players.find_by_user_id(session[:user_id])
+
     @edges = Edge.all
     @tiles = Tile.all
+
     @placed = @game.tileInstances.where(:status => "placed")
+
+    @roads = @game.roads.collect do |road|
+      road.roadSections
+    end
+    
+    @cities = @game.cities.collect do |city|
+      city.citySections
+    end
+
+    @farms = @game.farms.collect do |farm|
+      farm.farmSections
+    end
+    
+    @cloisters = @game.cloisters.collect do |cloister|
+      [cloister, cloister.cloisterSections]
+    end
   end
 
   def new

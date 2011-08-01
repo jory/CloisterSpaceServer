@@ -37,12 +37,21 @@ class Game < ActiveRecord::Base
     
     if tiles.any?
       self.move_number += 1
+
+      if self.current_player == self.players.size
+        self.current_player = 1
+      else
+        self.current_player += 1
+      end
+      
       self.save
 
       tile = tiles[rand(tiles.size)]
       tile.status = "current"
       tile.move_number = self.move_number
+
       tile.save
+
       return tile
     end
   end

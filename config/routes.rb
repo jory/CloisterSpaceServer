@@ -7,15 +7,7 @@ CloisterSpaceServer::Application.routes.draw do
   get "sign_up" => "users#new", :as => "sign_up"
   resources :users
 
-  match 'tiles' => 'tiles#index'
-  match 'edges' => 'edges#index'
-
   resources :games do
-    match 'roads' => 'roads#index'
-    match 'cloisters' => 'cloisters#index'
-    match 'cities' => 'cities#index'
-    match 'farms' => 'farms#index'
-
     match 'tileInstances/place/:id' => 'tileInstances#update'
     match 'tileInstances/:status' => 'tileInstances#index'
 

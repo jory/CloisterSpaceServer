@@ -82,4 +82,20 @@ class GameTest < ActiveSupport::TestCase
     game = Game.create(:creator => @creator, :users => [@creator.email, "bonk!"])
     assert !game.valid?
   end
+
+  test "five players max, two players min" do
+
+    users = [@creator.email, users(:one).email, users(:two).email,
+             users(:three).email, users(:four).email, users(:five).email,
+             users(:baz).email]
+
+    assert Game.create(:creator => @creator, :users => users[0,2]).valid?
+    assert Game.create(:creator => @creator, :users => users[0,3]).valid?
+    assert Game.create(:creator => @creator, :users => users[0,4]).valid?
+    assert Game.create(:creator => @creator, :users => users[0,5]).valid?
+
+    assert Game.create(:creator => @creator, :users => users[0,6]).invalid?
+    assert Game.create(:creator => @creator, :users => users[0,7]).invalid?
+    assert Game.create(:creator => @creator, :users => users[0,1]).invalid?
+  end
 end

@@ -4,7 +4,7 @@ class Game < ActiveRecord::Base
 
   before_validation :sanitize_users
 
-  validate :creator_in_users, :users_exist
+  validate :creator_in_users, :between_two_and_five_users, :users_exist
 
   validates  :creator, :presence => true
   belongs_to :creator, :class_name => "User", :foreign_key => "user_id"
@@ -45,6 +45,13 @@ class Game < ActiveRecord::Base
     if users and creator
       errors[:base] << "Creator has to be included among players." unless
         users.index(creator.email)
+    end
+  end
+
+  def between_two_and_five_users
+    if users
+      errors[:base] << "Must have more than one player." unless users.size > 1
+      errors[:base] << "Must have five or fewer players." unless users.size < 6
     end
   end
 

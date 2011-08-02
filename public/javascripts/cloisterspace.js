@@ -366,7 +366,6 @@
       parseEdges = __bind(function() {
         var data, edge, obj, _i, _len, _results;
         data = $.parseJSON($('#json_edges').text());
-        console.log("Found " + data.length + " edges.");
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           obj = data[_i];
@@ -378,7 +377,6 @@
       parseTiles = __bind(function() {
         var data, obj, tile, _i, _len, _results;
         data = $.parseJSON($('#json_tiles').text());
-        console.log("Found " + data.length + " tiles.");
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           obj = data[_i];
@@ -394,7 +392,6 @@
       setupBoard = __bind(function() {
         var data, instance, obj, tile, _i, _len;
         data = $.parseJSON($('#json_placed_tiles').text());
-        console.log("Found " + data.length + " placed tiles");
         this.currentMoveNumber = data.length;
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           obj = data[_i];
@@ -408,7 +405,6 @@
       parseRoads = __bind(function() {
         var data, obj, road, roadFeature, section, _i, _j, _len, _len2, _results;
         data = $.parseJSON($('#json_roads').text());
-        console.log("Found " + data.length + " roads.");
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           roadFeature = data[_i];
@@ -425,7 +421,6 @@
       parseCities = __bind(function() {
         var city, cityFeature, data, obj, section, _i, _j, _len, _len2, _results;
         data = $.parseJSON($('#json_cities').text());
-        console.log("Found " + data.length + " cities.");
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           cityFeature = data[_i];
@@ -442,7 +437,6 @@
       parseFarms = __bind(function() {
         var data, farm, farmFeature, obj, section, _i, _j, _len, _len2, _results;
         data = $.parseJSON($('#json_farms').text());
-        console.log("Found " + data.length + " farms.");
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           farmFeature = data[_i];
@@ -459,7 +453,6 @@
       parseCloisters = __bind(function() {
         var c, cloister, cs, data, obj, section, _i, _j, _len, _len2, _ref, _results;
         data = $.parseJSON($('#json_cloisters').text());
-        console.log("Found " + data.length + " cloisters.");
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           obj = data[_i];
@@ -482,7 +475,6 @@
       parseCities();
       parseFarms();
       parseCloisters();
-      console.log("Play ball!");
       this.next();
     }
     World.prototype.next = function() {
@@ -495,7 +487,10 @@
             this.currentMoveNumber += 1;
             this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);
             this.candidates = this.findValidPositions();
-            return this.drawCandidates();
+            this.drawCandidates();
+            if (this.currentPlayer !== this.players_turn) {
+              return this.getNextMove();
+            }
           } else {
             this.finished = true;
             _ref = this.farms;
@@ -510,6 +505,32 @@
           }
         }, this));
       }
+    };
+    World.prototype.getNextMove = function() {
+      var helper;
+      helper = __bind(function() {
+        return $.getJSON(this.href + ("move/" + this.currentMoveNumber + ".json"), __bind(function(obj) {
+          var candidate, inst, _i, _len, _ref;
+          if (!(obj != null)) {
+            return setTimeout(helper, 1000);
+          } else {
+            $('#candidate > img').attr('style', 'visibility: hidden');
+            inst = obj.tile_instance;
+            _ref = this.candidates[inst.rotation];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              candidate = _ref[_i];
+              if (candidate[0] === inst.row && candidate[1] === inst.col) {
+                this.currentTile.reset();
+                this.currentTile.rotate(inst.rotation);
+                this.placeTile(inst.row, inst.col, this.currentTile, candidate[3]);
+              }
+            }
+            this.drawBoard();
+            return this.next();
+          }
+        }, this));
+      }, this);
+      return helper();
     };
     World.prototype.findValidPositions = function(tile) {
       var candidate, candidates, col, i, row, sortedCandidates, turns, valid, _i, _len, _ref, _ref2, _ref3, _ref4;
@@ -578,14 +599,16 @@
       this.handleFarms(row, col, tile, neighbours);
       this.handleRoads(row, col, tile, neighbours);
       this.handleCities(row, col, tile, neighbours);
-      return $.ajax({
-        url: this.href + ("tileInstances/place/" + tile.id),
-        data: "x=" + row + "&y=" + col + "&rotation=" + tile.rotation,
-        type: "PUT",
-        success: __bind(function() {
-          return this.next();
-        }, this)
-      });
+      if (this.currentPlayer === this.players_turn) {
+        return $.ajax({
+          url: this.href + ("tileInstances/place/" + tile.id),
+          data: "x=" + row + "&y=" + col + "&rotation=" + tile.rotation,
+          type: "PUT",
+          success: __bind(function() {
+            return this.next();
+          }, this)
+        });
+      }
     };
     World.prototype.placeTileOnBoard = function(row, col, tile) {
       this.board[row][col] = tile;

@@ -294,7 +294,6 @@ class World
 
     parseEdges = =>
       data = $.parseJSON($('#json_edges').text())
-      console.log("Found #{data.length} edges.")
 
       for obj in data
         edge = obj.edge
@@ -302,7 +301,6 @@ class World
 
     parseTiles = =>
       data = $.parseJSON($('#json_tiles').text())
-      console.log("Found #{data.length} tiles.")
 
       for obj in data
         tile = obj.tile
@@ -314,7 +312,6 @@ class World
 
     setupBoard = =>
       data = $.parseJSON($('#json_placed_tiles').text())
-      console.log("Found #{data.length} placed tiles")
 
       @currentMoveNumber = data.length
 
@@ -328,7 +325,6 @@ class World
 
     parseRoads = =>
       data = $.parseJSON($('#json_roads').text())
-      console.log("Found #{data.length} roads.")
 
       for roadFeature in data
         road = new Road()
@@ -342,7 +338,6 @@ class World
 
     parseCities = =>
       data = $.parseJSON($('#json_cities').text())
-      console.log("Found #{data.length} cities.")
 
       for cityFeature in data
         city = new City()
@@ -356,7 +351,6 @@ class World
 
     parseFarms = =>
       data = $.parseJSON($('#json_farms').text())
-      console.log("Found #{data.length} farms.")
 
       for farmFeature in data
         farm = new Farm()
@@ -369,7 +363,6 @@ class World
 
     parseCloisters = =>
       data = $.parseJSON($('#json_cloisters').text())
-      console.log("Found #{data.length} cloisters.")
 
       for obj in data
         c = obj[0].cloister
@@ -392,7 +385,6 @@ class World
     parseFarms()
     parseCloisters()
 
-    console.log("Play ball!")
     @next()
 
   next: ->
@@ -408,6 +400,9 @@ class World
           @candidates = @findValidPositions()
           @drawCandidates()
 
+          if @currentPlayer != @players_turn
+            @getNextMove()
+
         else
           @finished = true
 
@@ -419,6 +414,28 @@ class World
           $('#right').unbind().prop('disabled', 'disabled')
           $('#step').unbind().prop('disabled', 'disabled')
       )
+
+  getNextMove: ->
+    helper = =>
+      $.getJSON(@href + "move/#{@currentMoveNumber}.json", (obj) =>
+        if not obj?
+          setTimeout(helper, 1000)
+        else
+          $('#candidate > img').attr('style', 'visibility: hidden')
+
+          inst = obj.tile_instance
+
+          for candidate in @candidates[inst.rotation]
+            if candidate[0] == inst.row and candidate[1] == inst.col
+              @currentTile.reset()
+              @currentTile.rotate(inst.rotation)
+              @placeTile(inst.row, inst.col, @currentTile, candidate[3])
+
+          @drawBoard()
+          @next()
+      )
+
+    helper()
 
   findValidPositions: (tile = @currentTile) ->
     candidates = []
@@ -474,13 +491,14 @@ class World
     @handleRoads(row, col, tile, neighbours)
     @handleCities(row, col, tile, neighbours)
 
-    $.ajax(
-      url: @href + "tileInstances/place/#{tile.id}"
-      data: "x=#{row}&y=#{col}&rotation=#{tile.rotation}"
-      type: "PUT"
-      success: =>
-        @next()
-    )
+    if @currentPlayer == @players_turn
+      $.ajax(
+        url: @href + "tileInstances/place/#{tile.id}"
+        data: "x=#{row}&y=#{col}&rotation=#{tile.rotation}"
+        type: "PUT"
+        success: =>
+          @next()
+      )
 
   placeTileOnBoard: (row, col, tile) ->
     @board[row][col] = tile

@@ -12,9 +12,39 @@ body {
 }
 
 #user_nav {
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 42px;
+    background-color: #454545;
+    color: white;
+
+    padding-left: 10px;
+    padding-right: 10px;
+
+    height: 20px;
+}
+
+#user_nav .blue {
+    color: #7CD3FE;
+}
+
+#user_nav .nav_item {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+#user_nav a:link {
+    text-decoration: none;
+}
+
+#user_nav a:visited {
+    text-decoration: none;
+    color: white;
+}
+
+#user_nav a:active {
+    text-decoration: none;
+}
+
+#user_nav a:hover {
+    text-decoration: none;
 }
 
 #nav_game {

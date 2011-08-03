@@ -1,25 +1,28 @@
+<h1>CloisterSpace</h1>
 <% if current_user %>
-  <h1>Listing games</h1>
+  <h2>Listing games</h2>
 
-  <table>
-    <tr>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-
-    <% @games.each do |game| %>
+  <% if @games.any? %>
+    <table style="width: 100%">
       <tr>
-        <td><%= game.id %></td>
-        <td><%= link_to 'Show', game %></td>
-        <td><%= link_to 'Destroy', game, :confirm => 'Are you sure?', :method => :delete %></td>
+        <th></th>
+        <th></th>
+        <th></th>
       </tr>
-    <% end %>
-  </table>
+
+      <% @games.each do |game| %>
+        <tr>
+          <td><%= link_to game.id, game %></td>
+          <td>
+            <%= game.players.collect { |player| User.find(player.user_id).email }.join(', ') %>
+          </td>
+          <td><%= link_to 'Destroy', game, :confirm => 'Are you sure?', :method => :delete %></td>
+        </tr>
+      <% end %>
+    </table>
+  <% end %>
 
   <br />
 
   <%= link_to 'New Game', new_game_path %>
-<% else %>
-  <h1>CloisterSpace</h1>
 <% end %>

@@ -1,9 +1,57 @@
-#user_nav {
-    float: right;
+body {
+    width: 100%;
+    height: 100%;
+
+    margin: 0px;
+
+    position: absolute;
+    left: 0px;
+    top: 0px;
+
+    background-color: #eaeaea;
 }
 
-#game {
+#user_nav {
+    width: 100%;
+    margin-bottom: 42px;
+}
+
+#nav_game {
+    float: left;
+    margin-left: 5px;
+}
+
+#nav_session {
+    float: right;
+    margin-right: 5px;
+}
+
+#game #sideboard {
+    height: 120px;
     clear: both;
+}
+
+#game #sideboard > div {
+    display: inline-block;
+    vertical-align: top;
+    width: 24%;
+}
+
+#game #sideboard #controls > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#game #sideboard #controls #candidate {
+    height: 90px;
+    width: 90px;
+    background: white;
+}
+
+#game #board {
+    clear: both;
+    overflow: scroll;
+    background-color: white;
 }
 
 #game .r1 {
@@ -50,26 +98,3 @@
     width: 88px;
 }
 
-#game #board {
-    overflow: scroll;
-}
-
-#game #sideboard {
-    height: 120px;
-}
-
-#game #candidate {
-    float: left;
-    height: 90px;
-    width: 90px;
-    background: #eaeaea;
-}
-
-#game #controls {
-    float: left;
-}
-
-#game #play {
-    float: left;
-    height: 90px;
-}

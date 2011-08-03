@@ -1,16 +1,26 @@
 <div id="game">
-  <div id="board"></div>
   <div id="sideboard">
+    <div id="info">
+      Game info
+    </div>
     <div id="controls">
-      <div id="candidate">
-        <img src="" style="visibility: hidden"/>
+      <div id="left_turn">
+        <input id="left" type="button" value="Left" disabled="disabled"/>
       </div>
-      <div style="float: right">
-        <input id="left" type="button" value="Left" disabled="disabled"/><br/>
-        <input id="right" type="button" value="Right" disabled="disabled"/><br/>
+      <div id="candidate">
+        <img src=""/>
+      </div>
+      <div id="right_turn">
+        <input id="right" type="button" value="Right" disabled="disabled"/>
       </div>
     </div>
-    <div id="debug">
+    <div id="players">
+      List of players
+    </div>
+    <div id="chat">
+      Chatterbox
+    </div>
+    <!--div id="debug">
       <div id="play">
         <input id="step" type="button" value="Step"/><br/>
       </div>
@@ -21,8 +31,9 @@
         <input id="features_farms" type="button" 
                value="Features: Farms"/>
       </div>
-    </div>
+    </div-->
   </div>
+  <div id="board"></div>
   <div style="display:none">
     <div id="num_tiles">72</div>
     <div id="players_turn"><%= @player.turn %></div>
@@ -35,5 +46,4 @@
     <div id="json_cloisters"><%= @cloisters.to_json %></div>
   </div>
 </div>
-<%= link_to 'Back', games_path %>
 <%= javascript_include_tag 'cloisterspace' %>

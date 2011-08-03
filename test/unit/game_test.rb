@@ -4,7 +4,7 @@ class GameTest < ActiveSupport::TestCase
 
   def setup
     @creator = users(:foobar)
-    @users = [@creator.email]
+    @users = [@creator.email, users(:baz).email]
     @game = Game.create(:creator => @creator, :users => @users)
   end
 
@@ -26,7 +26,7 @@ class GameTest < ActiveSupport::TestCase
 
   test "players is populated" do
     assert_equal(@users.size, @game.players.size)
-    assert_equal(1, @game.players.size)
+    assert_equal(2, @game.players.size)
   end
 
   test "creator is populated" do

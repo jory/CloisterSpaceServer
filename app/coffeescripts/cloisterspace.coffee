@@ -410,8 +410,8 @@ class World
             farm.calculateScore(@cities)
 
           $('#candidate > img').attr('style', 'visibility: hidden')
-          $('#left').unbind().prop('disabled', 'disabled')
-          $('#right').unbind().prop('disabled', 'disabled')
+          $('#left').unbind()
+          $('#right').unbind()
           $('#step').unbind().prop('disabled', 'disabled')
       )
 
@@ -696,8 +696,8 @@ class World
       for item in actives
         item.removeClass('candidate-active').removeClass('candidate-inactive').unbind()
 
-      $('#left').unbind().prop('disabled', 'disabled')
-      $('#right').unbind().prop('disabled', 'disabled')
+      $('#left').unbind()
+      $('#right').unbind()
 
     attach = (cell, row, col, neighbours) =>
       cell.unbind().click(=>
@@ -725,13 +725,13 @@ class World
       disableAll()
       tile.rotate(-1)
       @drawCandidates()
-    ).prop('disabled', '')
+    )
 
     $('#right').unbind().click(=>
       disableAll()
       tile.rotate(1)
       @drawCandidates()
-    ).prop('disabled', '')
+    )
 
   randomlyPlaceTile: (tile = @currentTile, candidates = @candidates) ->
     candidates = [].concat candidates...

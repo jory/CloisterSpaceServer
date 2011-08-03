@@ -12,22 +12,23 @@ body {
 }
 
 #user_nav {
-    width: 100%;
-    margin-bottom: 42px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 42px;
 }
 
 #nav_game {
     float: left;
-    margin-left: 5px;
 }
 
 #nav_session {
     float: right;
-    margin-right: 5px;
 }
 
 #game #sideboard {
     height: 120px;
+    padding-left: 20px;
+    padding-right: 20px;
     clear: both;
 }
 
@@ -39,7 +40,8 @@ body {
 
 #game #sideboard #controls > div {
     display: inline-block;
-    vertical-align: top;
+    vertical-align: middle;
+    text-align: center;
 }
 
 #game #sideboard #controls #candidate {
@@ -52,6 +54,7 @@ body {
     clear: both;
     overflow: scroll;
     background-color: white;
+    text-align: center;
 }
 
 #game .r1 {

@@ -499,8 +499,8 @@
               farm.calculateScore(this.cities);
             }
             $('#candidate > img').attr('style', 'visibility: hidden');
-            $('#left').unbind().prop('disabled', 'disabled');
-            $('#right').unbind().prop('disabled', 'disabled');
+            $('#left').unbind();
+            $('#right').unbind();
             return $('#step').unbind().prop('disabled', 'disabled');
           }
         }, this));
@@ -876,8 +876,8 @@
           item = actives[_i];
           item.removeClass('candidate-active').removeClass('candidate-inactive').unbind();
         }
-        $('#left').unbind().prop('disabled', 'disabled');
-        return $('#right').unbind().prop('disabled', 'disabled');
+        $('#left').unbind();
+        return $('#right').unbind();
       };
       attach = __bind(function(cell, row, col, neighbours) {
         return cell.unbind().click(__bind(function() {
@@ -903,12 +903,12 @@
         disableAll();
         tile.rotate(-1);
         return this.drawCandidates();
-      }, this)).prop('disabled', '');
+      }, this));
       return $('#right').unbind().click(__bind(function() {
         disableAll();
         tile.rotate(1);
         return this.drawCandidates();
-      }, this)).prop('disabled', '');
+      }, this));
     };
     World.prototype.randomlyPlaceTile = function(tile, candidates) {
       var candidate, col, i, index, j, neighbours, row, subcandidates, turns, _i, _len, _ref, _ref2;

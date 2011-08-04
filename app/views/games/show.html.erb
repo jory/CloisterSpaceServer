@@ -1,43 +1,46 @@
 <div id="game">
-  <div id="sideboard">
+
+  <div id="window_main">
+    <div id="board"></div>
     <div id="info">
-      Game info
+      <div id="info_left">
+        Turn, Meeples.
+      </div>
+      <div id="controls">
+        <div id="left">
+          <img src="../images/left.png"/><br/>
+          ROTATE<br/>
+          LEFT
+        </div>
+        <div id="candidate">
+          <img src=""/>
+        </div>
+        <div id="right">
+          <img src="../images/right.png"/><br/>
+          ROTATE<br/>
+          RIGHT      
+        </div>
+      </div>
+      <div id="info_right">
+        Undo, Confirm, Remaining Tiles.
+      </div>
     </div>
-    <div id="controls">
-      <div id="left">
-        <img src="../images/left.png"/><br/>
-        ROTATE<br/>
-        LEFT
-      </div>
-      <div id="candidate">
-        <img src=""/>
-      </div>
-      <div id="right">
-        <img src="../images/right.png"/><br/>
-        ROTATE<br/>
-        RIGHT      
-      </div>
-    </div>
-    <div id="players">
-      List of players
-    </div>
-    <div id="chat">
-      Chatterbox
-    </div>
-    <!--div id="debug">
-      <div id="play">
-        <input id="step" type="button" value="Step"/><br/>
-      </div>
-      <div id="features">  
-        <input id="features_all" type="button" value="Features: All"/><br/>
-        <input id="features_completed" type="button" 
-               value="Features: Completed"/><br/>
-        <input id="features_farms" type="button" 
-               value="Features: Farms"/>
-      </div>
-    </div-->
   </div>
-  <div id="board"></div>
+
+  <div id="sideboard">
+    <div id="players">
+      <table style="width: 100%">
+<tr>
+  <th></th>
+   <th>PLAYERS</th>
+     <th>SCORE</th>
+  </tr>
+
+      </table>
+    </div>
+    <div id="chat">Chatterbox</div>
+  </div>
+
   <div style="display:none">
     <div id="num_tiles">72</div>
     <div id="players_turn"><%= @player.turn %></div>

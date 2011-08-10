@@ -4,7 +4,7 @@ class CityTest < ActiveSupport::TestCase
 
   def setup
     creator = users(:foobar)
-    users = [creator.email]
+    users = [{:email => creator.email, :colour => 'blue'}]
     @game = Game.create(:creator => creator, :users => users)
     @otherGame = Game.create(:creator => creator, :users => users)
     @city = City.create(:game => @game)

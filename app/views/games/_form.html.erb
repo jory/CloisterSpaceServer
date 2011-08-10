@@ -19,7 +19,7 @@
       <% end %>
     </ul>
     <%= link_to_function "Add another player", 
-          "$('#users').append('<li><input id=\"game_users__email\" name=\"game[users][][email]\" size=\"30\" type=\"text\"> <a href=\"#\" onclick=\"$(this).parent().remove(); return false;\">Remove</a></li>')"%>
+          "$('#users').append('<li>Email: <input id=\"game_users__email\" name=\"game[users][][email]\" size=\"30\" type=\"text\"><a href=\"#\" onclick=\"$(this).parent().remove(); return false;\">Remove</a><br>Colour: <input id=\"game_users__colour\" name=\"game[users][][colour]\" size=\"30\" type=\"text\"></li>')"%>
 
   </p>
 

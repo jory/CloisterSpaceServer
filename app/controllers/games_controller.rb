@@ -47,7 +47,6 @@ class GamesController < ApplicationController
 
   def create
     params[:game][:creator] = User.find(session[:user_id])
-    params[:game][:users] = params[:game][:users].collect {|user| user[:email]}
 
     @game = Game.new(params[:game])
     if @game.save

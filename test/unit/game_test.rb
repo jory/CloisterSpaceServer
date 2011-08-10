@@ -4,28 +4,95 @@ class GameTest < ActiveSupport::TestCase
 
   def setup
     @creator = users(:foobar)
-    @users = [@creator.email, users(:baz).email]
-    @game = Game.create(:creator => @creator, :users => @users)
+
+    @players = [{:email => @creator.email, :colour => 'blue'},
+                {:email => users(:baz).email, :colour => 'red'}]
+
+    @game = Game.create(:creator => @creator, :users => @players)
+  end
+
+  test "valid Game" do
+    assert @game.valid?, @game.errors.full_messages.to_s
+  end
+
+  test "multiple games for the same players" do
+    assert Game.create(:creator => @creator, :users => @players).valid?
   end
 
   test "needs something" do
-    assert !Game.create().valid?
+    assert Game.create().invalid?
   end
 
   test "needs Creator" do
-    assert !Game.create(:users => @users).valid?
+    assert Game.create(:users => @players).invalid?
   end
 
   test "needs Users" do
-    assert !Game.create(:creator => @creator).valid?
+    assert Game.create(:creator => @creator).invalid?
+  end
+
+  test "have to include creator as player" do
+    @players = [{:email => users(:one).email, :colour => 'blue'},
+                {:email => users(:two).email, :colour => 'red'}]
+
+    assert Game.create(:creator => @creator, :users => @players).invalid?
+  end
+
+  test "no empty players" do
+    @players << {:email => '', :colour => 'green'}
+
+    assert Game.create(:creator => @creator, :users => @players).invalid?
+  end
+
+  test "no empty colours" do
+    @players << {:email => users(:one).email, :colour => ''}
+
+    assert Game.create(:creator => @creator, :users => @players).invalid?
+  end
+
+  test "no duplicate colours" do
+    @players << {:email => users(:one).email, :colour => 'blue'}
+
+    assert Game.create(:creator => @creator, :users => @players).invalid?
+  end
+
+  test "no duplicate players" do
+    @players << {:email => @creator.email, :colour => 'green'}
+
+    assert Game.create(:creator => @creator, :users => @players).invalid?
+  end
+
+  test "only valid colours" do
+    @players << {:email => users(:one).email, :colour => 'purple'}
+
+    assert Game.create(:creator => @creator, :users => @players).invalid?
   end
   
-  test "valid Game" do
-    assert Game.create(:creator => @creator, :users => @users).valid?
+  test "users exist" do
+    @players << {:email => 'bonk!', :colour => 'green'}
+
+    assert Game.create(:creator => @creator, :users => @players).invalid?
+  end
+
+  test "five players max, two players min" do
+    @players << {:email => users(:one).email, :colour => 'green'}
+    @players << {:email => users(:two).email, :colour => 'yellow'}
+    @players << {:email => users(:three).email, :colour => 'black'}
+    @players << {:email => users(:four).email, :colour => 'purple'}
+
+    assert Game.create(:creator => @creator, :users => @players[0, 1]).invalid?
+
+    g = Game.create(:creator => @creator, :users => @players[0, 2])
+    assert g.valid?, g.errors.full_messages.to_s
+
+    assert Game.create(:creator => @creator, :users => @players[0, 3]).valid?
+    assert Game.create(:creator => @creator, :users => @players[0, 4]).valid?
+    assert Game.create(:creator => @creator, :users => @players[0, 5]).valid?
+    assert Game.create(:creator => @creator, :users => @players[0, 6]).invalid?
   end
 
   test "players is populated" do
-    assert_equal(@users.size, @game.players.size)
+    assert_equal(@players.size, @game.players.size)
     assert_equal(2, @game.players.size)
   end
 
@@ -57,45 +124,5 @@ class GameTest < ActiveSupport::TestCase
     assert City.where(:game_id => id).empty?
     assert Cloister.where(:game_id => id).empty?
     assert Farm.where(:game_id => id).empty?
-  end
-
-  test "have to include creator as player" do
-    other = users(:baz)
-    game = Game.create(:creator => @creator, :users => [other.email])
-    assert !game.valid?
-  end
-
-  test "no empty players" do
-    game = Game.create(:creator => @creator, :users => [@creator.email, "", "",
-                                                        users(:baz).email])
-    assert game.valid?
-
-    assert_equal game.players.size, 2
-
-    assert game.players.find_by_turn(1)
-    assert game.players.find_by_turn(2)
-    assert !game.players.find_by_turn(3)
-    assert !game.players.find_by_turn(4)
-  end
-
-  test "users exist" do
-    game = Game.create(:creator => @creator, :users => [@creator.email, "bonk!"])
-    assert !game.valid?
-  end
-
-  test "five players max, two players min" do
-
-    users = [@creator.email, users(:one).email, users(:two).email,
-             users(:three).email, users(:four).email, users(:five).email,
-             users(:baz).email]
-
-    assert Game.create(:creator => @creator, :users => users[0,2]).valid?
-    assert Game.create(:creator => @creator, :users => users[0,3]).valid?
-    assert Game.create(:creator => @creator, :users => users[0,4]).valid?
-    assert Game.create(:creator => @creator, :users => users[0,5]).valid?
-
-    assert Game.create(:creator => @creator, :users => users[0,6]).invalid?
-    assert Game.create(:creator => @creator, :users => users[0,7]).invalid?
-    assert Game.create(:creator => @creator, :users => users[0,1]).invalid?
   end
 end

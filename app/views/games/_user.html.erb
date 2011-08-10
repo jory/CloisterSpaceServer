@@ -1,5 +1,6 @@
 <%= fields_for 'game[users]', :index => nil do |user_form| %>
-  <li><%= user_form.text_field :email %> 
-     <%= link_to_function "Remove", 
-           "$(this).parent().remove()" %></li>
+  <li>Email: <%= user_form.text_field :email %> 
+    <%= link_to_function "Remove", "$(this).parent().remove()" %>
+    <br/>
+    Colour: <%= user_form.text_field :colour %></li>
 <% end %>

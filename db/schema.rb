@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110801171222) do
+ActiveRecord::Schema.define(:version => 20110804190316) do
 
   create_table "cities", :force => true do |t|
     t.integer  "size",       :default => 0
@@ -103,6 +103,9 @@ ActiveRecord::Schema.define(:version => 20110801171222) do
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "score",          :default => 0
+    t.string   "colour"
+    t.integer  "unused_meeples", :default => 7
   end
 
   create_table "road_sections", :force => true do |t|

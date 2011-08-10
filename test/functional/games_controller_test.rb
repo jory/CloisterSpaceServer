@@ -4,7 +4,8 @@ class GamesControllerTest < ActionController::TestCase
   setup do
     @creator = users(:foobar)
     @other = users(:baz)
-    @users = [{:email => @creator.email}, {:email => @other.email}]
+    @users = [{:email => @creator.email, :colour => 'blue'},
+              {:email => @other.email, :colour => 'red'}]
     @game = games(:one)
   end
 

@@ -4,7 +4,7 @@ class CloisterTest < ActiveSupport::TestCase
 
   def setup
     creator = users(:foobar)
-    users = [creator.email]
+    users = [{:email => creator.email, :colour => 'blue'}]
     @game = Game.create(:creator => creator, :users => users)
     @cloister = Cloister.create(:row => 72, :col => 72, :game => @game)
   end

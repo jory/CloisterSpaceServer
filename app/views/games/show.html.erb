@@ -29,28 +29,26 @@
 
   <div id="sideboard">
     <div id="players">
-      <table style="width: 100%">
+      
+      <table id="players">
         <tr>
-          <th style="width: 20px"></th>
-          <th>PLAYERS</th>
-          <th style="text-align: right">SCORE</th>
+          <th id="player_colours"></th>
+          <th class="player_email">PLAYERS</th>
+          <th class="player_score">SCORE</th>
         </tr>
-        <tr>
-          <td style="background-color: blue">&nbsp;</td>
-          <td style="padding-left: 10px">JORY</td>
-          <td style="text-align: right">42</td>
-        </tr>
-        <tr>
-          <td style="background-color: red">&nbsp;</td>
-          <td style="padding-left: 10px">APRILE</td>
-          <td style="text-align: right">24</td>
-        </tr>
+        <% @game.players.sort_by {|p| p.turn}.each do |player| %>
+          <tr id="player_<%=player.turn%>">
+            <td class="player_<%= player.colour %>">&nbsp;</td>
+            <td class="player_email"><%=player.user.email.upcase%></td>
+            <td class="player_score"><%=player.score%></td>
+          </tr>
+        <% end %>
       </table>
     </div>
     <div id="chat">Chatterbox</div>
   </div>
 
-  <div style="display:none">
+  <div class="invisible">
     <div id="num_tiles">72</div>
     <div id="players_turn"><%= @player.turn %></div>
     <div id="json_edges"><%= @edges.to_json %></div>
@@ -62,4 +60,5 @@
     <div id="json_cloisters"><%= @cloisters.to_json %></div>
   </div>
 </div>
+
 <%= javascript_include_tag 'cloisterspace' %>

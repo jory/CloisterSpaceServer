@@ -486,6 +486,8 @@
             this.currentPlayer = obj[0];
             this.currentMoveNumber += 1;
             this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);
+            $('.current_player').removeClass('current_player');
+            $('#player_' + this.currentPlayer).addClass('current_player');
             this.candidates = this.findValidPositions();
             this.drawCandidates();
             if (this.currentPlayer !== this.players_turn) {

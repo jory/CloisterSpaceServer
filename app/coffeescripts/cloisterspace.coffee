@@ -397,6 +397,9 @@ class World
           @currentMoveNumber += 1
           @currentTile = new Tile(@tiles[instance.tile_id], instance.id)
 
+          $('.current_player').removeClass('current_player');
+          $('#player_' + @currentPlayer).addClass('current_player');
+
           @candidates = @findValidPositions()
           @drawCandidates()
 

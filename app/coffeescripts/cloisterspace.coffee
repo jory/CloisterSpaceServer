@@ -702,12 +702,31 @@ class World
       $('#left').unbind()
       $('#right').unbind()
 
+      $('#confirm').unbind().prop('disabled', 'disabled')
+      $('#undo').unbind().prop('disabled', 'disabled')
+
     attach = (cell, row, col, neighbours) =>
       cell.unbind().click(=>
         disableAll()
         img.attr('style', 'visibility: hidden')
-        @placeTile(row, col, tile, neighbours)
-        @drawBoard()
+
+        $("div[row=#{row}][col=#{col}]").append("<img " +
+            "src='/images/#{tile.image}' class='#{tile.rotationClass}'/>")
+
+        $('#confirm').click(=>
+          $('#confirm').unbind().prop('disabled', 'disabled')
+          $('#undo').unbind().prop('disabled', 'disabled')
+          @placeTile(row, col, tile, neighbours)
+          @drawBoard()
+        ).prop('disabled', '')
+
+
+        $('#undo').click(=>
+          $('#confirm').unbind().prop('disabled', 'disabled')
+          $('#undo').unbind().prop('disabled', 'disabled')
+          @drawBoard()
+          @drawCandidates()
+        ).prop('disabled', '')
 
         # Add clicking here!
         # <map...>

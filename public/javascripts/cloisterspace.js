@@ -879,14 +879,27 @@
           item.removeClass('candidate-active').removeClass('candidate-inactive').unbind();
         }
         $('#left').unbind();
-        return $('#right').unbind();
+        $('#right').unbind();
+        $('#confirm').unbind().prop('disabled', 'disabled');
+        return $('#undo').unbind().prop('disabled', 'disabled');
       };
       attach = __bind(function(cell, row, col, neighbours) {
         return cell.unbind().click(__bind(function() {
           disableAll();
           img.attr('style', 'visibility: hidden');
-          this.placeTile(row, col, tile, neighbours);
-          return this.drawBoard();
+          $("div[row=" + row + "][col=" + col + "]").append("<img " + ("src='/images/" + tile.image + "' class='" + tile.rotationClass + "'/>"));
+          $('#confirm').click(__bind(function() {
+            $('#confirm').unbind().prop('disabled', 'disabled');
+            $('#undo').unbind().prop('disabled', 'disabled');
+            this.placeTile(row, col, tile, neighbours);
+            return this.drawBoard();
+          }, this)).prop('disabled', '');
+          return $('#undo').click(__bind(function() {
+            $('#confirm').unbind().prop('disabled', 'disabled');
+            $('#undo').unbind().prop('disabled', 'disabled');
+            this.drawBoard();
+            return this.drawCandidates();
+          }, this)).prop('disabled', '');
         }, this));
       }, this);
       actives = (function() {

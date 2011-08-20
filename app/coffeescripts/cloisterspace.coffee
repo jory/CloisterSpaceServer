@@ -267,6 +267,7 @@ class Farm
 class World
   constructor: ->
     @players_turn = parseInt($('#players_turn').text())
+    @players_colour = $('#players_colour').text()
 
     @origin = window.location.protocol + "//" + window.location.host
     @href = window.location.href + "/"
@@ -323,6 +324,12 @@ class World
 
       @drawBoard()
 
+    drawInterface = =>
+      num_unused_meeples = parseInt($('#num_unused_meeples').text())
+
+      for i in [1..num_unused_meeples]
+        $('#meeples').append("<img src='/images/meeples/#{@players_colour}.gif'/>")
+
     parseRoads = =>
       data = $.parseJSON($('#json_roads').text())
 
@@ -378,6 +385,7 @@ class World
     parseEdges()
     parseTiles()
 
+    drawInterface()
     setupBoard()
 
     parseRoads()
@@ -398,7 +406,14 @@ class World
           @currentTile = new Tile(@tiles[instance.tile_id], instance.id)
 
           $('.current_player').removeClass('current_player');
-          $('#player_' + @currentPlayer).addClass('current_player');
+          player = $('#player_' + @currentPlayer).addClass('current_player');
+
+          info_turn = $('#info_turn').empty()
+          if @currentPlayer == @players_turn
+            info_turn.append("YOUR")
+          else
+            info_turn.append(player.find('td[class="player_email"]').text() + "'s")
+
 
           @candidates = @findValidPositions()
           @drawCandidates()

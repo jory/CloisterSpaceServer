@@ -4,7 +4,9 @@
     <div id="board"></div>
     <div id="info">
       <div id="info_left">
-        Turn, Meeples.
+        HELLO <span class="blue"><%= @player.user.email.upcase %></span>.<br/>
+        IT IS <span id="info_turn"></span> TURN.<br/><br/>
+        <span id="meeples"></span>
       </div>
       <div id="controls">
         <div id="left">
@@ -52,7 +54,9 @@
 
   <div class="invisible">
     <div id="num_tiles">72</div>
+    <div id="num_unused_meeples"><%= @player.unused_meeples %></div>
     <div id="players_turn"><%= @player.turn %></div>
+    <div id="players_colour"><%= @player.colour %></div>
     <div id="json_edges"><%= @edges.to_json %></div>
     <div id="json_tiles"><%= @tiles.to_json %></div>
     <div id="json_placed_tiles"><%= @placed.to_json %></div>

@@ -30,7 +30,7 @@ a:hover { color: #fff; background-color:#000; }
     height: 18px;
 }
 
-#user_nav .blue {
+.blue {
     color: #7dd3ff;
 }
 
@@ -66,6 +66,11 @@ a:hover { color: #fff; background-color:#000; }
 
 #nav_session {
     float: right;
+    font-weight: bold;
+}
+
+#game {
+    font-weight: bold;
 }
 
 #game #window_main {

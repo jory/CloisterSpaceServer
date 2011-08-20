@@ -337,8 +337,9 @@
   })();
   World = (function() {
     function World() {
-      var i, parseCities, parseCloisters, parseEdges, parseFarms, parseRoads, parseTiles, setupBoard;
+      var drawInterface, i, parseCities, parseCloisters, parseEdges, parseFarms, parseRoads, parseTiles, setupBoard;
       this.players_turn = parseInt($('#players_turn').text());
+      this.players_colour = $('#players_colour').text();
       this.origin = window.location.protocol + "//" + window.location.host;
       this.href = window.location.href + "/";
       this.finished = false;
@@ -401,6 +402,15 @@
           this.placeTileOnBoard(instance.row, instance.col, tile);
         }
         return this.drawBoard();
+      }, this);
+      drawInterface = __bind(function() {
+        var i, num_unused_meeples, _results;
+        num_unused_meeples = parseInt($('#num_unused_meeples').text());
+        _results = [];
+        for (i = 1; 1 <= num_unused_meeples ? i <= num_unused_meeples : i >= num_unused_meeples; 1 <= num_unused_meeples ? i++ : i--) {
+          _results.push($('#meeples').append("<img src='/images/meeples/" + this.players_colour + ".gif'/>"));
+        }
+        return _results;
       }, this);
       parseRoads = __bind(function() {
         var data, obj, road, roadFeature, section, _i, _j, _len, _len2, _results;
@@ -470,6 +480,7 @@
       }, this);
       parseEdges();
       parseTiles();
+      drawInterface();
       setupBoard();
       parseRoads();
       parseCities();
@@ -480,14 +491,20 @@
     World.prototype.next = function() {
       if (!this.finished) {
         return $.getJSON(this.href + "next.json", __bind(function(obj) {
-          var farm, instance, _i, _len, _ref;
+          var farm, info_turn, instance, player, _i, _len, _ref;
           if (obj != null) {
             instance = obj[1].tile_instance;
             this.currentPlayer = obj[0];
             this.currentMoveNumber += 1;
             this.currentTile = new Tile(this.tiles[instance.tile_id], instance.id);
             $('.current_player').removeClass('current_player');
-            $('#player_' + this.currentPlayer).addClass('current_player');
+            player = $('#player_' + this.currentPlayer).addClass('current_player');
+            info_turn = $('#info_turn').empty();
+            if (this.currentPlayer === this.players_turn) {
+              info_turn.append("YOUR");
+            } else {
+              info_turn.append(player.find('td[class="player_email"]').text() + "'s");
+            }
             this.candidates = this.findValidPositions();
             this.drawCandidates();
             if (this.currentPlayer !== this.players_turn) {

@@ -10,8 +10,15 @@ class TileInstancesController < ApplicationController
 
   def update
     @tileInstance = TileInstance.find(params[:id])
-    @tileInstance.place(params[:x].to_i, params[:y].to_i,
-                        params[:rotation].to_i)
+
+    game = @tileInstance.game
+    current = Player.find_by_game_id_and_turn(game.id, game.current_player)
+
+    if current.user.id == session[:user_id]
+      @tileInstance.place(params[:x].to_i, params[:y].to_i,
+                          params[:rotation].to_i)
+    end
+    
     respond_with(@tileInstance)
   end
 

@@ -1,168 +1,11 @@
 (function() {
-  var City, Cloister, Farm, Road, Tile, World, adjacents, empty, offset, oppositeDirection;
+  var City, Cloister, Farm, Game, Road, Tile, adjacents, empty, offset, oppositeDirection;
   var __indexOf = Array.prototype.indexOf || function(item) {
     for (var i = 0, l = this.length; i < l; i++) {
       if (this[i] === item) return i;
     }
     return -1;
   }, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-  Array.prototype.remove = function(e) {
-    var t, _ref;
-    if ((t = this.indexOf(e)) > -1) {
-      return ([].splice.apply(this, [t, t - t + 1].concat(_ref = [])), _ref);
-    }
-  };
-  oppositeDirection = {
-    "north": "south",
-    "east": "west",
-    "south": "north",
-    "west": "east"
-  };
-  adjacents = {
-    north: {
-      row: -1,
-      col: 0
-    },
-    east: {
-      row: 0,
-      col: 1
-    },
-    south: {
-      row: 1,
-      col: 0
-    },
-    west: {
-      row: 0,
-      col: -1
-    }
-  };
-  offset = function(edge, row, col) {
-    var offsets;
-    offsets = adjacents[edge];
-    return [row + offsets.row, col + offsets.col];
-  };
-  empty = function(obj) {
-    return !(obj != null);
-  };
-  Tile = (function() {
-    function Tile(tile, id) {
-      this.id = id != null ? id : null;
-      this.image = tile.image;
-      this.hasTwoCities = tile.hasTwoCities;
-      this.hasRoadEnd = tile.hasRoadEnd;
-      this.hasPennant = tile.hasPennant;
-      this.citysFields = tile.citysFields;
-      this.isCloister = tile.isCloister;
-      this.isStart = tile.isStart;
-      this.edges = {
-        north: tile.north,
-        east: tile.east,
-        south: tile.south,
-        west: tile.west
-      };
-      this.rotation = 0;
-      this.rotationClass = 'r0';
-    }
-    Tile.prototype.rotate = function(turns) {
-      var i, tmp, _i, _ref, _results, _results2;
-      if (__indexOf.call((function() {
-        _results = [];
-        for (var _i = _ref = -3; _ref <= 3 ? _i <= 3 : _i >= 3; _ref <= 3 ? _i++ : _i--){ _results.push(_i); }
-        return _results;
-      }).apply(this, arguments), turns) < 0) {
-        throw 'Invalid Rotation';
-      }
-      if (turns !== 0) {
-        switch (turns) {
-          case -1:
-            turns = 3;
-            break;
-          case -2:
-            turns = 2;
-            break;
-          case -3:
-            turns = 1;
-        }
-        this.rotation += turns;
-        if (this.rotation > 3) {
-          this.rotation -= 4;
-        }
-        this.rotationClass = "r" + this.rotation;
-        _results2 = [];
-        for (i = 1; 1 <= turns ? i <= turns : i >= turns; 1 <= turns ? i++ : i--) {
-          tmp = this.edges.north;
-          this.edges.north = this.edges.west;
-          this.edges.west = this.edges.south;
-          this.edges.south = this.edges.east;
-          _results2.push(this.edges.east = tmp);
-        }
-        return _results2;
-      }
-    };
-    Tile.prototype.reset = function() {
-      if (this.rotation > 0) {
-        return this.rotate(4 - this.rotation);
-      }
-    };
-    Tile.prototype.connectableTo = function(from, other) {
-      return this.edges[from].kind === other.edges[oppositeDirection[from]].kind;
-    };
-    return Tile;
-  })();
-  Road = (function() {
-    function Road() {
-      this.length = 0;
-      this.numEnds = 0;
-      this.finished = false;
-      this.tiles = {};
-      this.nums = {};
-      this.edges = {};
-    }
-    Road.prototype.add = function(row, col, edge, num, hasEnd) {
-      var address;
-      address = "" + row + "," + col;
-      if (!this.tiles[address]) {
-        this.length += 1;
-        this.tiles[address] = true;
-      }
-      if (hasEnd) {
-        this.numEnds += 1;
-        if (this.numEnds === 2) {
-          this.finished = true;
-        }
-      }
-      this.nums[address + ("," + num)] = true;
-      return this.edges[address + ("," + edge)] = {
-        row: row,
-        col: col,
-        edge: edge,
-        num: num,
-        hasEnd: hasEnd
-      };
-    };
-    Road.prototype.merge = function(other) {
-      var e, edge, _ref, _results;
-      _ref = other.edges;
-      _results = [];
-      for (e in _ref) {
-        edge = _ref[e];
-        _results.push(this.add(edge.row, edge.col, edge.edge, edge.num, edge.hasEnd));
-      }
-      return _results;
-    };
-    Road.prototype.has = function(row, col, num) {
-      return this.nums["" + row + "," + col + "," + num];
-    };
-    Road.prototype.toString = function() {
-      var address, out;
-      out = "Road: (";
-      for (address in this.tiles) {
-        out += "" + address + "; ";
-      }
-      return out.slice(0, -2) + ("), length: " + this.length + ", finished: " + this.finished + ", numEnds: " + this.numEnds);
-    };
-    return Road;
-  })();
   City = (function() {
     function City() {
       this.size = 0;
@@ -335,8 +178,8 @@
     };
     return Farm;
   })();
-  World = (function() {
-    function World() {
+  Game = (function() {
+    function Game() {
       var drawInterface, i, parseCities, parseCloisters, parseEdges, parseFarms, parseRoads, parseTiles, setupBoard;
       this.players_turn = parseInt($('#players_turn').text());
       this.players_colour = $('#players_colour').text();
@@ -488,7 +331,7 @@
       parseCloisters();
       this.next();
     }
-    World.prototype.next = function() {
+    Game.prototype.next = function() {
       if (!this.finished) {
         return $.getJSON(this.href + "next.json", __bind(function(obj) {
           var farm, info_turn, instance, player, _i, _len, _ref;
@@ -525,7 +368,7 @@
         }, this));
       }
     };
-    World.prototype.getNextMove = function() {
+    Game.prototype.getNextMove = function() {
       var helper;
       helper = __bind(function() {
         return $.getJSON(this.href + ("move/" + this.currentMoveNumber + ".json"), __bind(function(obj) {
@@ -551,7 +394,7 @@
       }, this);
       return helper();
     };
-    World.prototype.findValidPositions = function(tile) {
+    Game.prototype.findValidPositions = function(tile) {
       var candidate, candidates, col, i, row, sortedCandidates, turns, valid, _i, _len, _ref, _ref2, _ref3, _ref4;
       if (tile == null) {
         tile = this.currentTile;
@@ -585,7 +428,7 @@
       }
       return sortedCandidates;
     };
-    World.prototype.validatePosition = function(row, col, tile) {
+    Game.prototype.validatePosition = function(row, col, tile) {
       var invalids, other, otherCol, otherRow, side, valids, _ref;
       valids = [];
       invalids = 0;
@@ -604,12 +447,12 @@
         return valids;
       }
     };
-    World.prototype.getTile = function(row, col) {
+    Game.prototype.getTile = function(row, col) {
       if ((0 <= row && row < this.maxSize) && (0 <= col && col < this.maxSize)) {
         return this.board[row][col];
       }
     };
-    World.prototype.placeTile = function(row, col, tile, neighbours) {
+    Game.prototype.placeTile = function(row, col, tile, neighbours) {
       if (neighbours.length === 0 && !tile.isStart) {
         throw "Invalid tile placement";
       }
@@ -629,14 +472,14 @@
         });
       }
     };
-    World.prototype.placeTileOnBoard = function(row, col, tile) {
+    Game.prototype.placeTileOnBoard = function(row, col, tile) {
       this.board[row][col] = tile;
       this.maxrow = Math.max(this.maxrow, row);
       this.minrow = Math.min(this.minrow, row);
       this.maxcol = Math.max(this.maxcol, col);
       return this.mincol = Math.min(this.mincol, col);
     };
-    World.prototype.handleCloisters = function(row, col, tile) {
+    Game.prototype.handleCloisters = function(row, col, tile) {
       var cloister, n, neighbour, otherCol, otherRow, _i, _len, _ref, _ref2, _results;
       if (tile.isCloister) {
         cloister = new Cloister(row, col);
@@ -659,12 +502,12 @@
       }
       return _results;
     };
-    World.prototype.getOtherEdge = function(dir, row, col) {
+    Game.prototype.getOtherEdge = function(dir, row, col) {
       var otherCol, otherRow, _ref;
       _ref = offset(dir, row, col), otherRow = _ref[0], otherCol = _ref[1];
       return [otherRow, otherCol, this.getTile(otherRow, otherCol).edges[oppositeDirection[dir]]];
     };
-    World.prototype.handleRoads = function(row, col, tile, neighbours) {
+    Game.prototype.handleRoads = function(row, col, tile, neighbours) {
       var added, dir, edge, otherCol, otherEdge, otherRow, road, seenRoad, _i, _j, _len, _len2, _ref, _ref2, _results;
       seenRoad = null;
       for (_i = 0, _len = neighbours.length; _i < _len; _i++) {
@@ -722,7 +565,7 @@
       }
       return _results;
     };
-    World.prototype.handleCities = function(row, col, tile, neighbours) {
+    Game.prototype.handleCities = function(row, col, tile, neighbours) {
       var added, c, cities, city, dir, edge, otherCol, otherEdge, otherRow, _i, _j, _len, _len2, _ref, _ref2, _results;
       cities = [];
       for (_i = 0, _len = neighbours.length; _i < _len; _i++) {
@@ -774,7 +617,7 @@
       }
       return _results;
     };
-    World.prototype.handleFarms = function(row, col, tile, neighbours) {
+    Game.prototype.handleFarms = function(row, col, tile, neighbours) {
       var added, dir, edge, f, farm, farms, otherCol, otherEdge, otherFarm, otherRow, _i, _j, _k, _l, _len, _len2, _len3, _len4, _len5, _m, _ref, _ref2, _ref3, _results;
       farms = [];
       for (_i = 0, _len = neighbours.length; _i < _len; _i++) {
@@ -879,7 +722,7 @@
       }
       return _results;
     };
-    World.prototype.drawCandidates = function(tile, candidates) {
+    Game.prototype.drawCandidates = function(tile, candidates) {
       var actives, attach, candidate, cell, col, disableAll, img, neighbours, row, turns;
       if (tile == null) {
         tile = this.currentTile;
@@ -942,7 +785,7 @@
         return this.drawCandidates();
       }, this));
     };
-    World.prototype.randomlyPlaceTile = function(tile, candidates) {
+    Game.prototype.randomlyPlaceTile = function(tile, candidates) {
       var candidate, col, i, index, j, neighbours, row, subcandidates, turns, _i, _len, _ref, _ref2;
       if (tile == null) {
         tile = this.currentTile;
@@ -978,7 +821,7 @@
         return this.placeTile(row, col, tile, neighbours);
       }
     };
-    World.prototype.drawBoard = function() {
+    Game.prototype.drawBoard = function() {
       var col, div, row, td, tile, tr, _ref, _ref2, _ref3, _ref4, _results;
       div = $("#board").empty();
       _results = [];
@@ -998,66 +841,167 @@
       }
       return _results;
     };
-    return World;
+    return Game;
   })();
   $(function() {
-    var print_features, world;
-    world = new World();
-    print_features = function(all) {
-      var city, cloister, farm, road, _i, _j, _k, _l, _len, _len2, _len3, _len4, _ref, _ref2, _ref3, _ref4, _results;
-      console.log('------------------------------------------');
-      _ref = world.cloisters;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        cloister = _ref[_i];
-        if (all || cloister.finished) {
-          console.log(cloister.toString());
+    var game;
+    return game = new Game();
+  });
+  Road = (function() {
+    function Road() {
+      this.length = 0;
+      this.numEnds = 0;
+      this.finished = false;
+      this.tiles = {};
+      this.nums = {};
+      this.edges = {};
+    }
+    Road.prototype.add = function(row, col, edge, num, hasEnd) {
+      var address;
+      address = "" + row + "," + col;
+      if (!this.tiles[address]) {
+        this.length += 1;
+        this.tiles[address] = true;
+      }
+      if (hasEnd) {
+        this.numEnds += 1;
+        if (this.numEnds === 2) {
+          this.finished = true;
         }
       }
-      _ref2 = world.cities;
-      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-        city = _ref2[_j];
-        if (all || city.finished) {
-          console.log(city.toString());
-        }
-      }
-      _ref3 = world.roads;
-      for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
-        road = _ref3[_k];
-        if (all || road.finished) {
-          console.log(road.toString());
-        }
-      }
-      if (all) {
-        _ref4 = world.farms;
-        _results = [];
-        for (_l = 0, _len4 = _ref4.length; _l < _len4; _l++) {
-          farm = _ref4[_l];
-          _results.push(console.log(farm.toString()));
-        }
-        return _results;
-      }
+      this.nums[address + ("," + num)] = true;
+      return this.edges[address + ("," + edge)] = {
+        row: row,
+        col: col,
+        edge: edge,
+        num: num,
+        hasEnd: hasEnd
+      };
     };
-    $('#features_all').click(function() {
-      return print_features(true);
-    });
-    $('#features_completed').click(function() {
-      return print_features(false);
-    });
-    $('#features_farms').click(function() {
-      var farm, _i, _len, _ref, _results;
-      console.log('------------------------------------------');
-      _ref = world.farms;
+    Road.prototype.merge = function(other) {
+      var e, edge, _ref, _results;
+      _ref = other.edges;
       _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        farm = _ref[_i];
-        _results.push(console.log(farm.toString()));
+      for (e in _ref) {
+        edge = _ref[e];
+        _results.push(this.add(edge.row, edge.col, edge.edge, edge.num, edge.hasEnd));
       }
       return _results;
-    });
-    return $('#step').click(function() {
-      $('.candidate').removeClass('candidate').unbind();
-      world.randomlyPlaceTile();
-      return world.drawBoard();
-    });
-  });
+    };
+    Road.prototype.has = function(row, col, num) {
+      return this.nums["" + row + "," + col + "," + num];
+    };
+    Road.prototype.toString = function() {
+      var address, out;
+      out = "Road: (";
+      for (address in this.tiles) {
+        out += "" + address + "; ";
+      }
+      return out.slice(0, -2) + ("), length: " + this.length + ", finished: " + this.finished + ", numEnds: " + this.numEnds);
+    };
+    return Road;
+  })();
+  Tile = (function() {
+    function Tile(tile, id) {
+      this.id = id != null ? id : null;
+      this.image = tile.image;
+      this.hasTwoCities = tile.hasTwoCities;
+      this.hasRoadEnd = tile.hasRoadEnd;
+      this.hasPennant = tile.hasPennant;
+      this.citysFields = tile.citysFields;
+      this.isCloister = tile.isCloister;
+      this.isStart = tile.isStart;
+      this.edges = {
+        north: tile.north,
+        east: tile.east,
+        south: tile.south,
+        west: tile.west
+      };
+      this.rotation = 0;
+      this.rotationClass = 'r0';
+    }
+    Tile.prototype.rotate = function(turns) {
+      var i, tmp, _i, _ref, _results, _results2;
+      if (__indexOf.call((function() {
+        _results = [];
+        for (var _i = _ref = -3; _ref <= 3 ? _i <= 3 : _i >= 3; _ref <= 3 ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this, arguments), turns) < 0) {
+        throw 'Invalid Rotation';
+      }
+      if (turns !== 0) {
+        switch (turns) {
+          case -1:
+            turns = 3;
+            break;
+          case -2:
+            turns = 2;
+            break;
+          case -3:
+            turns = 1;
+        }
+        this.rotation += turns;
+        if (this.rotation > 3) {
+          this.rotation -= 4;
+        }
+        this.rotationClass = "r" + this.rotation;
+        _results2 = [];
+        for (i = 1; 1 <= turns ? i <= turns : i >= turns; 1 <= turns ? i++ : i--) {
+          tmp = this.edges.north;
+          this.edges.north = this.edges.west;
+          this.edges.west = this.edges.south;
+          this.edges.south = this.edges.east;
+          _results2.push(this.edges.east = tmp);
+        }
+        return _results2;
+      }
+    };
+    Tile.prototype.reset = function() {
+      if (this.rotation > 0) {
+        return this.rotate(4 - this.rotation);
+      }
+    };
+    Tile.prototype.connectableTo = function(from, other) {
+      return this.edges[from].kind === other.edges[oppositeDirection[from]].kind;
+    };
+    return Tile;
+  })();
+  Array.prototype.remove = function(e) {
+    var t, _ref;
+    if ((t = this.indexOf(e)) > -1) {
+      return ([].splice.apply(this, [t, t - t + 1].concat(_ref = [])), _ref);
+    }
+  };
+  oppositeDirection = {
+    "north": "south",
+    "east": "west",
+    "south": "north",
+    "west": "east"
+  };
+  adjacents = {
+    north: {
+      row: -1,
+      col: 0
+    },
+    east: {
+      row: 0,
+      col: 1
+    },
+    south: {
+      row: 1,
+      col: 0
+    },
+    west: {
+      row: 0,
+      col: -1
+    }
+  };
+  offset = function(edge, row, col) {
+    var offsets;
+    offsets = adjacents[edge];
+    return [row + offsets.row, col + offsets.col];
+  };
+  empty = function(obj) {
+    return !(obj != null);
+  };
 }).call(this);

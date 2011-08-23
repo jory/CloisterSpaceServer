@@ -101,8 +101,8 @@ a:hover { color: #fff; background-color:#000; }
 }
 
 #game #info #controls #candidate {
-    height: 90px;
-    width: 90px;
+    height: 85px;
+    width: 85px;
     background: white;
 }
 
@@ -130,12 +130,12 @@ a:hover { color: #fff; background-color:#000; }
 }
 
 #game .row {
-    height: 90px;
+    height: 85px;
 }
 
 #game .col {
-    height: 90px;
-    width: 90px;
+    height: 85px;
+    width: 85px;
     display: inline-block;
 }
 
@@ -144,8 +144,8 @@ a:hover { color: #fff; background-color:#000; }
     border-color: #002b36;
     border-style: dashed;
     border-width: 1px;
-    height: 88px;
-    width: 88px;
+    height: 83px;
+    width: 83px;
 }
 
 #game .candidate-inactive {
@@ -153,8 +153,8 @@ a:hover { color: #fff; background-color:#000; }
     border-color: #002b36;
     border-style: dashed;
     border-width: 1px;
-    height: 88px;
-    width: 88px;
+    height: 83px;
+    width: 83px;
 }
 
 #game .invisible {
@@ -163,6 +163,7 @@ a:hover { color: #fff; background-color:#000; }
 
 #game #players {
     width: 100%;
+    border-collapse: collapse;
 }
 
 #game #player_colours {
@@ -174,7 +175,7 @@ a:hover { color: #fff; background-color:#000; }
 }
 
 #game .player_score {
-    text-align: right;
+    text-align: center;
 }
 
 #game .player_blue {

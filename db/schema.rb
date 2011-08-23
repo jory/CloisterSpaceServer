@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110804190316) do
+ActiveRecord::Schema.define(:version => 20110823204556) do
 
   create_table "cities", :force => true do |t|
     t.integer  "size",       :default => 0
@@ -155,6 +155,8 @@ ActiveRecord::Schema.define(:version => 20110804190316) do
     t.integer  "west"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "featurePolys"
+    t.string   "meepleCoords"
   end
 
   create_table "users", :force => true do |t|

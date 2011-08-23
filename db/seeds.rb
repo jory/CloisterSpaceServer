@@ -285,7 +285,7 @@ coordinates =
    "f4:16,70"
   ]
 
-tileDefinitions.zip(coordinates).collect! { |arr| arr.join }
+tileDefinitions = tileDefinitions.zip(coordinates).collect { |arr| arr.join }
 
 tileDefinitions.each do |definition|
   tile = definition.gsub(/ +/, ' ').split(' ')
@@ -322,5 +322,6 @@ tileDefinitions.each do |definition|
               :east => east, :south => south, :west => west,
               :hasTwoCities => hasTwoCities, :hasRoadEnd => hasRoadEnd,
               :hasPennant => hasPennant, :citysFields => citysFields,
-              :isCloister => isCloister, :isStart => isStart)
+              :isCloister => isCloister, :isStart => isStart,
+              :featurePolys => featurePolys, :meepleCoords => meepleCoords)
 end

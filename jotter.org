@@ -1,0 +1,69 @@
+* Here are some words 
+** Turn loop in Coffeescript
+   - if not current player's turn
+     - query for next move, and apply it once it arrives
+
+   - if current player's turn
+
+     - Buttons
+       - "Confirm" sends the current state, but doesn't become active
+         unless the current tile has been placed.
+         - Clicking it disables all three buttons.
+
+       - "Remove Tile" deletes the updated state.
+         - Clicking it disables all three buttons.
+
+       - "Remove Meeple" removes the meeple from the updated state.
+         - Clicking it disables itself.
+
+     - Placement
+       - Tile
+         - Activates "Confirm" and "Remove Tile"
+         - Disables all other tile placement options.
+
+       - Meeple
+         - Activates "Remove Meeple"
+         - If Meeple is already placed
+           - If new position is invalid, raise an error and don't move
+             the Meeple
+           - Else, move the Meeple
+
+     - Record initial state at beginning of player's turn
+       - This is the state the "Remove Tile" button reverts to.
+     - Player places Tile
+       - This creates the state that the "Remove Meeple" button reverts to.
+       - Whenever a valid Meeple placement is generated, it is based on
+         this state.
+     - player can now opt to put a meeple on the tile
+       - placing the meeple updates the state again
+       - if the player clicks on a feature that's already controlled,
+         an error is raised
+       - if the feature is free, a meeple is placed
+       - any subsequent click will either move the meeple, or raise an
+         error and leave the meeple where it is
+       - "Remove Meeple" reverts the meeple state
+       - confirm sends the current state
+     - scoring takes place on newly finished features
+
+** Turn object
+   tile_id:         int
+   x:               int
+   y:               int
+   rotation:        int
+   meeple_feature:  string
+** Board vs. Game
+   Game has static information:
+   - tile definitions
+   - edge definitions
+   - which player is this?
+   - what is the current board
+   - what is the prospective board
+     
+   Board seems like the wrong nomenclature though. State is more
+   appropriate. A game has states, states can have associated turns,
+   states can be reverted. A state has a board, filled with tiles...
+
+   State has fluid information:
+   - which tiles have been placed, and where (Board)
+   - what are the states of the features (Cloister, Road, Cities, etc.)
+   - where are all the meeples

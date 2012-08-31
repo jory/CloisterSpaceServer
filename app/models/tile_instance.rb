@@ -191,62 +191,62 @@ class TileInstance < ActiveRecord::Base
   ##########################################
   def handleRoads
 
-    seenRoad = nil
+    # seenRoad = nil
     
-    @neighbours.each { |dir, tile|
-      edge = Edge.find(self.tile[@edges[dir]])
+    # @neighbours.each { |dir, tile|
+    #   edge = Edge.find(self.tile[@edges[dir]])
 
-      if edge.kind == 'r'
+    #   if edge.kind == 'r'
         
-        otherRow, otherCol = Tile.getAddress(self.row, self.col, dir)
-        otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[Tile::Opposite[dir]]])
+    #     otherRow, otherCol = Tile.getAddress(self.row, self.col, dir)
+    #     otherEdge = Edge.find(tile.tile[rotate(tile.rotation)[Tile::Opposite[dir]]])
 
-        Road.where(:game_id => self.game).each do |road|
-          if road.has(otherRow, otherCol, otherEdge.road)
-            if not seenRoad.nil? and not self.tile.hasRoadEnd
-              if road == seenRoad
-                road.finished = true
-                road.save
-              else
-                seenRoad.merge(road)
-              end
-            else
-              road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)
-              seenRoad = road
-            end
+    #     Road.where(:game_id => self.game).each do |road|
+    #       if road.has(otherRow, otherCol, otherEdge.road)
+    #         if not seenRoad.nil? and not self.tile.hasRoadEnd
+    #           if road == seenRoad
+    #             road.finished = true
+    #             road.save
+    #           else
+    #             seenRoad.merge(road)
+    #           end
+    #         else
+    #           road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)
+    #           seenRoad = road
+    #         end
             
-            break
+    #         break
 
-          end
-        end
-      end
-    }
+    #       end
+    #     end
+    #   end
+    # }
 
-    Tile::Directions.each { |dir|
-      if not @neighbours[dir]
+    # Tile::Directions.each { |dir|
+    #   if not @neighbours[dir]
 
-        edge = Edge.find(self.tile[@edges[dir]])
-        if edge.kind == 'r'
+    #     edge = Edge.find(self.tile[@edges[dir]])
+    #     if edge.kind == 'r'
 
-          added = false
+    #       added = false
           
-          Road.where(:game_id => self.game).each do |road|
-            if road.has(self.row, self.col, edge.road)
-              road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)
-              added = true
-              break
-            end
-          end
+    #       Road.where(:game_id => self.game).each do |road|
+    #         if road.has(self.row, self.col, edge.road)
+    #           road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)
+    #           added = true
+    #           break
+    #         end
+    #       end
 
-          if not added
-            road = Road.create(:game => self.game)
-            if not road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)
-              raise "Failed to add to the road."
-            end
-          end
-        end
-      end
-    }
+    #       if not added
+    #         road = Road.create(:game => self.game)
+    #         if not road.add(self.row, self.col, dir, edge.road, self.tile.hasRoadEnd)
+    #           raise "Failed to add to the road."
+    #         end
+    #       end
+    #     end
+    #   end
+    # }
   end
 
   def handleCities
